@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The advanced bit map utility</title>
+    <link rel="stylesheet" href="./css/main.css">
+</head>
+<script src="./js/main.js" defer></script>
+ <body>
+   <div id="background"></div>
+        <div id="UIleft">
+      
+            <button id="primary" class="double selectP">Primary</button> <br>
+            <button id="secondary" class="double" >Secondary</button> <br>
+
+            <button id="pencil" class="icon selectP"><img src="./icons/pencil.png" width="48" height="48"></button>
+            <button id="line"class="icon"><img src="./icons/line.png" width="48" height="48"></button>
+            <br>
+            <button id="poly"class="icon"><img src="./icons/poly.png" width="48" height="48"></button>
+            <button id="circle"class="icon"><img src="./icons/circle.png" width="48" height="48"></button>
+            <br>
+            <button id="select"class="icon"><img src="./icons/select.png" width="48" height="48"></button>
+            <button id="eraser"class="icon selectS"><img src="./icons/eraser.png" width="48" height="48"></button>
+            <br>
+            <div id="toolmenu">
+                <p>The tool menu</p>
+            </div>
+
+<div id="UIleftBottom">
+            <label for="lnW">Line width</label>
+            <input id="lnW" type="number" value=1>
+            <label for="tick">Tick(ms)</label>
+            <input id="tick" type="number" value=0>
+
+        </div>
+ 
+        </div>  
+          
+        <div id="UIright">
+          <button id="primary" class="double selectP">Primary</button> <br>
+          <button id="secondary" class="double" >Secondary</button> <br>
+          <div id="colorpalette">
+            <button class="color" style="background-color: #FFFFFF;"></button>
+            <button class="color" style="background-color: #EEEEEE;"></button>
+            <button class="color" style="background-color: #DDDDDD;"></button>
+            <button class="color" style="background-color: #CCCCCC;"></button>
+            <button class="color" style="background-color: #BBBBBB;"></button>
+            <button class="color" style="background-color: #AAAAAA;"></button>
+            <button class="color" style="background-color: #999999;"></button>
+            <button class="color" style="background-color: #888888;"></button>
+            <button class="color" style="background-color: #777777;"></button>
+            <button class="color" style="background-color: #666666;"></button>
+            <button class="color" style="background-color: #555555;"></button>
+            <button class="color" style="background-color: #444444;"></button>
+            <button class="color" style="background-color: #333333;"></button>
+            <button class="color" style="background-color: #222222;"></button>
+            <button class="color" style="background-color: #111111;"></button>
+            <button class="color" style="background-color: #000000;"></button>
+          </div>
+          <div id="coloredit">
+            <button class="colorE" style="background-color: #000000;"></button>
+            <button class="smallButton" style="position:absolute;left:100px;">Add</button>
+          </div>
+        </div>
+        <div id="UItop">
+
+
+            <button id="save">Save</button>
+            <button id="fileClick">
+                Open
+                  <input type="file" id="open"accept="image/png, image/jpg, image/gif, image/jpeg"></input>
+            </button>
+          
+            <button id="new">New</button>   
+             <button id="resize" style="width: 58px;">Resize</button>
+
+             <div id="UItopRight">
+                <button id="left">Left</button>
+
+             <button id="down">Down</button>
+
+             <button id="right">Right</button>
+        </div>
+        </div>
+        
+       <div id="UIres" style="visibility:hidden;">
+        <p>Resize to:</p>
+      <label>X:</label>
+      <input id="resX" type="number" value="0">
+      <label>Y:</label>
+      <input id="resY" type="number" value="0">
+      <button id="resizeconfirm">Ok</button>
+      </div>
+   
+   <div id="canvasdiv" >
+
+ <canvas id="canvas" >  </canvas>
+ <canvas id="previewcanvas" >  </canvas>
+ <canvas id="uicanvas" >  </canvas>
+   </div>
+            
+ 
+   
+    
+
+ </body>
+</html>
+<html>
+  
+   
+   
