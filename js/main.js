@@ -1,3 +1,6 @@
+////////////
+//EXTERNAL//
+////////////
 function sleep(millis)
 {
     var date = new Date();
@@ -14,76 +17,229 @@ function download(){
 }
 
 
+
+////////
+//MAIN//
+////////
+    //VARS//
 var TICK = 0;
-///*
-
-//FILE MANAGEMENT & UI
-let FILE_SAVED = false;
+let E;
 
 
 
-let lineAccuracy = 100;
 
-//primary tool
 
+//////////
+//CANVAS//
+//////////
+
+    //VARS//
+var canvasSize = {x: 512,y: 256}
+var resolution = {x:512,y:256}
+var resScale = 0.25; //for mouse
+
+
+    //ELEMENTS//
+var uiCanvas = document.getElementById("uicanvas");
+var previewCanvas = document.getElementById("previewcanvas");
+var canvas = document.getElementById("canvas");var ctx = canvas.getContext("2d");
+let background = document.getElementById("background");
+var div = document.getElementById("canvasdiv");
+div.style.height = ""+canvasSize.y+"px";
+div.style.width = ""+canvasSize.x+"px";
+
+    //FUNC//
+function UpdateCanvas(){
+  canvas.height = resolution.y;
+  canvas.width = resolution.x;
+  previewCanvas.height = resolution.y;
+  previewCanvas.width = resolution.x;
+  uiCanvas.height = resolution.y;
+  uiCanvas.width = resolution.x;
+}
+function ChangeRes(){
+  if(resolution.x > resolution.y){
+    resScale =  resolution.x / canvasSize.x;
+  }
+  else{
+    resScale =  resolution.y / canvasSize.y; 
+  }
+canvas.style.backgroundSize = 200/resolution.x  + "%";
+}
+function ScrollUpdate(){
+var rect = canvas.getBoundingClientRect();
+ canvasOffset.x = rect.left;
+ canvasOffset.y = rect.top;
+}
+
+function MoveCanvas(){
+
+  div.style.left = canvasOffset.x + ((AbsPos.x-AbsLastPos.x))+"px";
+  div.style.top = canvasOffset.y +((AbsPos.y-AbsLastPos.y))+"px";
+  
+  ScrollUpdate();
+  }
+
+////////
+//TOOL//
+////////
+    //VARS//
 var PRIMARY = "pencil";
-
 var PRIMARY_MODE = "PENCIL_MODE_BASIC";
-
-
-
 var lineWidth = 1;
 var lineCap = 'butt';
-var lineColor = "rgba(0,0,255,255)";
-// secondary tool
+var lineColor = "rgba(0,0,0,255)";
+
 var SECONDARY = "eraser";
-
 var SECONDARY_MODE = "ERASER_MODE_BASIC";
-
 var lineWidthS = 0.1;
 var lineCapS = 'butt';
 var lineColorS = "rgba(0,0,0,255)";
 
 
-//resolution and scale for zooming
-var canvasSize = {x: 512,y: 256}
-var resolution = {x:512,y:256}
-var resScale = 0.25; //for mouse
-var scale = 1;//zoom
 
-//canvas
-var uiCanvas = document.getElementById("uicanvas");
-var previewCanvas = document.getElementById("previewcanvas");
-var canvas = document.getElementById("canvas");
-var div = document.getElementById("canvasdiv");
-//canvas.style.backgroundSize = (2/resScale) + "px";
-
-div.style.height = ""+canvasSize.y+"px";
-div.style.width = ""+canvasSize.x+"px";
-UpdateCanvas();
-let hoverCanvas = false;
-let hoverBackground = false;
-uiCanvas.onmouseover = function(){
-  hoverCanvas = true;
+////////////////
+//COLORPALETTE//
+////////////////
+    //FUNC//
+    function ChangeColor(value){//changes modified color at relevant places
  
+  CurrentColor.getContext("2d").fillStyle = value;
+  CurrentColor.getContext("2d").clearRect(0,0,1,1);
+    CurrentColor.getContext("2d").fillRect(0,0,1,1);
+       Color = value;
+}
+
+    //VARS//
+var Color = "#000000"; //color being modified
+var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
+
+    //ELEMENTS//
+let colorpickerBackground = document.getElementById("colorCanvasGradient"); //SATURATIONxLEVEL gradient
+let cpbtx = colorpickerBackground.getContext("2d");
+colorpickerBackground.width = 256;
+colorpickerBackground.height = 256;
+let huepickerBackground = document.getElementById("hueCanvasGradient"); //HUE gradient
+let htx = huepickerBackground.getContext("2d");
+huepickerBackground.width = 1;
+huepickerBackground.height = 360;
+let trpickerBackground = document.getElementById("trCanvasGradient"); //TRANSPARENTCY gradient
+let trtx = trpickerBackground.getContext("2d");
+trpickerBackground.width = 1;
+trpickerBackground.height = 360;
+
+    //UI//
+const PRIMARY_COLOR = document.getElementById("PRIMARYCOLOR");
+const SECONDARY_COLOR = document.getElementById("SECONDARYCOLOR");
+const CurrentColor = document.getElementById("CurrentColor");
+CurrentColor.width = 1;
+CurrentColor.height = 1;
+CurrentColor.getContext("2d").fillStyle = "#000000";
+CurrentColor.getContext("2d").fillRect(0,0,1,1);
+const styleCPE = getComputedStyle(document.querySelector('#colorpicker'));
+const ColorButtonNew = document.getElementById("ColorButtonNew");
+ColorButtonNew.addEventListener("click",function(){
+if(!ColorSelected){
+  lineColor = Color;
+  PRIMARY_COLOR.style.backgroundColor = Color;
+
+}else{
+  lineColorS = Color;
+  SECONDARY_COLOR.style.backgroundColor = Color;
+}
+});
+
+
+let hex = document.getElementById("hex");
+hex.addEventListener("input",function(){
+//validate
+if(hex.value.length == 7 || hex.value.length == 9){
+  if(hex.value.includes("#")){
+ChangeColor(hex.value);
+  }
+
+}
+});
+let rgba = document.getElementById("rgba");
+rgba.addEventListener("input",function(){
+//validate
+
+  if(rgba.value.includes("rgba(")||rgba.value.includes("rgb(")){
+    ChangeColor(rgba.value);
+  }
+});
+let hsla = document.getElementById("hsla");
+hsla.addEventListener("input",function(){
+//validate
+
+  if(hsla.value.includes("hsla(")||rgba.value.includes("hsl(")){
+    ChangeColor(hsla.value);
+  }
+
+
+ 
+});
+let setcolor = "rbg(0,0,0,255)";
+let oncolor=false;
+let colors = document.getElementsByClassName("color");
+for (let i = 0; i < colors.length;i++){
+  colors[i].onmouseover = function() {
+
+  let color = colors[i].getAttribute("style");
+  color = color.split(" ")[1];
+  color = color.split(";")[0];
+ 
+  setcolor = color;
+  oncolor = true;
+  }
+  colors[i].onmouseout = function(){
+    oncolor = false;;
+  }
+}
+
+
+
+
+
+
+/////////
+//MOUSE//
+/////////
+
+    //HOVER//
+let hoveringON;
+let hoveredON; //When mousedown
+uiCanvas.onmouseover = function(){
+hoveringON = "canvas";
 }
 uiCanvas.onmouseout = function(){
-hoverCanvas = false;
+hoveringON = "none";
 }
-let background = document.getElementById("background");
-
 background.onmouseover = function(){
-  hoverBackground = true;
- 
+hoveringON = "background";
 }
 background.onmouseout = function(){
-hoverBackground = false;
+//hoverBackground = false;
+hoveringON = "none";
 }
 
+//color mouse changes
+colorpickerBackground.onmouseover = function(){
+hoveringON = "colorpicker";
+}
+colorpickerBackground.onmouseout = function(){
+hoveringON = "none";
+}
 
-var ctx = canvas.getContext("2d");
+ let colorPickerCursor = document.getElementById("gradientcursor");
+colorPickerCursor.onmouseover = function(){
+  hoveringON = "colorpicker";
+  }
+  colorPickerCursor.onmouseout = function(){
+    hoveringON = "none";
+    }
 
-//mouse
+      //MOUSE//
 var left = false;
 var middle = false;
 var right = false;
@@ -94,89 +250,284 @@ var lastPos = {x:-1, y:-1}//last position on canvas
 var downPos = {x:0, y:0}//last clicked position on canvas
 var upPos = {x:0, y:0}//last let go position on canvas
 let perfectPos = {x:0,y:0}//last confirmed pixel on canvas
-
+let lastIntPos = {x:0,y:0}
 var AbsPos = {x:0,y:0}
 var AbsLastPos = {x:0,y:0}
 
-let E;
-
-
-ChangeRes();
-ScrollUpdate();
-
-
-
-
-
-
-let scrollSpeed = 1.1;
-window.oncontextmenu = function ()
-{
-    return false;
-}
-
-
-window.onbeforeunload = function() {
-  return "GDsfs";
-};
-
-function UpdateCanvas(){
-  canvas.height = resolution.y;
-  canvas.width = resolution.x;
-  previewCanvas.height = resolution.y;
-  previewCanvas.width = resolution.x;
-  uiCanvas.height = resolution.y;
-  uiCanvas.width = resolution.x;
-}
-
-function ChangeRes(){
-  if(resolution.x > resolution.y){
-    resScale =  resolution.x / canvasSize.x;
-    
-     
-  }
-  else{
-    resScale =  resolution.y / canvasSize.y;
-
-
-
-    
-  }
-  scale = 1;
-canvas.style.backgroundSize = 200/resolution.x  + "%";
- 
-}
-function ScrollUpdate(){
-var rect = canvas.getBoundingClientRect();
- canvasOffset.x = rect.left;
- canvasOffset.y = rect.top;
-
-
-}
+    //FUNC//
 function UpdatePos(){
   AbsLastPos.x = AbsPos.x;
   AbsLastPos.y = AbsPos.y;
   lastPos.x = pos.x;
   lastPos.y = pos.y;
-  pos.x = ((E.clientX-canvasOffset.x)*resScale)*scale;
-  pos.y = ((E.clientY-canvasOffset.y)*resScale)*scale;
+  pos.x = ((E.clientX-canvasOffset.x)*resScale);
+  pos.y = ((E.clientY-canvasOffset.y)*resScale);
  AbsPos.x = E.clientX;
  AbsPos.y = E.clientY;
 
 }
+    //EVENTS//
 
-function MoveCanvas(){
-
-div.style.left = canvasOffset.x + ((AbsPos.x-AbsLastPos.x))+"px";
-div.style.top = canvasOffset.y +((AbsPos.y-AbsLastPos.y))+"px";
-
-ScrollUpdate();
+    document.addEventListener("mousedown", function(e){
+      downPos.x = pos.x;
+      downPos.y = pos.y;
+      switch(e.button){
+        case(0): //console.log("left");
+        hoveredON = hoveringON;
+       
+         left = true;
+         previewCanvas.getContext("2d").fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
+         switch(PRIMARY){
+          case("pencil"):
+          switch(PRIMARY_MODE){
+      case("PENCIL_MODE_PIXEL"):
+      
+      perfectPos.x = ~~pos.x;
+      perfectPos.y = ~~pos.y;
+      if(hoveredON == "canvas"){
+         ctx.fillRect(perfectPos.x,perfectPos.y,lineWidth,lineWidth);
+        PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+      }
+     
+      
+     
+      break;
+      
+          }
+      
+       break;
+        }
+         E = e;
+         Draw();
+         break;
+        case(1): /*console.log("middle");*/ middle = true; break;
+        case(2): /*console.log("right");*/ right = true;
+        hoveredON = hoveringON;
+        previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
+        E = e;
+        Draw();
+        break;
+      }
+    
+    
+       if(oncolor){
+      if(left){
+        lineColor = setcolor;
+      }else if(right){
+        lineColorS = setcolor;
+      }else if(middle){
+        //move+ color
+        console.log("middle");
+      }
+     }
+      
+    
+    
+    });
+    document.addEventListener("mouseup", function(e){
+     
+      //lastPos.x = pos.x;
+      //lastPos.y = pos.y;
+        switch(e.button){
+        case(0): /*console.log("left");*/ left = false;
+          switch(PRIMARY){
+        case("pencil"):
+        switch(PRIMARY_MODE){
+    case("PENCIL_MODE_PIXEL"):
+     previewCanvas.getContext("2d").clearRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
+    if(hoveredON == "canvas"){
+      console.log("hever");
+       ctx.fillStyle = lineColor;
+    ctx.fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
+    }
+   
+    break;
+    
+        }
+    
+     break;
+      }
+     break;
+        case(1): /*console.log("middle");*/ middle = false; break;
+        case(2): /*console.log("right");*/ right = false; break;
+      }
+    
+    
+    
+    
+    
+    
+     if(left&!right){
+        previewCanvas.getContext("2d").fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
+      }else if(!left&right){
+        previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
+      }
+    
+    
+          UpdatePos();
+          upPos.x =pos.x;
+          upPos.y = pos.y;
+          Draw();
+    
+     
+      
+      //pixel
+     hoveredON = "none";
+    
+    });
+    //drawing, pos update
+    document.addEventListener("mousemove", function(e) {
+      E = e;
+    
+    if(lastPos.x == -1){
+    
+     
+        UpdatePos();
+        lastPos.x = pos.x;
+        lastPos.y = pos.y;
+        AbsLastPos.x = AbsPos.x;
+        AbsLastPos.y = AbsPos.y;
+      }
+    
+    
+     // lastPos.x = pos.x;
+      //AbsLastPos.x = AbsPos.x;
+      //AbsLastPos.y = AbsPos.y;
+      //lastPos.y = pos.y;
+       UpdatePos();
+    if(middle){
+     
+      MoveCanvas();
+     
+      return true;
+    }
+      Draw();
+    
+    });
+    
+    document.addEventListener('wheel', function(e){
+    
+      if(e.wheelDelta > 0){
+    
+    
+        if(canvasSize.x >= resolution.x/4 && canvasSize.x < resolution.x*2){
+          var before = {x:0,y:0}
+          var after = {x:0,y:0}
+          before.x = ((E.clientX-canvasOffset.x)*resScale);
+          before.y = ((E.clientY-canvasOffset.y)*resScale);
+    canvasSize.x += resolution.x/4;
+    canvasSize.y += resolution.y/4;
+    div.style.height = canvasSize.y+"px";
+    div.style.width = canvasSize.x+"px";
+    ChangeRes();
+    after.x = ((E.clientX-canvasOffset.x));
+    after.y = ((E.clientY-canvasOffset.y));
+    
+    canvasOffset.x += (after.x-(before.x/resScale));
+    canvasOffset.y += (after.y-(before.y/resScale));
+    div.style.left = canvasOffset.x+"px";
+    div.style.top = canvasOffset.y+"px";
+         }
+        else if(canvasSize.x < resolution.x * 24){
+          var before = {x:0,y:0}
+          var after = {x:0,y:0}
+          before.x = ((E.clientX-canvasOffset.x)*resScale);
+          before.y = ((E.clientY-canvasOffset.y)*resScale);
+    canvasSize.x += resolution.x;
+    canvasSize.y += resolution.y;
+    div.style.height = canvasSize.y+"px";
+    div.style.width = canvasSize.x+"px";
+    ChangeRes();
+    after.x = ((E.clientX-canvasOffset.x));
+    after.y = ((E.clientY-canvasOffset.y));
+    
+    canvasOffset.x += (after.x-(before.x/resScale));
+    canvasOffset.y += (after.y-(before.y/resScale));
+    div.style.left = canvasOffset.x+"px";
+    div.style.top = canvasOffset.y+"px";
+        }
+        /*
+       else if(canvasSize.x < resolution.x*48){
+        return false;
+        canvasSize.x += resolution.x;
+        canvasSize.y += resolution.y;
+        canvas.style.height = ""+canvasSize.y+"px";
+    canvas.style.width = ""+canvasSize.x+"px";
+       }
+       */
+        
+        
+      }else{
+    
+        if(canvasSize.x > resolution.x*2){
+         
+          var before = {x:0,y:0}
+          var after = {x:0,y:0}
+          before.x = ((E.clientX-canvasOffset.x)*resScale);
+          before.y = ((E.clientY-canvasOffset.y)*resScale);
+          canvasSize.x -= resolution.x;
+        canvasSize.y -= resolution.y;
+        div.style.height = ""+canvasSize.y+"px";
+    div.style.width = ""+canvasSize.x+"px";
+    ChangeRes();
+    after.x = ((E.clientX-canvasOffset.x));
+    after.y = ((E.clientY-canvasOffset.y));
+    
+    canvasOffset.x += (after.x-(before.x/resScale));
+    canvasOffset.y += (after.y-(before.y/resScale));
+    div.style.left = canvasOffset.x+"px";
+    div.style.top = canvasOffset.y+"px";
+        } else if(canvasSize.x > resolution.x/4){
+         
+          var before = {x:0,y:0}
+          var after = {x:0,y:0}
+          before.x = ((E.clientX-canvasOffset.x)*resScale);
+          before.y = ((E.clientY-canvasOffset.y)*resScale);
+          canvasSize.x -= resolution.x/4;
+        canvasSize.y -= resolution.y/4;
+        div.style.height = ""+canvasSize.y+"px";
+    div.style.width = ""+canvasSize.x+"px";
+    ChangeRes();
+    after.x = ((E.clientX-canvasOffset.x));
+    after.y = ((E.clientY-canvasOffset.y));
+    
+    canvasOffset.x += (after.x-(before.x/resScale));
+    canvasOffset.y += (after.y-(before.y/resScale));
+    div.style.left = canvasOffset.x+"px";
+    div.style.top = canvasOffset.y+"px";
+        /*
+        else if (canvasSize.x > resolution.x/2){
+          return false;
+          canvasSize.x -= resolution.x/2;
+        canvasSize.y -= resolution.y/2;
+        canvas.style.height = ""+canvasSize.y+"px";
+    canvas.style.width = ""+canvasSize.x+"px";
+        }
+        */
+        
+      }
+    }                              
+      
+      },true);
+    
+    
+    
+//////////
+//WINDOW//
+//////////
+window.oncontextmenu = function ()
+{
+    return false;
 }
+window.onbeforeunload = function() {
+  return "wait!";
+};
 
 
 
-
-
+////////
+//DRAW//
+////////
 function PerfectLinePencil(X,Y,x,y,width) {
  
    if(X > x){//DONE
@@ -284,19 +635,11 @@ function PerfectLinePencil(X,Y,x,y,width) {
     
    }
    if(TICK > 0){
-    sleep(TICK);
+   sleep(TICK);
    }
   //sleep(100);
   }
   
-
-
-
-
-
-
-
-  let lastIntPos = {x:0,y:0}
 function PixelPerfectLinePencil(X,Y,x,y,width) {
   
     
@@ -304,11 +647,10 @@ function PixelPerfectLinePencil(X,Y,x,y,width) {
     if((Math.abs(perfectPos.x- ~~x) < 2) && (Math.abs(perfectPos.y- ~~y) < 2)){
       var xy = {x:~~x,y:~~y}
      if(xy.x != lastIntPos.x || xy.y != lastIntPos.y){
-      //previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);      //this is utter shit
+      //previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);      //this is... something
       previewCanvas.getContext("2d").clearRect(lastIntPos.x,lastIntPos.y,1,1); //less of a war crime than above
       lastIntPos.x = xy.x;
       lastIntPos.y = xy.y;
-    
       previewCanvas.getContext("2d").fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
       
       
@@ -343,10 +685,32 @@ perfectPos.y = ~~y;
   
    }
    
-
 //DRAW CODE
 function Draw(){
-  if(!hoverCanvas && !hoverBackground){
+      //COLORPICKER//
+  let Xoff = styleCPE.left.split("px")[0];
+  let Yoff = styleCPE.top.split("px")[0];  
+  if(hoveredON == "colorpicker"){
+    if(left){
+     
+      //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
+      var x = ~~(AbsPos.x-Xoff-4)*2;
+      var y = ~~(AbsPos.y-Yoff-4)*2;
+      if(x > 255){x=255;}
+      if(y > 255){y=255;}
+      if(x < 0){x=0;}
+      if(y < 0){y=0;}
+      //UI
+       colorPickerCursor.style.left = (x/2-8)+"px";
+      colorPickerCursor.style.top = (y/2-8)+"px";
+      var idk = cpbtx.getImageData(x,y,1,1).data;
+    Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+",1)";
+      CurrentColor.getContext("2d").fillStyle = Color;
+       CurrentColor.getContext("2d").fillRect(0,0,1,1);
+    }
+  }
+      //DRAW//
+  if(hoveredON != "canvas" && hoveredON!= "background"){
     return;
   }
   if(left){
@@ -463,271 +827,12 @@ break;
   
 }
 
-//COLOR SELECT
-
-let setcolor = "rbg(0,0,0,255)";
-let oncolor=false;
-let colors = document.getElementsByClassName("color");
-for (let i = 0; i < colors.length;i++){
-  colors[i].onmouseover = function() {
-
-  let color = colors[i].getAttribute("style");
-  color = color.split(" ")[1];
-  color = color.split(";")[0];
- 
-  setcolor = color;
-  oncolor = true;
-  }
-  colors[i].onmouseout = function(){
-    oncolor = false;;
-  }
-}
-
-document.addEventListener("mousedown", function(e){
 
 
 
-
-
-  downPos.x = pos.x;
-  downPos.y = pos.y;
-
-
-
-
-
-
-  switch(e.button){
-    case(0): //console.log("left");
-     left = true;
-     previewCanvas.getContext("2d").fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
-     switch(PRIMARY){
-      case("pencil"):
-      switch(PRIMARY_MODE){
-  case("PENCIL_MODE_PIXEL"):
-  
-  perfectPos.x = ~~pos.x;
-  perfectPos.y = ~~pos.y;
-  ctx.fillRect(perfectPos.x,perfectPos.y,lineWidth,lineWidth);
-  
-  PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
-  break;
-  
-      }
-  
-   break;
-    }
-     E = e;
-     Draw();
-     break;
-    case(1): /*console.log("middle");*/ middle = true; break;
-    case(2): /*console.log("right");*/ right = true;
-    previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
-    E = e;
-    Draw();
-    break;
-  }
-
-
-   if(oncolor){
-  if(left){
-    lineColor = setcolor;
-  }else if(right){
-    lineColorS = setcolor;
-  }else if(middle){
-    //move+ color
-    console.log("middle");
-  }
- }
-  
-
-
-});
-document.addEventListener("mouseup", function(e){
-  //lastPos.x = pos.x;
-  //lastPos.y = pos.y;
-    switch(e.button){
-    case(0): /*console.log("left");*/ left = false;
-      switch(PRIMARY){
-    case("pencil"):
-    switch(PRIMARY_MODE){
-case("PENCIL_MODE_PIXEL"):
-ctx.fillStyle = lineColor;
-//previewCanvas.getContext("2d").clearRect(lastIntPos.x,lastIntPos.y,1,1);
-previewCanvas.getContext("2d").clearRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
-ctx.fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
-break;
-
-    }
-
- break;
-  }
- break;
-    case(1): /*console.log("middle");*/ middle = false; break;
-    case(2): /*console.log("right");*/ right = false; break;
-  }
-
-
-
-
-
-
- if(left&!right){
-    previewCanvas.getContext("2d").fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
-  }else if(!left&right){
-    previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
-  }
-
-
-      UpdatePos();
-      upPos.x =pos.x;
-      upPos.y = pos.y;
-      Draw();
-
- 
-  
-  //pixel
-
-
-});
-//drawing, pos update
-document.addEventListener("mousemove", function(e) {
-  E = e;
-
-if(lastPos.x == -1){
-
- 
-    UpdatePos();
-    lastPos.x = pos.x;
-    lastPos.y = pos.y;
-    AbsLastPos.x = AbsPos.x;
-    AbsLastPos.y = AbsPos.y;
-  }
-
-
- // lastPos.x = pos.x;
-  //AbsLastPos.x = AbsPos.x;
-  //AbsLastPos.y = AbsPos.y;
-  //lastPos.y = pos.y;
-   UpdatePos();
-if(middle){
- 
-  MoveCanvas();
- 
-  return true;
-}
-  Draw();
-
-});
-
-document.addEventListener('wheel', function(e){
-
-  if(e.wheelDelta > 0){
-
-
-    if(canvasSize.x >= resolution.x/4 && canvasSize.x < resolution.x*2){
-      var before = {x:0,y:0}
-      var after = {x:0,y:0}
-      before.x = ((E.clientX-canvasOffset.x)*resScale);
-      before.y = ((E.clientY-canvasOffset.y)*resScale);
-canvasSize.x += resolution.x/4;
-canvasSize.y += resolution.y/4;
-div.style.height = canvasSize.y+"px";
-div.style.width = canvasSize.x+"px";
-ChangeRes();
-after.x = ((E.clientX-canvasOffset.x));
-after.y = ((E.clientY-canvasOffset.y));
-
-canvasOffset.x += (after.x-(before.x/resScale));
-canvasOffset.y += (after.y-(before.y/resScale));
-div.style.left = canvasOffset.x+"px";
-div.style.top = canvasOffset.y+"px";
-     }
-    else if(canvasSize.x < resolution.x * 24){
-      var before = {x:0,y:0}
-      var after = {x:0,y:0}
-      before.x = ((E.clientX-canvasOffset.x)*resScale);
-      before.y = ((E.clientY-canvasOffset.y)*resScale);
-canvasSize.x += resolution.x;
-canvasSize.y += resolution.y;
-div.style.height = canvasSize.y+"px";
-div.style.width = canvasSize.x+"px";
-ChangeRes();
-after.x = ((E.clientX-canvasOffset.x));
-after.y = ((E.clientY-canvasOffset.y));
-
-canvasOffset.x += (after.x-(before.x/resScale));
-canvasOffset.y += (after.y-(before.y/resScale));
-div.style.left = canvasOffset.x+"px";
-div.style.top = canvasOffset.y+"px";
-    }
-    /*
-   else if(canvasSize.x < resolution.x*48){
-    return false;
-    canvasSize.x += resolution.x;
-    canvasSize.y += resolution.y;
-    canvas.style.height = ""+canvasSize.y+"px";
-canvas.style.width = ""+canvasSize.x+"px";
-   }
-   */
-    
-    
-  }else{
-
-    if(canvasSize.x > resolution.x*2){
-     
-      var before = {x:0,y:0}
-      var after = {x:0,y:0}
-      before.x = ((E.clientX-canvasOffset.x)*resScale);
-      before.y = ((E.clientY-canvasOffset.y)*resScale);
-      canvasSize.x -= resolution.x;
-    canvasSize.y -= resolution.y;
-    div.style.height = ""+canvasSize.y+"px";
-div.style.width = ""+canvasSize.x+"px";
-ChangeRes();
-after.x = ((E.clientX-canvasOffset.x));
-after.y = ((E.clientY-canvasOffset.y));
-
-canvasOffset.x += (after.x-(before.x/resScale));
-canvasOffset.y += (after.y-(before.y/resScale));
-div.style.left = canvasOffset.x+"px";
-div.style.top = canvasOffset.y+"px";
-    } else if(canvasSize.x > resolution.x/4){
-     
-      var before = {x:0,y:0}
-      var after = {x:0,y:0}
-      before.x = ((E.clientX-canvasOffset.x)*resScale);
-      before.y = ((E.clientY-canvasOffset.y)*resScale);
-      canvasSize.x -= resolution.x/4;
-    canvasSize.y -= resolution.y/4;
-    div.style.height = ""+canvasSize.y+"px";
-div.style.width = ""+canvasSize.x+"px";
-ChangeRes();
-after.x = ((E.clientX-canvasOffset.x));
-after.y = ((E.clientY-canvasOffset.y));
-
-canvasOffset.x += (after.x-(before.x/resScale));
-canvasOffset.y += (after.y-(before.y/resScale));
-div.style.left = canvasOffset.x+"px";
-div.style.top = canvasOffset.y+"px";
-    /*
-    else if (canvasSize.x > resolution.x/2){
-      return false;
-      canvasSize.x -= resolution.x/2;
-    canvasSize.y -= resolution.y/2;
-    canvas.style.height = ""+canvasSize.y+"px";
-canvas.style.width = ""+canvasSize.x+"px";
-    }
-    */
-    
-  }
-}                              
-  
-  },true);
-
-//UI
-
-
+//////////////
+//GENERIC UI//
+//////////////
 let LeftHidden = false;
 let UILeft = document.getElementById("UIleft");
 let UILeftToggle = document.getElementById("left");
@@ -739,7 +844,6 @@ if(LeftHidden){
 }
 LeftHidden = !LeftHidden;
 });
-
 let Input_tick = document.getElementById("tick");
 Input_tick.addEventListener("input",function(e){
   if(Input_tick.value < 2001 && Input_tick.value > -1){
@@ -762,8 +866,7 @@ Input_lnW.addEventListener("input",function(e){
 
 });
 
-
-//FILE
+    //FILE MENU//
 let New = document.getElementById("new");
 New.addEventListener("click",function(e){
 ctx.clearRect(0,0,resolution.x,resolution.y);  
@@ -845,10 +948,6 @@ UpdateCanvas();
  
 });
 
-
-
-
-//LEFT
 let select = false; //false=PRIMARY,true=SECONDARY
 let PRIMARYtoolSELECT;
 let SECONDARYtoolSELECT; 
@@ -865,15 +964,6 @@ Button_primary.addEventListener("click",function(e) {
     Button_primary.classList.remove("selectP");
     Button_secondary.classList.add("selectS");
     });
-
-
-
-
-
-
-
-
-
 let Button_pencil = document.getElementById("pencil");
 let Button_line = document.getElementById("line");
 let Button_poly = document.getElementById("poly");
@@ -883,6 +973,8 @@ let Button_eraser = document.getElementById("eraser");
 PRIMARYtoolSELECT = Button_pencil;
 SECONDARYtoolSELECT = Button_eraser;
 
+let Menu_Tool = document.getElementById("toolmenu");
+      //FUNC//
 function CreateIcon(img,id){
   let temp = document.createElement("button");
   let imgobj = document.createElement("img");
@@ -909,8 +1001,6 @@ if(!select){
   return temp;
 }
 
-let Menu_Tool = document.getElementById("toolmenu");
-//tool settings menu
 function MenuChange() {
   
 if(!select){
@@ -1040,7 +1130,7 @@ PRIMARYtoolSELECT = obj;
 return;
 }
 
-
+    //TOOLS//
 Button_pencil.addEventListener("click",function(e) {
 if(!select){
 PRIMARY = "pencil";
@@ -1092,14 +1182,46 @@ Button_line.addEventListener("click",function(e) {
           UIbuttonCLICK(Button_eraser);
           });
 
+
+
+////////////////////
+//III-NN-N-III-TTT//
+//-I--N-NN--I---T-//
+//III-N--N-III--T-//
+////////////////////
 function Init() {
+
+//UI//
  MenuChange();
+//CANVAS//
+UpdateCanvas();
+ChangeRes();
+ScrollUpdate();
+
+ //TOOL//
  ctx.fillStyle = lineColor;
+
+ //COLORPALETTE//
+ cpbtx.fillStyle = "#FFFFFFFF";
+ cpbtx.fillRect(0,0,256,256);
+ //colored gradient
+ for(let i = 0; i < 256;i++){
+  cpbtx.fillStyle = "rgba(255,0,0,"+(i/255)+")";
+  cpbtx.fillRect(i,0,1,256);
+ }
+ for(let i = 0; i < 256;i++){
+  cpbtx.fillStyle = "rgba(0,0,0,"+(i/255)+")";
+  cpbtx.fillRect(0,i,256,1);
+ }
+ for(let i = 0; i < 360;i++){
+  htx.fillStyle = "hsla("+i+",100%,50%,1)";
+   htx.fillRect(0,i,1,1);
+ }
+ for(let i = 0; i < 360;i++){
+  trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+   trtx.fillRect(0,i,1,1);
+ }
+
 }
-
-
-
-
-
 Init();
    

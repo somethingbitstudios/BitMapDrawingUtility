@@ -7,8 +7,9 @@
     <title>The advanced bit map utility</title>
     <link rel="stylesheet" href="./css/main.css">
 </head>
-<script src="./js/main.js" defer></script>
- <body>
+
+ <body> 
+ 
    <div id="background"></div>
         <div id="UIleft">
       
@@ -59,10 +60,51 @@
             <button class="color" style="background-color: #111111;"></button>
             <button class="color" style="background-color: #000000;"></button>
           </div>
-          <div id="coloredit">
-            <button class="colorE" style="background-color: #000000;"></button>
-            <button class="smallButton" style="position:absolute;left:100px;">Add</button>
+          <div class="colorPick" >
+           
+           
+             <p class="nospace">PRIMARY</p> 
+             <button id="PRIMARYCOLOR" class="colorE" style="background-color: #000000;height: 32px;width: 32px;"></button>
+              </div>
+          <div class="colorPick">
+        <p class="nospace">SECONDARY</p>
+            <button id="SECONDARYCOLOR" class="colorE" style="background-color: #000000;"></button>
+        
           </div>
+        
+          <div id="colorpicker">
+
+            <p id="labelColor"> PRIMARY Tool Color Picker</p>
+<div id="colorCanvas">
+  <img src="./icons/cursor1.png" id="gradientcursor" width="16" height="16" >
+<canvas id="colorCanvasGradient" ></canvas>
+          </div>
+<div id="hueCanvas">
+  <img src="./icons/cursor2.png" id="huecursor" width="24" height="16" >
+  <canvas id="hueCanvasGradient"></canvas>
+</div>
+<div id="trCanvas">
+  <img src="./icons/cursor2.png" id="trcursor" width="24" height="16" >
+  <canvas id="trCanvasGradient"></canvas>
+</div>
+<div id="colorValues">
+  <small>HEX:</small>
+<input value="#000000FF" id="hex"></input><br/>
+<small>RGBA:</small>
+<input value="rgba(0,0,0,1)" id="rgba"></input><br/>
+<small>HSLA:</small>
+<input value="hsla(0,100%,0%,1)" id="hsla"></input>
+</div>
+<div id="ColorButtons"> 
+  <canvas id="CurrentColor"></canvas>
+  <button id="ColorButtonNew">Use</button>
+  <button id="ColorButtonCancel">Cancel</button>
+
+</div>
+
+          </div>
+          
+            
         </div>
         <div id="UItop">
 
@@ -97,7 +139,7 @@
    <div id="canvasdiv" >
 
  <canvas id="canvas" >  </canvas>
- <canvas id="previewcanvas" >  </canvas>
+ <canvas id="previewcanvas">  </canvas>
  <canvas id="uicanvas" >  </canvas>
    </div>
             
@@ -106,6 +148,8 @@
     
 
  </body>
+ <script  src="./js/main.js" ></script>
+
 </html>
 <html>
   
