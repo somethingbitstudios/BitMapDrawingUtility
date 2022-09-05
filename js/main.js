@@ -18,6 +18,213 @@ function download(){
 
 
 
+//////////////
+//CONVERSION//
+//////////////
+function BinaryToHex(string){
+  switch(string){
+  case("0000"):
+    return "0";
+    break;
+    case("0001"):
+    return "1";
+    break;
+    case("0010"):
+    return "2";
+    break;
+    case("0011"):
+    return "3";
+    break;
+    case("0100"):
+    return "4";
+    break;
+    case("0101"):
+    return "5";
+    break;
+    case("0110"):
+    return "6";
+    break;
+    case("0111"):
+    return "7";
+    break;
+    case("1000"):
+    return "8";
+    break;
+    case("1001"):
+    return "9";
+    break;
+    case("1010"):
+    return "A";
+    break;
+    case("1011"):
+    return "B";
+    break;
+    case("1100"):
+    return "C";
+    break;
+    case("1101"):
+    return "D";
+    break;
+    case("1110"):
+    return "E";
+    break;
+    case("1111"):
+    return "F";
+    break;
+}
+}
+function HexToBinary(string){
+  switch(string){
+  case("0"):
+    return "0000";
+    break;
+    case("1"):
+    return "0001";
+    break;
+    case("2"):
+    return "0010";
+    break;
+    case("3"):
+    return "0011";
+    break;
+    case("4"):
+    return "0100";
+    break;
+    case("5"):
+    return "0101";
+    break;
+    case("6"):
+    return "0110";
+    break;
+    case("7"):
+    return "0111";
+    break;
+    case("8"):
+    return "1000";
+    break;
+    case("9"):
+    return "1001";
+    break;
+    case("A"):
+    return "1010";
+    break;
+    case("B"):
+    return "1011";
+    break;
+    case("C"):
+    return "1100";
+    break;
+    case("D"):
+    return "1101";
+    break;
+    case("E"):
+    return "1110";
+    break;
+    case("F"):
+    return "1111";
+    break;
+}
+}
+function DecimalToHex(string){
+  let num = Number(string);
+  let binary = [];
+ while(num > 0){
+  let rem = num % 2;
+ 
+  binary.push(rem);
+  num = Math.floor(num/2);
+ }
+
+ let len = binary.length;
+ for(let i = 0; i < 8-len;i++){
+  binary.push("0");
+  
+ }
+
+  binary.reverse();
+ 
+  let hex1 = ""+binary[0]+binary[1]+binary[2]+binary[3];
+  let hex2 = ""+binary[4]+binary[5]+binary[6]+binary[7];
+ 
+  hex1 = BinaryToHex(hex1);
+ 
+  hex2 = BinaryToHex(hex2);
+  return hex1+hex2;
+
+
+}
+function HexToDecimal(string){
+let HEX1 = string[0];
+let HEX2 = string[1];
+HEX1 = HexToBinary(HEX1);
+HEX2 = HexToBinary(HEX2); 
+let Binary = HEX1+HEX2;
+let Decimal = 0;
+//binary to decimal
+for(let i = 0;i < 8;i++){
+ Decimal =  Decimal*2+Number(Binary[i])
+}
+
+return Decimal;
+}
+
+function RGBAtoHEX(rgba){
+  let r = rgba.split("rgba(")[1].split(",")[0];
+  let g = rgba.split("rgba(")[1].split(",")[1];
+  let b = rgba.split("rgba(")[1].split(",")[2];
+  let a = rgba.split("rgba(")[1].split(",")[3].split(")")[0];
+let HEXr = DecimalToHex(r);
+let HEXg = DecimalToHex(g);
+let HEXb = DecimalToHex(b);
+
+let HEXa = DecimalToHex(~~(a*255)); //FIX
+let HEX = "#"+HEXr+HEXg+HEXb+HEXa;
+
+return HEX;
+}
+function HEXtoRGBA(hex){
+  let hex1 = hex.substring(1,3); hex1 = Number(HexToDecimal(hex1));
+  let hex2 = hex.substring(3,5); hex2 = Number(HexToDecimal(hex2));
+  let hex3 = hex.substring(5,7); hex3 = Number(HexToDecimal(hex3));
+  let hexa = hex.substring(7,9); hexa = Number(HexToDecimal(hexa));
+  hexa = (hexa/255)+"";
+  hexa = Number(hexa.substring(0,4));
+  return ("rgba("+hex1+","+hex2+","+hex3+","+hexa+")");
+}
+function RGBAtoHSLA(rgba){
+  let r = Number(rgba.split("rgba(")[1].split(",")[0])/255;
+  let g = Number(rgba.split("rgba(")[1].split(",")[1])/255;
+  let b = Number(rgba.split("rgba(")[1].split(",")[2])/255;
+  let a = rgba.split("rgba(")[1].split(",")[3].split(")")[0];
+  let cmax = Math.max(r,Math.max(g,b));
+  let cmin = Math.min(r,Math.min(g,b));
+  let diff = cmax - cmin;
+  var hue = 0;
+ if(r==g&&g==b){
+  hue=0;
+ }else{
+   switch(cmax){
+    case(0):break;
+    case(r): hue = (60 * ((g - b) / diff) + 360) % 360;break;
+    case(g): hue = (60 * ((b - r) / diff) + 120) % 360;break;
+    case(b): hue = (60 * ((r - g) / diff) + 240) % 360;break;
+
+  }
+ }
+ 
+  var sat = 0;
+  if(cmax > 0){
+    sat = (diff/cmax)*100;
+  }
+  var value = cmax*100;
+  hue = (""+hue).split(".")[0];
+  sat = (""+sat).split(".")[0];
+  value = (""+value).split(".")[0];
+return "hsla("+hue+","+sat+","+value+","+a+")";
+
+}
+
+
 ////////
 //MAIN//
 ////////
@@ -25,7 +232,7 @@ function download(){
 var TICK = 0;
 let E;
 
-
+    
 
 
 
@@ -34,8 +241,8 @@ let E;
 //////////
 
     //VARS//
-var canvasSize = {x: 512,y: 256}
-var resolution = {x:512,y:256}
+var canvasSize = {x: 64,y: 64}
+var resolution = {x:64,y:64}
 var resScale = 0.25; //for mouse
 
 
@@ -84,11 +291,12 @@ function MoveCanvas(){
 //TOOL//
 ////////
     //VARS//
+  var selected = false; //false = primary,true = secondary
 var PRIMARY = "pencil";
 var PRIMARY_MODE = "PENCIL_MODE_BASIC";
 var lineWidth = 1;
 var lineCap = 'butt';
-var lineColor = "rgba(0,0,0,255)";
+var lineColor = "rgba(255,0,0,255)";
 
 var SECONDARY = "eraser";
 var SECONDARY_MODE = "ERASER_MODE_BASIC";
@@ -96,12 +304,117 @@ var lineWidthS = 0.1;
 var lineCapS = 'butt';
 var lineColorS = "rgba(0,0,0,255)";
 
+    //fill//
+var fillTool = false;
+var tobefilledpos = [];
+var lastfilledpos = [];
+var filledcolor;
+var lastfilledlenght = 0;
+var fillUpdate;
+var filling = false;
+function FourWayFill(){
+  lastfilledlenght = lastfilledpos.length;
+  for(let i = 0;i< lastfilledlenght;i++){
+      FillAround();
+      
+  }
+  if(tobefilledpos.length==0){
+    clearInterval(fillUpdate);
+  filling = false;
+  }else{
+  
+    lastfilledpos = tobefilledpos;
+    tobefilledpos = [];
+  }
+}
+function FillAround(){
+  let cordX = lastfilledpos[lastfilledpos.length-1].x;
+  let cordY = lastfilledpos[lastfilledpos.length-1].y;
+
+  lastfilledpos.pop();  
+  if(cordX>=resolution.x||cordY>=resolution.y||cordX<0||cordY<0){
+    
+     return;
+     
+   }
+  
+  FillPixel(cordX+1,cordY);
+  FillPixel(cordX-1,cordY);
+  FillPixel(cordX,cordY+1);
+  FillPixel(cordX,cordY-1);
+  
+}
+  function FillPixel(cX,cY){
+   
+   
+       var pixel = ctx.getImageData(cX,cY,1,1).data;
+
+    //if(pixel[0]==filledcolor[0]&&pixel[1]==filledcolor[1]&&pixel[2]==filledcolor[2]&&pixel[3]==filledcolor[3]){
+     if(String(pixel)==String(filledcolor)){
+      ctx.fillRect(cX,cY,1,1);
+      tobefilledpos.push({x:cX,y:cY});
+    }
+    }
+    
+ 
+  
+
+
 
 
 ////////////////
 //COLORPALETTE//
 ////////////////
     //FUNC//
+    function UpdateColorCode(color){
+        hexElem.value = RGBAtoHEX(color);
+        rgbaElem.value = color;
+        hslaElem.value = RGBAtoHSLA(color);
+    }
+    function UpdateTransparent(color){
+      let r = color.split(",")[0].split("(")[1];
+      let g = color.split(",")[1];
+      let b = color.split(",")[2];
+      trtx.clearRect(0,0,1,360);
+      for(let i = 0; i < 360;i++){
+        trtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/360)+")";
+        //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+       //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+        trtx.fillRect(0,360-i,1,1);
+      }
+     
+    }
+    function UpdateColorPicker(color){ //updates color and transparency ui
+      cpbtx.fillStyle = "rgb(255,255,255)";
+      
+      let r = color.split(",")[0].split("(")[1];
+      let g = color.split(",")[1];
+      let b = color.split(",")[2];
+      cpbtx.fillRect(0,0,256,256);
+      //colored gradient
+      for(let i = 0; i < 256;i++){
+        cpbtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/254)+")";
+       
+        //cpbtx.fillStyle = "rgba(255,0,0,"+(i/255)+")";
+       cpbtx.fillRect(i,0,1,256);
+      }
+      for(let i = 0; i < 256;i++){
+       cpbtx.fillStyle = "rgba(0,0,0,"+(i/254)+")";
+       cpbtx.fillRect(0,i,256,1);
+      }
+      trtx.clearRect(0,0,1,360);
+      for(let i = 0; i < 360;i++){
+        trtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/360)+")";
+        //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+       //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+        trtx.fillRect(0,360-i,1,1);
+      }
+      var idk = cpbtx.getImageData(ColorCords.x,ColorCords.y,1,1).data;
+      let Transparency = Color.split(",")[3].split(")")[0];
+    Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparency+")";
+    ChangeColor(Color);
+    UpdateTransparent(Color); //e.log(Color);
+    }
     function ChangeColor(value){//changes modified color at relevant places
  
   CurrentColor.getContext("2d").fillStyle = value;
@@ -111,10 +424,14 @@ var lineColorS = "rgba(0,0,0,255)";
 }
 
     //VARS//
-var Color = "#000000"; //color being modified
+    var ColorCords = {x:255,y:0}
+var Color = "rgba(0,0,0,1)"; //color being modified
 var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
 
     //ELEMENTS//
+    let hexElem = document.getElementById("hex");
+    let rgbaElem = document.getElementById("rgba");
+    let hslaElem = document.getElementById("hsla");
 let colorpickerBackground = document.getElementById("colorCanvasGradient"); //SATURATIONxLEVEL gradient
 let cpbtx = colorpickerBackground.getContext("2d");
 colorpickerBackground.width = 256;
@@ -134,7 +451,7 @@ const SECONDARY_COLOR = document.getElementById("SECONDARYCOLOR");
 const CurrentColor = document.getElementById("CurrentColor");
 CurrentColor.width = 1;
 CurrentColor.height = 1;
-CurrentColor.getContext("2d").fillStyle = "#000000";
+CurrentColor.getContext("2d").fillStyle = "rgba(255,0,0,1)";
 CurrentColor.getContext("2d").fillRect(0,0,1,1);
 const styleCPE = getComputedStyle(document.querySelector('#colorpicker'));
 const ColorButtonNew = document.getElementById("ColorButtonNew");
@@ -239,6 +556,38 @@ colorPickerCursor.onmouseover = function(){
     hoveringON = "none";
     }
 
+
+    huepickerBackground.onmouseover = function(){
+      hoveringON = "huepicker";
+      }
+      huepickerBackground.onmouseout = function(){
+      hoveringON = "none";
+      }
+      
+       let huePickerCursor = document.getElementById("huecursor");
+      huePickerCursor.onmouseover = function(){
+        hoveringON = "huepicker";
+        }
+        colorPickerCursor.onmouseout = function(){
+          hoveringON = "none";
+          }
+
+
+
+    trpickerBackground.onmouseover = function(){
+      hoveringON = "trpicker";
+      }
+      trpickerBackground.onmouseout = function(){
+      hoveringON = "none";
+      }
+      
+       let trPickerCursor = document.getElementById("trcursor");
+      trPickerCursor.onmouseover = function(){
+        hoveringON = "trpicker";
+        }
+        colorPickerCursor.onmouseout = function(){
+          hoveringON = "none";
+          }
       //MOUSE//
 var left = false;
 var middle = false;
@@ -246,8 +595,10 @@ var right = false;
 var canvasOffset = {x:0,y:0}
 
 var pos = {x:0,y:0}//current position on canvas
+var intPos = {x:0,y:0}//int
 var lastPos = {x:-1, y:-1}//last position on canvas
 var downPos = {x:0, y:0}//last clicked position on canvas
+var downIntPos = {x:0,y:0}//int
 var upPos = {x:0, y:0}//last let go position on canvas
 let perfectPos = {x:0,y:0}//last confirmed pixel on canvas
 let lastIntPos = {x:0,y:0}
@@ -260,8 +611,12 @@ function UpdatePos(){
   AbsLastPos.y = AbsPos.y;
   lastPos.x = pos.x;
   lastPos.y = pos.y;
-  pos.x = ((E.clientX-canvasOffset.x)*resScale);
+  lastIntPos.x = intPos.x;
+  lastIntPos.y = intPos.y;
+    pos.x = ((E.clientX-canvasOffset.x)*resScale);
   pos.y = ((E.clientY-canvasOffset.y)*resScale);
+  intPos.x = ~~pos.x;
+  intPos.y = ~~pos.y;
  AbsPos.x = E.clientX;
  AbsPos.y = E.clientY;
 
@@ -271,41 +626,85 @@ function UpdatePos(){
     document.addEventListener("mousedown", function(e){
       downPos.x = pos.x;
       downPos.y = pos.y;
+      downIntPos.x = ~~ pos.x;
+      downIntPos.y = ~~ pos.y;
       switch(e.button){
         case(0): //console.log("left");
         hoveredON = hoveringON;
        
          left = true;
          previewCanvas.getContext("2d").fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
+         //if(hoveredON == "canvas"){
          switch(PRIMARY){
+
           case("pencil"):
           switch(PRIMARY_MODE){
       case("PENCIL_MODE_PIXEL"):
-      
       perfectPos.x = ~~pos.x;
       perfectPos.y = ~~pos.y;
-      if(hoveredON == "canvas"){
+      
          ctx.fillRect(perfectPos.x,perfectPos.y,lineWidth,lineWidth);
         PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
-      }
-     
       
-     
       break;
-      
           }
-      
        break;
+case("line"):
+switch(PRIMARY_MODE){
+  default:
+    
+      ctx.fillRect(downIntPos.x,downIntPos.y,lineWidth,lineWidth);  
+    
+
+  break;
+}
+break;
+case("fill"):
+if(hoveredON == "canvas"){
+var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
+ctx.fillRect(~~pos.x,~~pos.y,1,1);
+var temp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
+
+if(String(beftemp)!=String(temp)){
+  filledcolor = beftemp;
+
+  var xy = {x:~~pos.x,y:~~pos.y};
+lastfilledpos.push(xy);
+if(!filling){
+  filling = true;
+  fillUpdate=setInterval(function(){
+
+   FourWayFill();
+  
+},TICK);
+}
+
+}
+
+/*
+if(selected){
+  filledcolor = lineColorS;
+}else{
+  filledcolor = lineColor;
+}
+*/
+}
+break;
+
         }
+      //}
          E = e;
          Draw();
          break;
         case(1): /*console.log("middle");*/ middle = true; break;
         case(2): /*console.log("right");*/ right = true;
         hoveredON = hoveringON;
+           E = e;
         previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
-        E = e;
-        Draw();
+        if(hoveredON == "canvas"){
+           Draw();
+        }
+       
         break;
       }
     
@@ -325,28 +724,38 @@ function UpdatePos(){
     
     });
     document.addEventListener("mouseup", function(e){
-     
+    previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);
       //lastPos.x = pos.x;
       //lastPos.y = pos.y;
         switch(e.button){
         case(0): /*console.log("left");*/ left = false;
+        if(hoveredON == "canvas"){
           switch(PRIMARY){
         case("pencil"):
         switch(PRIMARY_MODE){
     case("PENCIL_MODE_PIXEL"):
      previewCanvas.getContext("2d").clearRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
-    if(hoveredON == "canvas"){
-      console.log("hever");
+ 
+    
        ctx.fillStyle = lineColor;
     ctx.fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
     }
    
     break;
     
-        }
+        
     
+   
+     case("line"):
+    switch(PRIMARY_MODE){
+default:
+  Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+  Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+  break;
+    }
      break;
       }
+    }
      break;
         case(1): /*console.log("middle");*/ middle = false; break;
         case(2): /*console.log("right");*/ right = false; break;
@@ -375,34 +784,29 @@ function UpdatePos(){
      hoveredON = "none";
     
     });
+ 
     //drawing, pos update
     document.addEventListener("mousemove", function(e) {
+
       E = e;
-    
+            
     if(lastPos.x == -1){
-    
-     
         UpdatePos();
         lastPos.x = pos.x;
         lastPos.y = pos.y;
         AbsLastPos.x = AbsPos.x;
         AbsLastPos.y = AbsPos.y;
       }
-    
-    
      // lastPos.x = pos.x;
       //AbsLastPos.x = AbsPos.x;
       //AbsLastPos.y = AbsPos.y;
       //lastPos.y = pos.y;
        UpdatePos();
     if(middle){
-     
       MoveCanvas();
-     
       return true;
     }
       Draw();
-    
     });
     
     document.addEventListener('wheel', function(e){
@@ -639,7 +1043,7 @@ function PerfectLinePencil(X,Y,x,y,width) {
    }
   //sleep(100);
   }
-  
+
 function PixelPerfectLinePencil(X,Y,x,y,width) {
   
     
@@ -684,31 +1088,382 @@ perfectPos.y = ~~y;
    PerfectLinePencil(X,Y,x,y,lineWidth);
   
    }
+
+  function Line(fill,Vctx,X,Y,x,y,lineWidth){
+    var color = "rgb(0,0,0)";
+    if(selected){
+      color = lineColorS;
+   }else{
+     color = lineColor;
+   }
+    var width = 1;
+    if(selected){
+       width = lineWidthS;
+    }else{
+      width = lineWidth;
+    }
    
+
+    Vctx.fillStyle=color;
+
+   var diffX = X-x;
+   var AdiffX = Math.abs(diffX);
+   var diffY = Y-y;
+   var AdiffY = Math.abs(diffY);
+   if(AdiffX>=AdiffY){
+      for(let i = 0;i < AdiffX+1;i++){
+
+        if(fill){
+ Vctx.fillRect(X-(i*(diffX/AdiffX)),Y-(Math.round((i/AdiffX)*diffY)),lineWidth,lineWidth);
+        }
+        else{
+          Vctx.clearRect(X-(i*(diffX/AdiffX)),Y-(Math.round((i/AdiffX)*diffY)),lineWidth,lineWidth);
+        }
+        
+      }
+   }else{
+    for(let i = 0;i < AdiffY+1;i++){
+
+      if(fill){
+Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,lineWidth);
+      }
+      else{
+        Vctx.clearRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,lineWidth);
+      }
+      
+    }
+   }
+    /*
+    if(fill){
+
+   if(X > x){//DONE
+    if(Y > y){ //DONE
+      
+      let diffX = (X-x+1);
+      let diffY = (Y-y+1);
+     if(diffX >=diffY){
+       for(let i = 0; i < diffX;i++){
+   Vctx.fillRect(~~(x+i),~~(y+(i/diffX)*diffY),width,width);
+   }
+     } else{
+      for(let i = 0; i < diffY;i++){
+        Vctx.fillRect(~~(x+(i/diffY)*diffX),~~(y+i),width,width);
+        }  
+     }
+    
+    }
+    else if (Y<y){//D
+      let diffX = X-x+1;
+      let diffY = y-Y+2;
+      if(diffX >=diffY){
+        diffY-=1;
+        y++;
+        for(let i = 0; i < diffX;i++){
+   Vctx.fillRect(~~(x+i),~~(y-((i+1)/diffX)*diffY),width,width);
+   }
+      }else{
+        diffY--;
+        for(let i = 0; i < diffY;i++){
+          Vctx.fillRect(~~(x+(i/diffY)*diffX),~~(y-i),width,width);
+          }
+      }
+    }
+    else{ // DONE
+      let diffX = X-x+1;
+     for(let i = 0; i < diffX;i++){
+   Vctx.fillRect(~~(x+i),~~y,width,width);
+   }
+    }
+    
+   }
+   else if(X<x){ 
+    if(Y > y){ //
+      
+      let diffX = (x-X);
+      let diffY = (Y-y+1);
+     
+     if(diffX >=diffY){
+ diffX++;
+       for(let i = 0; i < diffX;i++){
+   Vctx.fillRect(~~(x-i),~~(y+(i/diffX)*diffY),width,width);
+   
+   }
+     } else{
+        x++;
+        diffX++
+      for(let i = 0; i < diffY;i++){
+        
+        Vctx.fillRect(~~(x-((i+1)/diffY)*diffX),~~(y+i),width,width);
+        }  
+     }
+    
+    }
+    else if (Y<y){//
+      let diffX = x-X;
+      let diffY = y-Y;
+      if(diffX >=diffY){
+        diffX++;
+        for(let i = 0; i < diffX;i++){
+   Vctx.fillRect(~~(x-i),~~(y-((i+1)/diffX)*diffY),width,width);
+   }
+      }else{
+      diffY++;
+        for(let i = 0; i < diffY;i++){
+          Vctx.fillRect(~~(x-((i+1)/diffY)*diffX),~~(y-i),width,width);
+          }
+      }
+     
+    }
+    else{ // 
+     
+      let diffX = x-X+1;
+     for(let i = 0; i < diffX;i++){
+   Vctx.fillRect(~~(x-i),~~y,width,width);
+   }
+    }
+    
+   }
+   else{
+    
+    if(Y > y){
+      
+      let diffY = Y-y+1;
+     
+     for(let i = 0; i < diffY;i++){
+   Vctx.fillRect(~~X,~~(y+i),width,width);
+   }
+    }
+    else if (Y<y){
+    
+      let diffY = y-Y+1;
+     for(let i = 0; i < diffY;i++){
+   Vctx.fillRect(~~X,~~(y-i),width,width);
+   }
+    }
+    else{
+     
+   Vctx.fillRect(~~X,~~Y,width,width);
+   
+    }
+    
+   }
+  
+    }else{
+      x = ~~lastPos.x;
+      y = ~~lastPos.y;
+      
+   if(X > x){//DONE
+    if(Y > y){ //DONE
+      
+      let diffX = (X-x+1);
+      let diffY = (Y-y+1);
+     if(diffX >=diffY){
+       for(let i = 0; i < diffX;i++){
+   Vctx.clearRect(~~(x+i),~~(y+(i/diffX)*diffY),width,width);
+   }
+     } else{
+      for(let i = 0; i < diffY;i++){
+        Vctx.clearRect(~~(x+(i/diffY)*diffX),~~(y+i),width,width);
+        }  
+     }
+    
+    }
+    else if (Y<y){//D
+      let diffX = X-x+1;
+      let diffY = y-Y+2;
+      if(diffX >=diffY){
+        diffY-=1;
+        y++;
+        for(let i = 0; i < diffX;i++){
+   Vctx.clearRect(~~(x+i),~~(y-((i+1)/diffX)*diffY),width,width);
+   }
+      }else{
+        diffY--;
+        for(let i = 0; i < diffY;i++){
+          Vctx.clearRect(~~(x+(i/diffY)*diffX),~~(y-i),width,width);
+          }
+      }
+    }
+    else{ // DONE
+      let diffX = X-x+1;
+     for(let i = 0; i < diffX;i++){
+   Vctx.clearRect(~~(x+i),~~y,width,width);
+   }
+    }
+    
+   }
+   else if(X<x){ 
+    if(Y > y){ //
+      
+      let diffX = (x-X);
+      let diffY = (Y-y+1);
+     
+     if(diffX >=diffY){
+ diffX++;
+       for(let i = 0; i < diffX;i++){
+   Vctx.clearRect(~~(x-i),~~(y+(i/diffX)*diffY),width,width);
+   
+   }
+     } else{
+        x++;
+        diffX++
+      for(let i = 0; i < diffY;i++){
+        
+        Vctx.clearRect(~~(x-((i+1)/diffY)*diffX),~~(y+i),width,width);
+        }  
+     }
+    
+    }
+    else if (Y<y){//
+      let diffX = x-X;
+      let diffY = y-Y;
+      if(diffX >=diffY){
+        diffX++;
+        for(let i = 0; i < diffX;i++){
+   Vctx.clearRect(~~(x-i),~~(y-((i+1)/diffX)*diffY),width,width);
+   }
+      }else{
+      diffY++;
+        for(let i = 0; i < diffY;i++){
+          Vctx.clearRect(~~(x-((i+1)/diffY)*diffX),~~(y-i),width,width);
+          }
+      }
+     
+    }
+    else{ // 
+     
+      let diffX = x-X+1;
+     for(let i = 0; i < diffX;i++){
+   Vctx.clearRect(~~(x-i),~~y,width,width);
+   }
+    }
+    
+   }
+   else{
+    
+    if(Y > y){
+      
+      let diffY = Y-y+1;
+     
+     for(let i = 0; i < diffY;i++){
+   Vctx.clearRect(~~X,~~(y+i),width,width);
+   }
+    }
+    else if (Y<y){
+    
+      let diffY = y-Y+1;
+     for(let i = 0; i < diffY;i++){
+   Vctx.clearRect(~~X,~~(y-i),width,width);
+   }
+    }
+    else{
+     
+   Vctx.clearRect(~~X,~~Y,width,width);
+   
+    }
+    
+   }
+   
+    }
+    */
+    if(TICK > 0){
+   sleep(TICK);
+   }
+  }
+
 //DRAW CODE
 function Draw(){
       //COLORPICKER//
-  let Xoff = styleCPE.left.split("px")[0];
-  let Yoff = styleCPE.top.split("px")[0];  
-  if(hoveredON == "colorpicker"){
-    if(left){
+ 
+  switch(hoveredON){ 
+ 
+    case("colorpicker"):
      
+ if(left){
+     let Xoff = styleCPE.left.split("px")[0];
+  let Yoff = styleCPE.top.split("px")[0];  
       //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
-      var x = ~~(AbsPos.x-Xoff-4)*2;
-      var y = ~~(AbsPos.y-Yoff-4)*2;
-      if(x > 255){x=255;}
-      if(y > 255){y=255;}
+      var x = ~~(AbsPos.x-Xoff-4);
+      var y = ~~(AbsPos.y-Yoff-4);
+      if(x > 127){x=127;}
+      if(y > 127){y=127;}
       if(x < 0){x=0;}
       if(y < 0){y=0;}
       //UI
-       colorPickerCursor.style.left = (x/2-8)+"px";
-      colorPickerCursor.style.top = (y/2-8)+"px";
-      var idk = cpbtx.getImageData(x,y,1,1).data;
-    Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+",1)";
+       colorPickerCursor.style.left = (x-8)+"px";
+      colorPickerCursor.style.top = (y-8)+"px";
+
+      var idk = cpbtx.getImageData(x*2,y*2,1,1).data;
+      ColorCords.x = x*2;
+      ColorCords.y = y*2;
+      let Transparency = Color.split(",")[3].split(")")[0];
+      
+    Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparency+")";
+    
       CurrentColor.getContext("2d").fillStyle = Color;
+      CurrentColor.getContext("2d").clearRect(0,0,1,1);
        CurrentColor.getContext("2d").fillRect(0,0,1,1);
+       UpdateTransparent(Color);
+       UpdateColorCode(Color);
     }
+    break;
+    case("huepicker"):
+    if(left){
+      //let Xoff = styleCPE.left.split("px")[0];
+      let Yoff = styleCPE.top.split("px")[0];  
+         //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
+         var x = 8;
+         var y = ~~(AbsPos.y-Yoff-6);
+         //if(x > 127){x=127;}
+         if(y > 127){y=127;}
+         //if(x < 0){x=0;}
+         if(y < 0){y=0;}
+         //UI
+         
+          huePickerCursor.style.left = (x-8)+"px";
+         huePickerCursor.style.top = (y-2)+"px";
+         //2.8125 = 360/128
+         var idk = htx.getImageData(0,~~(y*2.8125),1,1).data;
+         let Transparent = Color.split(")")[0].split(",")[3];
+         let tempColor = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparent+")";
+       
+        UpdateColorPicker(tempColor);
+        UpdateColorCode(Color);
+        
+       
+          
+       }
+       break;
+       case("trpicker"):
+    if(left){
+      //let Xoff = styleCPE.left.split("px")[0];
+      let Yoff = styleCPE.top.split("px")[0];  
+         //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
+         var x = 8;
+         var y = ~~(AbsPos.y-Yoff-6);
+         //if(x > 127){x=127;}
+         if(y > 127){y=127;}
+         //if(x < 0){x=0;}
+         if(y < 0){y=0;}
+         //UI
+         
+          trPickerCursor.style.left = (x-8)+"px";
+         trPickerCursor.style.top = (y-2)+"px";
+         //2.8125 = 360/128
+        let Transparency = Number((1-(y*2.8125)/360+"").substring(0,4));
+      let rgb = Color.split("rgba(")[1].split(",");
+    Color = "rgba("+rgb[0]+","+rgb[1]+","+rgb[2]+","+Transparency+")";
+    
+      CurrentColor.getContext("2d").fillStyle = Color;
+      CurrentColor.getContext("2d").clearRect(0,0,1,1);
+       CurrentColor.getContext("2d").fillRect(0,0,1,1);
+       
+       UpdateColorCode(Color);  
+       }
+       break;
   }
+  
+ 
       //DRAW//
   if(hoveredON != "canvas" && hoveredON!= "background"){
     return;
@@ -759,7 +1514,14 @@ break;
      
       break;
       case("line"):
-
+      switch(PRIMARY_MODE){
+        default:
+           Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+      Line(true,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+          break;
+      }
+      
+      break;
     }
 
 
@@ -967,7 +1729,7 @@ Button_primary.addEventListener("click",function(e) {
 let Button_pencil = document.getElementById("pencil");
 let Button_line = document.getElementById("line");
 let Button_poly = document.getElementById("poly");
-let Button_circle = document.getElementById("circle");
+let Button_fill = document.getElementById("fill");
 let Button_select = document.getElementById("select");
 let Button_eraser = document.getElementById("eraser");
 PRIMARYtoolSELECT = Button_pencil;
@@ -1157,13 +1919,13 @@ Button_line.addEventListener("click",function(e) {
       }
     UIbuttonCLICK(Button_poly);
     });
-    Button_circle.addEventListener("click",function(e) {
+    Button_fill.addEventListener("click",function(e) {
       if(!select){
-        PRIMARY = "circle";
+        PRIMARY = "fill";
         }else{
-        SECONDARY = "circle";
+        SECONDARY = "fill";
         }
-      UIbuttonCLICK(Button_circle);
+      UIbuttonCLICK(Button_fill);
       });
       Button_select.addEventListener("click",function(e) {
         if(!select){
@@ -1200,7 +1962,14 @@ ScrollUpdate();
 
  //TOOL//
  ctx.fillStyle = lineColor;
-
+ 
+ for(let i = 0; i < 360;i++){
+  htx.fillStyle = "hsla("+i+",100%,50%,1)";
+   htx.fillRect(0,i,1,1);
+ }
+ UpdateColorPicker(lineColor);
+ UpdateColorCode(lineColor);
+/*
  //COLORPALETTE//
  cpbtx.fillStyle = "#FFFFFFFF";
  cpbtx.fillRect(0,0,256,256);
@@ -1219,9 +1988,17 @@ ScrollUpdate();
  }
  for(let i = 0; i < 360;i++){
   trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
-   trtx.fillRect(0,i,1,1);
+   trtx.fillRect(0,360-i,1,1);
  }
-
+*/
 }
 Init();
-   
+/*
+lastfilledpos.push({x:100,y:100});
+FillAround();
+console.log(tobefilledpos);
+console.log(lastfilledpos);
+lastfilledpos=tobefilledpos;
+console.log(tobefilledpos);
+console.log(lastfilledpos);
+*/
