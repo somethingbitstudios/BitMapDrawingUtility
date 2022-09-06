@@ -601,6 +601,7 @@ var downPos = {x:0, y:0}//last clicked position on canvas
 var downIntPos = {x:0,y:0}//int
 var upPos = {x:0, y:0}//last let go position on canvas
 let perfectPos = {x:0,y:0}//last confirmed pixel on canvas
+let previewPos = {x:0,y:0}//last previewed pixel in pp pencil mode
 let lastIntPos = {x:0,y:0}
 var AbsPos = {x:0,y:0}
 var AbsLastPos = {x:0,y:0}
@@ -634,7 +635,7 @@ function UpdatePos(){
        
          left = true;
          previewCanvas.getContext("2d").fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
-         //if(hoveredON == "canvas"){
+         if(hoveredON == "canvas"||hoveredON=="background"){
          switch(PRIMARY){
 
           case("pencil"):
@@ -644,7 +645,7 @@ function UpdatePos(){
       perfectPos.y = ~~pos.y;
       
          ctx.fillRect(perfectPos.x,perfectPos.y,lineWidth,lineWidth);
-        PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+        //PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
       
       break;
           }
@@ -653,7 +654,7 @@ case("line"):
 switch(PRIMARY_MODE){
   default:
     
-      ctx.fillRect(downIntPos.x,downIntPos.y,lineWidth,lineWidth);  
+     ctx.fillRect(downIntPos.x,downIntPos.y,lineWidth,lineWidth);  
     
 
   break;
@@ -692,7 +693,7 @@ if(selected){
 break;
 
         }
-      //}
+      }
          E = e;
          Draw();
          break;
@@ -724,12 +725,13 @@ break;
     
     });
     document.addEventListener("mouseup", function(e){
-    previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);
+    //previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);
       //lastPos.x = pos.x;
       //lastPos.y = pos.y;
         switch(e.button){
         case(0): /*console.log("left");*/ left = false;
-        if(hoveredON == "canvas"){
+     
+        if(hoveredON == "canvas"||hoveredON=="background"){
           switch(PRIMARY){
         case("pencil"):
         switch(PRIMARY_MODE){
@@ -738,7 +740,10 @@ break;
  
     
        ctx.fillStyle = lineColor;
-    ctx.fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
+       if(downIntPos.x !=lastIntPos.x||downIntPos.y!=lastIntPos.y){
+          ctx.fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
+       }
+  
     }
    
     break;
@@ -1045,16 +1050,19 @@ function PerfectLinePencil(X,Y,x,y,width) {
   }
 
 function PixelPerfectLinePencil(X,Y,x,y,width) {
-  
+  X = ~~X;
+  Y = ~~Y;
+  x = ~~x;
+  y = ~~y;
     
 
-    if((Math.abs(perfectPos.x- ~~x) < 2) && (Math.abs(perfectPos.y- ~~y) < 2)){
-      var xy = {x:~~x,y:~~y}
-     if(xy.x != lastIntPos.x || xy.y != lastIntPos.y){
+    if((Math.abs(perfectPos.x- x) < 2) && (Math.abs(perfectPos.y- y) < 2)){
+      
+     if(x != lastIntPos.x || y != lastIntPos.y){
       //previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);      //this is... something
       previewCanvas.getContext("2d").clearRect(lastIntPos.x,lastIntPos.y,1,1); //less of a war crime than above
-      lastIntPos.x = xy.x;
-      lastIntPos.y = xy.y;
+      lastIntPos.x = x;
+      lastIntPos.y = y;
       previewCanvas.getContext("2d").fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
       
       
@@ -1066,7 +1074,7 @@ function PixelPerfectLinePencil(X,Y,x,y,width) {
       return;
     }
     
-    else if ((Math.abs(perfectPos.x- ~~x) < 3) && (Math.abs(perfectPos.y- ~~y) < 3)){
+    else if ((Math.abs(perfectPos.x- x) < 3) && (Math.abs(perfectPos.y- y) < 3)){
    
     ctx.fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
     perfectPos.x = lastIntPos.x;
@@ -1082,13 +1090,53 @@ function PixelPerfectLinePencil(X,Y,x,y,width) {
  Y = perfectPos.y;
  
 
-perfectPos.x = ~~x;
-perfectPos.y = ~~y;
+perfectPos.x = x;
+perfectPos.y = y;
 
    PerfectLinePencil(X,Y,x,y,lineWidth);
   
    }
 
+   function PixelPerfectPencil(lineWidth){
+  let dist = 0;
+  dist = Math.abs(intPos.x-perfectPos.x);
+  let temp = Math.abs(intPos.y-perfectPos.y);
+  if(dist < temp){
+    dist = temp;
+  }
+  
+  switch(dist){
+    case(0):
+    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidth,lineWidth);
+    previewPos.x = perfectPos.x;
+    previewPos.y = perfectPos.y;
+    break;
+    case(1):
+
+    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidth,lineWidth);
+    previewCanvas.getContext("2d").fillRect(intPos.x,intPos.y,lineWidth,lineWidth);
+    previewPos.x = intPos.x;
+    previewPos.y = intPos.y;
+
+    break;
+    default:
+      
+    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidth,lineWidth);
+      //Line code//
+      let beforePos = LinePPP(true,ctx,previewPos.x,previewPos.y,intPos.x,intPos.y,lineWidth);
+
+
+      //END//
+     
+      previewPos.x = intPos.x;
+      previewPos.y = intPos.y;
+      perfectPos.x = beforePos.x;//inpos =>1px before intpos
+      perfectPos.y = beforePos.y;
+      previewCanvas.getContext("2d").fillRect(intPos.x,intPos.y,lineWidth,lineWidth);
+    break;
+  }
+  
+   }
   function Line(fill,Vctx,X,Y,x,y,lineWidth){
     var color = "rgb(0,0,0)";
     if(selected){
@@ -1111,7 +1159,7 @@ perfectPos.y = ~~y;
    var diffY = Y-y;
    var AdiffY = Math.abs(diffY);
    if(AdiffX>=AdiffY){
-      for(let i = 0;i < AdiffX+1;i++){
+      for(let i = 1;i < AdiffX+1;i++){
 
         if(fill){
  Vctx.fillRect(X-(i*(diffX/AdiffX)),Y-(Math.round((i/AdiffX)*diffY)),lineWidth,lineWidth);
@@ -1122,7 +1170,7 @@ perfectPos.y = ~~y;
         
       }
    }else{
-    for(let i = 0;i < AdiffY+1;i++){
+    for(let i = 1;i < AdiffY+1;i++){
 
       if(fill){
 Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,lineWidth);
@@ -1371,6 +1419,62 @@ Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,li
    }
   }
 
+  function LinePPP(fill,Vctx,X,Y,x,y,lineWidth){
+    let result = {x:0,y:0}
+    var color = "rgb(0,0,0)";
+    if(selected){
+      color = lineColorS;
+   }else{
+     color = lineColor;
+   }
+    var width = 1;
+    if(selected){
+       width = lineWidthS;
+    }else{
+      width = lineWidth;
+    }
+   
+
+    Vctx.fillStyle=color;
+
+   var diffX = X-x;
+   var AdiffX = Math.abs(diffX);
+   var diffY = Y-y;
+   var AdiffY = Math.abs(diffY);
+   if(AdiffX>=AdiffY){
+    result.x = X-((AdiffX-1)*(diffX/AdiffX));
+    result.y = Y-(Math.round(((AdiffX-1)/AdiffX)*diffY));
+      for(let i = 0;i < AdiffX;i++){
+
+        if(fill){
+ Vctx.fillRect(X-(i*(diffX/AdiffX)),Y-(Math.round((i/AdiffX)*diffY)),lineWidth,lineWidth);
+        }
+        else{
+          Vctx.clearRect(X-(i*(diffX/AdiffX)),Y-(Math.round((i/AdiffX)*diffY)),lineWidth,lineWidth);
+        }
+        
+      }
+   }else{
+    result.x = X-(Math.round(((AdiffY-1)/AdiffY)*diffX));
+    result.y = Y-((AdiffY-1)*(diffY/AdiffY));
+    for(let i = 0;i < AdiffY;i++){
+
+      if(fill){
+Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,lineWidth);
+      }
+      else{
+        Vctx.clearRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,lineWidth);
+      }
+      
+    }
+   }
+    
+    if(TICK > 0){
+   sleep(TICK);
+   }
+   return result;
+  }
+
 //DRAW CODE
 function Draw(){
       //COLORPICKER//
@@ -1505,8 +1609,8 @@ if(lastPos.x == pos.x){
 break;
 case("PENCIL_MODE_PIXEL"):
 
-PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
- 
+//PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+ PixelPerfectPencil(lineWidth);
 break;
 
       }
