@@ -736,12 +736,12 @@ break;
         case("pencil"):
         switch(PRIMARY_MODE){
     case("PENCIL_MODE_PIXEL"):
-     previewCanvas.getContext("2d").clearRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
+     previewCanvas.getContext("2d").clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
  
     
        ctx.fillStyle = lineColor;
-       if(downIntPos.x !=lastIntPos.x||downIntPos.y!=lastIntPos.y){
-          ctx.fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
+       if(downIntPos.x !=intPos.x||downIntPos.y!=intPos.y){
+          ctx.fillRect(intPos.x,intPos.y,lineWidth,lineWidth);
        }
   
     }
@@ -1099,6 +1099,11 @@ perfectPos.y = y;
 
    function PixelPerfectPencil(lineWidth){
   let dist = 0;
+  let offset = 0;
+  if(perfectPos.x==previewPos.x&&perfectPos.y==previewPos.y){
+offset = 1;
+
+  }
   dist = Math.abs(intPos.x-perfectPos.x);
   let temp = Math.abs(intPos.y-perfectPos.y);
   if(dist < temp){
@@ -1123,7 +1128,7 @@ perfectPos.y = y;
       
     previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidth,lineWidth);
       //Line code//
-      let beforePos = LinePPP(true,ctx,previewPos.x,previewPos.y,intPos.x,intPos.y,lineWidth);
+      let beforePos = LinePPP(true,ctx,previewPos.x,previewPos.y,intPos.x,intPos.y,lineWidth,offset);
 
 
       //END//
@@ -1419,7 +1424,7 @@ Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,li
    }
   }
 
-  function LinePPP(fill,Vctx,X,Y,x,y,lineWidth){
+  function LinePPP(fill,Vctx,X,Y,x,y,lineWidth,offset){
     let result = {x:0,y:0}
     var color = "rgb(0,0,0)";
     if(selected){
@@ -1444,7 +1449,7 @@ Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,li
    if(AdiffX>=AdiffY){
     result.x = X-((AdiffX-1)*(diffX/AdiffX));
     result.y = Y-(Math.round(((AdiffX-1)/AdiffX)*diffY));
-      for(let i = 0;i < AdiffX;i++){
+      for(let i = offset;i < AdiffX;i++){
 
         if(fill){
  Vctx.fillRect(X-(i*(diffX/AdiffX)),Y-(Math.round((i/AdiffX)*diffY)),lineWidth,lineWidth);
@@ -1457,7 +1462,7 @@ Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,li
    }else{
     result.x = X-(Math.round(((AdiffY-1)/AdiffY)*diffX));
     result.y = Y-((AdiffY-1)*(diffY/AdiffY));
-    for(let i = 0;i < AdiffY;i++){
+    for(let i = offset;i < AdiffY;i++){
 
       if(fill){
 Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,lineWidth);
