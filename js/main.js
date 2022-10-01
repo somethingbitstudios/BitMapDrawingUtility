@@ -307,11 +307,16 @@ var lineColorS = "rgba(0,0,0,255)";
     //fill//
 var fillTool = false;
 var tobefilledpos = [];
-var lastfilledpos = [];
+var lastfilledpos = []; //also seeds
 var filledcolor;
 var lastfilledlenght = 0;
 var fillUpdate;
 var filling = false;
+
+
+
+var upSeeded = false;
+var downSeeded = false;
 function FourWayFill(){
   lastfilledlenght = lastfilledpos.length;
   for(let i = 0;i< lastfilledlenght;i++){
@@ -326,6 +331,47 @@ function FourWayFill(){
     lastfilledpos = tobefilledpos;
     tobefilledpos = [];
   }
+}
+
+
+function ScanlineFill(){
+  //XY expected to be most left, different color right of the x
+  for(let i = 0; i < lastfilledpos.length;i++){
+      downSeeded =  false;
+  upSeeded = false;
+    FillLine(lastfilledpos[0]);
+    lastfilledpos.splice(0, 1);
+  }
+
+}
+function FillLine(xy){
+while( String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor) ){
+  ctx.fillRect(xy.x,xy.y,1,1);
+  if(xy.y+1 < resolution.y){
+    
+    if(String(ctx.getImageData(xy.x,xy.y+1,1,1).data)==String(filledcolor)){ 
+       
+      if(!downSeeded){
+      console.log("seed");
+        lastfilledpos.push({x:xy.x,y:xy.y +1});
+        downSeeded = true;
+      }
+  }else{
+    downSeeded = false;
+  }
+  }
+  if(xy.y > 0){
+     if(String(ctx.getImageData(xy.x,xy.y-1,1,1).data)==String(filledcolor)){
+      if(!upSeeded){
+    lastfilledpos.push({x:xy.x,y:xy.y -1});
+    upSeeded = true;
+      }
+  }else{
+    upSeeded = false;
+  }
+  }
+  xy.x++;
+}
 }
 function FillAround(){
   let cordX = lastfilledpos[lastfilledpos.length-1].x;
@@ -662,6 +708,9 @@ switch(PRIMARY_MODE){
 break;
 case("fill"):
 if(hoveredON == "canvas"){
+
+  switch(PRIMARY_MODE){
+    case("FILL_MODE_SLOW"):
 var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
 ctx.fillRect(~~pos.x,~~pos.y,1,1);
 var temp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
@@ -670,17 +719,50 @@ if(String(beftemp)!=String(temp)){
   filledcolor = beftemp;
 
   var xy = {x:~~pos.x,y:~~pos.y};
+
+  lastfilledpos.push(xy);
+  if(!filling){
+    filling = true;
+    fillUpdate=setInterval(function(){
+   FourWayFill();
+  },TICK);
+  }
+}
+break;
+case("FILL_MODE_FAST"):
+var xy = {x:~~pos.x,y:~~pos.y};
+filledcolor = ctx.getImageData(xy.x,xy.y,1,1).data;
+
+while (String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor)){
+
+  if(xy.x <= 0){
+    xy.x--;
+    break;
+       
+  }xy.x--;
+  
+
+}
+xy.x++;
+
 lastfilledpos.push(xy);
 if(!filling){
   filling = true;
   fillUpdate=setInterval(function(){
 
-   FourWayFill();
+  ScanlineFill();
+},0);
+}
+break;
+case("FILL_MODE_INST"):
+console.log("filled");
+break;
+  }
   
-},TICK);
-}
 
-}
+
+
+
 
 /*
 if(selected){
@@ -1953,6 +2035,27 @@ if(!select){
     Menu_Tool.appendChild(br);
    
     break;
+
+
+    case("fill"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Fill";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    
+   
+    break;
   }
 }
 }
@@ -2031,6 +2134,7 @@ Button_line.addEventListener("click",function(e) {
     Button_fill.addEventListener("click",function(e) {
       if(!select){
         PRIMARY = "fill";
+        PRIMARY_MODE = "FILL_MODE_SLOW";
         }else{
         SECONDARY = "fill";
         }
