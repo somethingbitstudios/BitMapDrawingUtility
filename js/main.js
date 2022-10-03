@@ -962,61 +962,38 @@ if(!filling){
 break;
 case("FILL_MODE_INST"):
 //should be fast
-if(!filling){
-
-
-filledcolor = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
-var Colorette = lineColor.split("rgba(")[1].split(")")[0].split(",");
-if(Number(Colorette[3]) * 256 < 1){
-
+if(!filling){ 
+   OS_fillColor = lineColor.split("rgba(")[1].split(")")[0].split(",");
+  OS_fillColor = [Number(OS_fillColor[0]),Number(OS_fillColor[1]),Number(OS_fillColor[2]),Math.round(Number(OS_fillColor[3])*255)];
+   //load canvas to var
+  OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
+filledcolor = OS_GetPixel({x:~~pos.x,y:~~pos.y})//ctx.getImageData(~~pos.x,~~pos.y,1,1).data; //needed
+//var Colorette = lineColor.split("rgba(")[1].split(")")[0].split(",");
+if(OS_fillColor[3] < 1){
   break;
 }
-if(filledcolor[3] == 255 ){
+
 //put colorette is not same color as beftemp here!
-if(String(filledcolor[0])==Colorette[0]&&String(filledcolor[1])==Colorette[1]&&String(filledcolor[2])==Colorette[2]){
+if(filledcolor[0]==OS_fillColor[0]&&filledcolor[1]==OS_fillColor[1]&&filledcolor[2]==OS_fillColor[2]&&filledcolor[3]==OS_fillColor[3]){
 break;
 }
-}
+
 var xy = {x:~~pos.x,y:~~pos.y};
-while (String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor)){
+while (ArrayEqual(OS_GetPixel({x:~~pos.x,y:~~pos.y}),filledcolor)){
   if(xy.x <= 0){
     xy.x--;
     break;
   }xy.x--;
 }
 xy.x++;
-
-
 lastfilledpos.push(xy);
-
-
   filling = true;
-
-  //load canvas to var
-  OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
-  OS_fillColor = lineColor.split("rgba(")[1].split(")")[0].split(",");
-  OS_fillColor = [Number(OS_fillColor[0]),Number(OS_fillColor[1]),Number(OS_fillColor[2]),Math.round(Number(OS_fillColor[3])*255)]
-
   fillUpdate=setInterval(function(){
   OS_ScanlineFill();
- 
 },0);
 }
 break;
   }
-  
-
-
-
-
-
-/*
-if(selected){
-  filledcolor = lineColorS;
-}else{
-  filledcolor = lineColor;
-}
-*/
 }
 break;
 
