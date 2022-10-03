@@ -54,22 +54,22 @@ function BinaryToHex(string){
     return "9";
     break;
     case("1010"):
-    return "A";
+    return "a";
     break;
     case("1011"):
-    return "B";
+    return "b";
     break;
     case("1100"):
-    return "C";
+    return "c";
     break;
     case("1101"):
-    return "D";
+    return "d";
     break;
     case("1110"):
-    return "E";
+    return "e";
     break;
     case("1111"):
-    return "F";
+    return "f";
     break;
 }
 }
@@ -105,22 +105,22 @@ function HexToBinary(string){
     case("9"):
     return "1001";
     break;
-    case("A"):
+    case("a"):
     return "1010";
     break;
-    case("B"):
+    case("b"):
     return "1011";
     break;
-    case("C"):
+    case("c"):
     return "1100";
     break;
-    case("D"):
+    case("d"):
     return "1101";
     break;
-    case("E"):
+    case("e"):
     return "1110";
     break;
-    case("F"):
+    case("f"):
     return "1111";
     break;
 }
@@ -186,7 +186,13 @@ function HEXtoRGBA(hex){
   let hex1 = hex.substring(1,3); hex1 = Number(HexToDecimal(hex1));
   let hex2 = hex.substring(3,5); hex2 = Number(HexToDecimal(hex2));
   let hex3 = hex.substring(5,7); hex3 = Number(HexToDecimal(hex3));
-  let hexa = hex.substring(7,9); hexa = Number(HexToDecimal(hexa));
+let hexa = 0;
+  if(hex.length == 7){
+  hexa = 255;
+  }else{
+  hexa = hex.substring(7,9); hexa = Number(HexToDecimal(hexa));
+  }
+
   hexa = (hexa/255)+"";
   hexa = Number(hexa.substring(0,4));
   return ("rgba("+hex1+","+hex2+","+hex3+","+hexa+")");
@@ -223,8 +229,59 @@ function RGBAtoHSLA(rgba){
 return "hsla("+hue+","+sat+","+value+","+a+")";
 
 }
+function HSLAtoRGBA(hsla){
 
 
+
+
+
+  let h = Number(hsla.split("hsla(")[1].split(",")[0]);
+  let s = Number(hsla.split("hsla(")[1].split(",")[1])*255/100;
+  let v = Number(hsla.split("hsla(")[1].split(",")[2])*255/100;
+  let a = Number(hsla.split(")")[0].split("hsla(")[1].split(",")[3]);
+
+
+
+
+//credit to that_guy for finding this convertor somewhere
+
+var rgb = { };
+
+      if (s == 0) {
+
+      rgb.r = rgb.g = rgb.b = v;
+      } else {
+      var t1 = v;
+      var t2 = (255 - s) * v / 255;
+      var t3 = (t1 - t2) * (h % 60) / 60;
+
+          if (h == 360) h = 0;
+
+              if (h < 60) { rgb.r = t1; rgb.b = t2; rgb.g = t2 + t3 }
+              else if (h < 120) { rgb.g = t1; rgb.b = t2; rgb.r = t1 - t3 }
+              else if (h < 180) { rgb.g = t1; rgb.r = t2; rgb.b = t2 + t3 }
+              else if (h < 240) { rgb.b = t1; rgb.r = t2; rgb.g = t1 - t3 }
+              else if (h < 300) { rgb.b = t1; rgb.g = t2; rgb.r = t2 + t3 }
+              else if (h < 360) { rgb.r = t1; rgb.g = t2; rgb.b = t1 - t3 }
+              else { rgb.r = 0; rgb.g = 0; rgb.b = 0 }
+      }
+return "rgba("+Math.round(rgb.r)+","+Math.round(rgb.g)+","+Math.round(rgb.b)+","+a+")";
+  
+
+
+}
+function ALLToRGBA(value){
+  if(value.includes("rgba(")){
+    return value;
+  }else if (value.includes("#")){
+    return HEXtoRGBA(value);
+  }else if (value.includes("hsla(")){
+    return HSLAtoRGBA(value);
+  }else{
+    return "rgba("+value+")";
+  }
+  
+}
 ////////
 //MAIN//
 ////////
@@ -296,13 +353,13 @@ var PRIMARY = "pencil";
 var PRIMARY_MODE = "PENCIL_MODE_BASIC";
 var lineWidth = 1;
 var lineCap = 'butt';
-var lineColor = "rgba(255,0,0,255)";
+var lineColor = "rgba(255,0,0,1)";
 
 var SECONDARY = "eraser";
 var SECONDARY_MODE = "ERASER_MODE_BASIC";
 var lineWidthS = 0.1;
 var lineCapS = 'butt';
-var lineColorS = "rgba(0,0,0,255)";
+var lineColorS = "rgba(0,0,0,1)";
 
     //fill//
 var fillTool = false;
@@ -345,15 +402,27 @@ function ScanlineFill(){
 
 }
 function FillLine(xy){
-while( String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor) ){
+while( String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor) && xy.x < resolution.x){
   ctx.fillRect(xy.x,xy.y,1,1);
+
   if(xy.y+1 < resolution.y){
     
     if(String(ctx.getImageData(xy.x,xy.y+1,1,1).data)==String(filledcolor)){ 
        
       if(!downSeeded){
-      console.log("seed");
-        lastfilledpos.push({x:xy.x,y:xy.y +1});
+        var tempCords = {x:xy.x,y:xy.y+1};
+        while (String(ctx.getImageData(tempCords.x,tempCords.y,1,1).data)==String(filledcolor)){
+
+          if(tempCords.x <= 0){
+            tempCords.x--;
+            break;
+               
+          }tempCords.x--;
+          
+        
+        }
+        tempCords.x++;
+        lastfilledpos.push({x:tempCords.x,y:tempCords.y});
         downSeeded = true;
       }
   }else{
@@ -363,7 +432,19 @@ while( String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor) ){
   if(xy.y > 0){
      if(String(ctx.getImageData(xy.x,xy.y-1,1,1).data)==String(filledcolor)){
       if(!upSeeded){
-    lastfilledpos.push({x:xy.x,y:xy.y -1});
+        var tempCords = {x:xy.x,y:xy.y-1};
+        while (String(ctx.getImageData(tempCords.x,tempCords.y,1,1).data)==String(filledcolor)){
+
+          if(tempCords.x <= 0){
+            tempCords.x--;
+            break;
+               
+          }tempCords.x--;
+          
+        
+        }
+        tempCords.x++;
+        lastfilledpos.push({x:tempCords.x,y:tempCords.y});
     upSeeded = true;
       }
   }else{
@@ -502,6 +583,7 @@ CurrentColor.getContext("2d").fillRect(0,0,1,1);
 const styleCPE = getComputedStyle(document.querySelector('#colorpicker'));
 const ColorButtonNew = document.getElementById("ColorButtonNew");
 ColorButtonNew.addEventListener("click",function(){
+  Color = ALLToRGBA(Color);
 if(!ColorSelected){
   lineColor = Color;
   PRIMARY_COLOR.style.backgroundColor = Color;
@@ -518,7 +600,7 @@ hex.addEventListener("input",function(){
 //validate
 if(hex.value.length == 7 || hex.value.length == 9){
   if(hex.value.includes("#")){
-ChangeColor(hex.value);
+ChangeColor(HEXtoRGBA(hex.value));
   }
 
 }
@@ -536,7 +618,7 @@ hsla.addEventListener("input",function(){
 //validate
 
   if(hsla.value.includes("hsla(")||rgba.value.includes("hsl(")){
-    ChangeColor(hsla.value);
+    ChangeColor(HSLAtoRGBA(hsla.value));
   }
 
 
@@ -730,6 +812,18 @@ if(String(beftemp)!=String(temp)){
 }
 break;
 case("FILL_MODE_FAST"):
+
+
+var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
+console.log("drawn color: "+lineColor);
+console.log("replaced color: rgba("+beftemp+")");
+var Colorette = lineColor.split("rgba(")[1].split(")")[0].split(",");
+console.log(Colorette);
+if(beftemp[3] == 255 ){
+//put colorette is not same color as beftemp here!
+
+}
+
 var xy = {x:~~pos.x,y:~~pos.y};
 filledcolor = ctx.getImageData(xy.x,xy.y,1,1).data;
 
@@ -1754,7 +1848,7 @@ break;
     }
     
     ctx.lineWidth = 0.5;
-    ctx.strokeStyle = "#000000";
+    ctx.strokeStyle = "rgba(0,0,0,1)";
     ctx.stroke();
   
   UpdatePos();
