@@ -362,7 +362,14 @@ var lineCapS = 'butt';
 var lineColorS = "rgba(0,0,0,1)";
 
     //fill//
+
 var fillTool = false;
+
+//OS-off screen fill
+
+var OS_canvas;
+var OS_fillColor;
+
 var tobefilledpos = [];
 var lastfilledpos = []; //also seeds
 var filledcolor;
@@ -399,6 +406,22 @@ function ScanlineFill(){
     FillLine(lastfilledpos[0]);
     lastfilledpos.splice(0, 1);
   }
+
+}
+function OS_ScanlineFill(){
+   //XY expected to be most left, different color right of the x
+   for(let i = 0; i < lastfilledpos.length;i++){
+    downSeeded =  false;
+upSeeded = false;
+  OS_FillLine(lastfilledpos[0]);
+  lastfilledpos.splice(0, 1);
+}
+if(lastfilledpos.length < 1){
+  clearInterval(fillUpdate);
+  ctx.putImageData(OS_canvas,0,0);
+  //console.log("complete");
+  filling = false;
+}
 
 }
 function FillLine(xy){
@@ -453,6 +476,90 @@ while( String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor) && xy.x
   }
   xy.x++;
 }
+}
+function ArrayEqual(arr1,arr2){
+if(arr1.length != arr2.length){
+  return false;
+}
+for(let i = 0; i < arr1.length;i++){
+  if(arr1[i]!=arr2[i]){
+    return false;
+  }
+}
+return true;
+}
+function OS_GetPixel(xy){
+  //return OS_canvas[]
+  return [OS_canvas.data[(xy.x+xy.y*resolution.x)* 4],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+1],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+2],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+3]];
+}
+function OS_SetPixel(xy,color,add){
+  //console.log("set");
+  if(!add){ // with no regard to alpha
+      OS_canvas.data[(xy.x+xy.y*resolution.x)* 4] = color[0];
+  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+1] = color[1];
+  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+2] = color[2];
+  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+3] = color[3];
+  }else{
+
+  }
+
+}
+function OS_FillLine(xy){
+//ctx.get... = OS_GetPixel ale je to array
+//console.log(filledcolor);
+//console.log(OS_GetPixel(xy));
+  while( ArrayEqual(OS_GetPixel(xy),filledcolor) && xy.x < resolution.x){
+   OS_SetPixel(xy,OS_fillColor,false);
+  
+    if(xy.y+1 < resolution.y){
+       var tempCords = {x:xy.x,y:xy.y+1};
+      if(ArrayEqual(OS_GetPixel(tempCords),filledcolor)){ 
+         
+        if(!downSeeded){
+         
+          while (ArrayEqual(OS_GetPixel(tempCords),filledcolor)){
+  
+            if(tempCords.x <= 0){
+              tempCords.x--;
+              break;
+                 
+            }tempCords.x--;
+            
+          
+          }
+          tempCords.x++;
+          lastfilledpos.push({x:tempCords.x,y:tempCords.y});
+          downSeeded = true;
+        }
+    }else{
+      downSeeded = false;
+    }
+    }
+    if(xy.y > 0){ 
+        tempCords = {x:xy.x,y:xy.y-1};
+        if(ArrayEqual(OS_GetPixel(tempCords),filledcolor)){ 
+        if(!upSeeded){
+       
+          while (ArrayEqual(OS_GetPixel(tempCords),filledcolor)){
+  
+            if(tempCords.x <= 0){
+              tempCords.x--;
+              break;
+                 
+            }tempCords.x--;
+            
+          
+          }
+          tempCords.x++;
+          lastfilledpos.push({x:tempCords.x,y:tempCords.y});
+      upSeeded = true;
+        }
+    }else{
+      upSeeded = false;
+    }
+    }
+    xy.x++;
+  }
 }
 function FillAround(){
   let cordX = lastfilledpos[lastfilledpos.length-1].x;
@@ -819,7 +926,7 @@ var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
 var Colorette = lineColor.split("rgba(")[1].split(")")[0].split(",");
 
 if(Number(Colorette[3]) * 256 < 1){
-  console.log("trans");
+  //console.log("trans");
   break;
 }
 if(beftemp[3] == 255 ){
@@ -850,11 +957,51 @@ if(!filling){
   fillUpdate=setInterval(function(){
 
   ScanlineFill();
-},0);
+},TICK);
 }
 break;
 case("FILL_MODE_INST"):
-console.log("filled");
+//should be fast
+if(!filling){
+
+
+filledcolor = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
+var Colorette = lineColor.split("rgba(")[1].split(")")[0].split(",");
+if(Number(Colorette[3]) * 256 < 1){
+
+  break;
+}
+if(filledcolor[3] == 255 ){
+//put colorette is not same color as beftemp here!
+if(String(filledcolor[0])==Colorette[0]&&String(filledcolor[1])==Colorette[1]&&String(filledcolor[2])==Colorette[2]){
+break;
+}
+}
+var xy = {x:~~pos.x,y:~~pos.y};
+while (String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor)){
+  if(xy.x <= 0){
+    xy.x--;
+    break;
+  }xy.x--;
+}
+xy.x++;
+
+
+lastfilledpos.push(xy);
+
+
+  filling = true;
+
+  //load canvas to var
+  OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
+  OS_fillColor = lineColor.split("rgba(")[1].split(")")[0].split(",");
+  OS_fillColor = [Number(OS_fillColor[0]),Number(OS_fillColor[1]),Number(OS_fillColor[2]),Math.round(Number(OS_fillColor[3])*255)]
+
+  fillUpdate=setInterval(function(){
+  OS_ScanlineFill();
+ 
+},0);
+}
 break;
   }
   
@@ -2264,11 +2411,18 @@ Button_line.addEventListener("click",function(e) {
 //III-N--N-III--T-//
 ////////////////////
 function Init() {
+
+
+
+  /* log i
 setInterval (function(){ 
 
   console.log(lineColor);
  
 },1000);
+*/
+
+
 //UI//
  MenuChange();
 //CANVAS//
