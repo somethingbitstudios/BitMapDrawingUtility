@@ -815,13 +815,18 @@ case("FILL_MODE_FAST"):
 
 
 var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
-console.log("drawn color: "+lineColor);
-console.log("replaced color: rgba("+beftemp+")");
+
 var Colorette = lineColor.split("rgba(")[1].split(")")[0].split(",");
-console.log(Colorette);
+
+if(Number(Colorette[3]) * 256 < 1){
+  console.log("trans");
+  break;
+}
 if(beftemp[3] == 255 ){
 //put colorette is not same color as beftemp here!
-
+if(String(beftemp[0])==Colorette[0]&&String(beftemp[1])==Colorette[1]&&String(beftemp[2])==Colorette[2]){
+break;
+}
 }
 
 var xy = {x:~~pos.x,y:~~pos.y};
@@ -2259,7 +2264,11 @@ Button_line.addEventListener("click",function(e) {
 //III-N--N-III--T-//
 ////////////////////
 function Init() {
+setInterval (function(){ 
 
+  console.log(lineColor);
+ 
+},1000);
 //UI//
  MenuChange();
 //CANVAS//
