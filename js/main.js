@@ -408,6 +408,7 @@ function ScanlineFill(){
   }
 
 }
+
 function OS_ScanlineFill(){
    //XY expected to be most left, different color right of the x
    for(let i = 0; i < lastfilledpos.length;i++){
@@ -417,10 +418,11 @@ upSeeded = false;
   lastfilledpos.splice(0, 1);
 }
 if(lastfilledpos.length < 1){
-  clearInterval(fillUpdate);
+  //clearInterval(fillUpdate);
   ctx.putImageData(OS_canvas,0,0);
   //console.log("complete");
   filling = false;
+
 }
 
 }
@@ -992,9 +994,10 @@ while (ArrayEqual(OS_GetPixel(xy),filledcolor)){
 xy.x++;
 lastfilledpos.push(xy);
   filling = true;
-  fillUpdate=setInterval(function(){
-  OS_ScanlineFill();
-},0);
+  
+  //fillUpdate=setInterval(function(){ //this slowed the function down immensely, + it could allow for some glitches so while wins, just lags a bit
+  while(filling){OS_ScanlineFill();}
+//},0);
 }
 break;
   }
