@@ -979,12 +979,16 @@ break;
 }
 
 var xy = {x:~~pos.x,y:~~pos.y};
-while (ArrayEqual(OS_GetPixel({x:~~pos.x,y:~~pos.y}),filledcolor)){
+while (ArrayEqual(OS_GetPixel(xy),filledcolor)){
+  
   if(xy.x <= 0){
     xy.x--;
     break;
   }xy.x--;
+
+
 }
+
 xy.x++;
 lastfilledpos.push(xy);
   filling = true;
@@ -2357,7 +2361,7 @@ Button_line.addEventListener("click",function(e) {
     Button_fill.addEventListener("click",function(e) {
       if(!select){
         PRIMARY = "fill";
-        PRIMARY_MODE = "FILL_MODE_SLOW";
+        PRIMARY_MODE = "FILL_MODE_INST";
         }else{
         SECONDARY = "fill";
         }
