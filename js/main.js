@@ -288,6 +288,41 @@ function ALLToRGBA(value){
     //VARS//
 var TICK = 0;
 let E;
+var Qindex = -1;
+var StateQueue = []; //max size- 32?
+var SQchanged = true;
+function SQ_SAVE(){
+
+  var canv = ctx.getImageData(0,0,resolution.x,resolution.y).data;
+if(Qindex != -1){
+  StateQueue.splice(Qindex+1,StateQueue.length-Qindex);
+}
+
+  StateQueue.push( canv);
+  if(StateQueue.length > 64){
+    StateQueue.splice(0,1);
+  }
+  Qindex = -1;  
+ // console.log(StateQueue.length);
+}
+function SQ_UNDO(){
+  if(StateQueue.length<2){return;}
+if(Qindex==-1){
+  Qindex=StateQueue.length-2;
+}else if (Qindex>0){
+Qindex--;
+}
+
+
+ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
+}
+function SQ_REDO(){
+  if(Qindex == -1){return;}
+  if(Qindex == StateQueue.length-1){Qindex=-1;return;}
+  Qindex++;
+
+  ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
+}
 
     
 
@@ -305,7 +340,7 @@ var resScale = 0.25; //for mouse
 
     //ELEMENTS//
 var uiCanvas = document.getElementById("uicanvas");
-var previewCanvas = document.getElementById("previewcanvas");
+var previewCanvas = document.getElementById("previewcanvas");var pctx = previewCanvas.getContext("2d");
 var canvas = document.getElementById("canvas");var ctx = canvas.getContext("2d");
 let background = document.getElementById("background");
 var div = document.getElementById("canvasdiv");
@@ -365,6 +400,13 @@ var lineColorS = "rgba(0,0,0,1)";
 
 var fillTool = false;
 
+
+
+
+    //poly//
+var polysides = 4;
+
+
 //OS-off screen fill
 
 var OS_canvas;
@@ -381,6 +423,77 @@ var filling = false;
 
 var upSeeded = false;
 var downSeeded = false;
+
+function PolyPreview(){
+  switch(polysides){
+    case(2):
+   
+    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+
+    break;
+    case(4):
+   //rect
+    
+    Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth);
+
+    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth);
+
+    Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+
+    Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+
+
+    Line(true,pctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth);
+
+    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth);
+
+    Line(true,pctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+    if(intPos.x != downIntPos.x || intPos.y != downIntPos.y ){
+          pctx.clearRect(intPos.x,intPos.y,1,1);
+    }
+
+    Line(true,pctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth);
+
+    break;
+  }
+  
+  }
+
+
+  function PolyDraw(){
+    switch(polysides){
+      case(2):
+     
+      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+  
+      break;
+      case(4):
+     //rect
+      
+      Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth);
+  
+      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth);
+  
+      Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+
+      Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+      pctx.clearRect(downIntPos.x,downIntPos.y,1,1);
+      ctx.fillRect(downIntPos.x,downIntPos.y,1,1);
+      Line(true,ctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth);
+  
+      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth);
+  
+      Line(true,ctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+      ctx.clearRect(intPos.x,intPos.y,1,1);
+      Line(true,ctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth);
+  
+      break;
+    }
+    
+    }
+  
 function FourWayFill(){
   lastfilledlenght = lastfilledpos.length;
   for(let i = 0;i< lastfilledlenght;i++){
@@ -405,6 +518,14 @@ function ScanlineFill(){
   upSeeded = false;
     FillLine(lastfilledpos[0]);
     lastfilledpos.splice(0, 1);
+  }
+  if(lastfilledpos.length < 1){
+    //clearInterval(fillUpdate);
+   //ctx.putImageData(OS_canvas,0,0);
+    //console.log("complete");
+    filling = false;
+    clearInterval(fillUpdate);
+  
   }
 
 }
@@ -690,6 +811,7 @@ CurrentColor.height = 1;
 CurrentColor.getContext("2d").fillStyle = "rgba(255,0,0,1)";
 CurrentColor.getContext("2d").fillRect(0,0,1,1);
 const styleCPE = getComputedStyle(document.querySelector('#colorpicker'));
+const colorpicker = document.getElementById("colorpicker");
 const ColorButtonNew = document.getElementById("ColorButtonNew");
 ColorButtonNew.addEventListener("click",function(){
   Color = ALLToRGBA(Color);
@@ -898,8 +1020,9 @@ switch(PRIMARY_MODE){
 }
 break;
 case("fill"):
-if(hoveredON == "canvas"){
 
+if(hoveredON == "canvas"){
+ 
   switch(PRIMARY_MODE){
     case("FILL_MODE_SLOW"):
 var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
@@ -997,15 +1120,26 @@ lastfilledpos.push(xy);
   
   //fillUpdate=setInterval(function(){ //this slowed the function down immensely, + it could allow for some glitches so while wins, just lags a bit
   while(filling){OS_ScanlineFill();}
+  SQ_SAVE();
+  SQchanged=false;
 //},0);
 }
 break;
   }
 }
 break;
+case("poly"):
+switch(PRIMARY_MODE){
+  default:
+    pctx.fillRect(intPos.x,intPos.y,1,1);
+PolyPreview();
+  break;
+}
 
+//console.log("poly");
         }
       }
+         
          E = e;
          Draw();
          break;
@@ -1042,10 +1176,14 @@ break;
       //lastPos.y = pos.y;
         switch(e.button){
         case(0): /*console.log("left");*/ left = false;
-     
-        if(hoveredON == "canvas"||hoveredON=="background"){
+       
+         
+        if(hoveredON == "canvas"||hoveredON=="background"){ 
+        
+          
           switch(PRIMARY){
         case("pencil"):
+        SQchanged=true;
         switch(PRIMARY_MODE){
     case("PENCIL_MODE_PIXEL"):
      previewCanvas.getContext("2d").clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
@@ -1064,6 +1202,7 @@ break;
     
    
      case("line"):
+     SQchanged=true;
     switch(PRIMARY_MODE){
 default:
   Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
@@ -1071,6 +1210,15 @@ default:
   break;
     }
      break;
+     case("poly"):
+     SQchanged=true;
+    PolyDraw();
+    
+     break;
+      }
+      if(SQchanged){
+        SQ_SAVE();
+        SQchanged=false;
       }
     }
      break;
@@ -1801,11 +1949,12 @@ function Draw(){
     case("colorpicker"):
      
  if(left){
-     let Xoff = styleCPE.left.split("px")[0];
-  let Yoff = styleCPE.top.split("px")[0];  
+     //let Xoff = styleCPE.left.split("px")[0];
+  //let Yoff = styleCPE.top.split("px")[0];  
       //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
-      var x = ~~(AbsPos.x-Xoff-4);
-      var y = ~~(AbsPos.y-Yoff-4);
+    //  console.log(E.clientX);
+      var x = ~~(E.clientX-colorpicker.getBoundingClientRect().left-4);
+      var y = ~~(E.clientY-colorpicker.getBoundingClientRect().top-4);
       if(x > 127){x=127;}
       if(y > 127){y=127;}
       if(x < 0){x=0;}
@@ -1943,6 +2092,9 @@ break;
       }
       
       break;
+      case("poly"):
+      PolyPreview();
+      break;
     }
 
 
@@ -2017,6 +2169,10 @@ break;
 //GENERIC UI//
 //////////////
 let LeftHidden = false;
+let UIUndo = document.getElementById("undo");
+UIUndo.addEventListener("click",SQ_UNDO);
+let UIRedo = document.getElementById("redo");
+UIRedo.addEventListener("click",SQ_REDO);
 let UILeft = document.getElementById("UIleft");
 let UILeftToggle = document.getElementById("left");
 UILeftToggle.addEventListener("click",function(x){
@@ -2026,6 +2182,17 @@ if(LeftHidden){
   UILeft.style.visibility = "hidden";
 }
 LeftHidden = !LeftHidden;
+});
+let RightHidden = false;
+let UIRight = document.getElementById("UIright");
+let UIRightToggle = document.getElementById("right");
+UIRightToggle.addEventListener("click",function(x){
+if(RightHidden){
+  UIRight.style.visibility = "visible";
+}else{
+  UIRight.style.visibility = "hidden";
+}
+RightHidden = !RightHidden;
 });
 let Input_tick = document.getElementById("tick");
 Input_tick.addEventListener("input",function(e){
@@ -2396,7 +2563,7 @@ Button_line.addEventListener("click",function(e) {
 ////////////////////
 function Init() {
 
-
+SQ_SAVE();
 
   /* log i
 setInterval (function(){ 

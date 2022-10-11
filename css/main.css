@@ -301,9 +301,9 @@ padding: 0px;
   border: 0px;
 }
 #colorpicker{
-  position: fixed;
+  position: absolute;
   top: 206px;
-  left: 908px;
+  left: -200px;
   background-color: #1d8b31;
   width: 192px;
   height: 218px;

@@ -40,6 +40,39 @@
         </div>  
           
         <div id="UIright">
+
+          <div id="colorpicker">
+
+            <p id="labelColor"> PRIMARY Tool Color Picker</p>
+<div id="colorCanvas">
+  <img src="./icons/cursor1.png" id="gradientcursor" width="16" height="16" >
+<canvas id="colorCanvasGradient" ></canvas>
+          </div>
+<div id="hueCanvas">
+  <img src="./icons/cursor2.png" id="huecursor" width="24" height="5" >
+  <canvas id="hueCanvasGradient"></canvas>
+</div>
+<div id="trCanvas">
+  <img src="./icons/cursor2.png" id="trcursor" width="24" height="5" >
+  <canvas id="trCanvasGradient"></canvas>
+</div>
+<div id="colorValues">
+  <small>HEX:</small>
+<input value="#000000FF" id="hex"></input><br/>
+<small>RGBA:</small>
+<input value="rgba(0,0,0,1)" id="rgba"></input><br/>
+<small>HSLA:</small>
+<input value="hsla(0,100%,0%,1)" id="hsla"></input>
+</div>
+<div id="ColorButtons"> 
+  <canvas id="CurrentColor"></canvas>
+  <button id="ColorButtonNew">Use</button>
+  <button id="ColorButtonCancel">Cancel</button>
+
+</div>
+
+          </div>
+
           <button id="primary" class="double selectP">Primary</button> <br>
           <button id="secondary" class="double" >Secondary</button> <br>
           <div id="colorpalette">
@@ -72,37 +105,7 @@
         
           </div>
         
-          <div id="colorpicker">
-
-            <p id="labelColor"> PRIMARY Tool Color Picker</p>
-<div id="colorCanvas">
-  <img src="./icons/cursor1.png" id="gradientcursor" width="16" height="16" >
-<canvas id="colorCanvasGradient" ></canvas>
-          </div>
-<div id="hueCanvas">
-  <img src="./icons/cursor2.png" id="huecursor" width="24" height="5" >
-  <canvas id="hueCanvasGradient"></canvas>
-</div>
-<div id="trCanvas">
-  <img src="./icons/cursor2.png" id="trcursor" width="24" height="5" >
-  <canvas id="trCanvasGradient"></canvas>
-</div>
-<div id="colorValues">
-  <small>HEX:</small>
-<input value="#000000FF" id="hex"></input><br/>
-<small>RGBA:</small>
-<input value="rgba(0,0,0,1)" id="rgba"></input><br/>
-<small>HSLA:</small>
-<input value="hsla(0,100%,0%,1)" id="hsla"></input>
-</div>
-<div id="ColorButtons"> 
-  <canvas id="CurrentColor"></canvas>
-  <button id="ColorButtonNew">Use</button>
-  <button id="ColorButtonCancel">Cancel</button>
-
-</div>
-
-          </div>
+      
           
             
         </div>
@@ -119,6 +122,9 @@
              <button id="resize" style="width: 58px;">Resize</button>
 
              <div id="UItopRight">
+              <button id="undo">Undo</button>
+              <button id="redo">Redo</button>
+
                 <button id="left">Left</button>
 
              <button id="down">Down</button>
