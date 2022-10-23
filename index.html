@@ -13,14 +13,16 @@
    <div id="background"></div>
         <div id="UIleft">
       
-            <button id="primary" class="double selectP">Primary</button> <br>
+            <button id="primary" class="double selectP">Primary deprecated</button> <br>
             <button id="secondary" class="double" >Secondary</button> <br>
 
             <button id="pencil" class="icon selectP"><img src="./icons/pencil.png" width="48" height="48"></button>
             <button id="line"class="icon"><img src="./icons/line.png" width="48" height="48"></button>
             <br>
             <button id="poly"class="icon"><img src="./icons/poly.png" width="48" height="48"></button>
-            <button id="fill"class="icon"><img src="./icons/circle.png" width="48" height="48"></button>
+            <button id="fill"class="icon"><img src="./icons/fill.png" width="48" height="48"></button>
+            <br>
+            <button id="picker"class="icon"><img src="./icons/picker.png" width="48" height="48"></button>
             <br>
             <button id="select"class="icon"><img src="./icons/select.png" width="48" height="48"></button>
             <button id="eraser"class="icon selectS"><img src="./icons/eraser.png" width="48" height="48"></button>
@@ -42,10 +44,10 @@
         <div id="UIright">
 
           <div id="colorpicker">
-
+<button id="cancel_colorpicker" class="cancel"></button>
             <p id="labelColor"> PRIMARY Tool Color Picker</p>
 <div id="colorCanvas">
-  <img src="./icons/cursor1.png" id="gradientcursor" width="16" height="16" >
+  <img src="./icons/cursor1.png" id="gradientcursor" width="16" height="16" left="-8px" top="119px" >
 <canvas id="colorCanvasGradient" ></canvas>
           </div>
 <div id="hueCanvas">
@@ -66,15 +68,15 @@
 </div>
 <div id="ColorButtons"> 
   <canvas id="CurrentColor"></canvas>
-  <button id="ColorButtonNew">Use</button>
-  <button id="ColorButtonCancel">Cancel</button>
+  <button id="ColorButtonNew">New</button>
+  <button id="ColorButtonNew">Edit</button>
+
 
 </div>
 
           </div>
 
-          <button id="primary" class="double selectP">Primary</button> <br>
-          <button id="secondary" class="double" >Secondary</button> <br>
+        
           <div id="colorpalette">
             <button class="color" style="background-color: #FFFFFF;"></button>
             <button class="color" style="background-color: #EEEEEE;"></button>
@@ -97,11 +99,13 @@
            
            
              <p class="nospace">PRIMARY</p> 
-             <button id="PRIMARYCOLOR" class="colorE" style="background-color: #000000;height: 32px;width: 32px;"></button>
+             <canvas class="ColorSquare" id="PRIMARYCOLORcanvas"></canvas>
+      
+             
               </div>
           <div class="colorPick">
         <p class="nospace">SECONDARY</p>
-            <button id="SECONDARYCOLOR" class="colorE" style="background-color: #000000;"></button>
+        <canvas class="ColorSquare" id="SECONDARYCOLORcanvas"></canvas>
         
           </div>
         
