@@ -43,7 +43,7 @@
           
         <div id="UIright">
 
-          <div id="colorpicker">
+          <div id="colorpicker" style="visibility: hidden;">
 <button id="cancel_colorpicker" class="cancel"></button>
             <p id="labelColor"> PRIMARY Tool Color Picker</p>
 <div id="colorCanvas">
@@ -68,8 +68,9 @@
 </div>
 <div id="ColorButtons"> 
   <canvas id="CurrentColor"></canvas>
-  <button id="ColorButtonNew">New</button>
-  <button id="ColorButtonNew">Edit</button>
+ 
+  <button id="ColorButtonEdit">Edit</button>
+   <button id="ColorButtonNew">New</button>
 
 
 </div>
@@ -78,35 +79,21 @@
 
         
           <div id="colorpalette">
-            <button class="color" style="background-color: #FFFFFF;"></button>
-            <button class="color" style="background-color: #EEEEEE;"></button>
-            <button class="color" style="background-color: #DDDDDD;"></button>
-            <button class="color" style="background-color: #CCCCCC;"></button>
-            <button class="color" style="background-color: #BBBBBB;"></button>
-            <button class="color" style="background-color: #AAAAAA;"></button>
-            <button class="color" style="background-color: #999999;"></button>
-            <button class="color" style="background-color: #888888;"></button>
-            <button class="color" style="background-color: #777777;"></button>
-            <button class="color" style="background-color: #666666;"></button>
-            <button class="color" style="background-color: #555555;"></button>
-            <button class="color" style="background-color: #444444;"></button>
-            <button class="color" style="background-color: #333333;"></button>
-            <button class="color" style="background-color: #222222;"></button>
-            <button class="color" style="background-color: #111111;"></button>
-            <button class="color" style="background-color: #000000;"></button>
+           
+           
           </div>
           <div class="colorPick" >
            
            
              <p class="nospace">PRIMARY</p> 
              <canvas class="ColorSquare" id="PRIMARYCOLORcanvas"></canvas>
-      
+             <button id="removeColorP">Remove</button>
              
               </div>
           <div class="colorPick">
         <p class="nospace">SECONDARY</p>
         <canvas class="ColorSquare" id="SECONDARYCOLORcanvas"></canvas>
-        
+        <button id="removeColorS">Remove</button>
           </div>
         
       
@@ -121,10 +108,14 @@
                 Open
                   <input type="file" id="open"accept="image/png, image/jpg, image/gif, image/jpeg"></input>
             </button>
+            <button id="impClick">
+              Imprt
+                <input type="file" id="import"accept="image/png, image/jpg, image/gif, image/jpeg"></input>
+          </button>
           
             <button id="new">New</button>   
              <button id="resize" style="width: 58px;">Resize</button>
-
+             <button id="options" style="width: 70px;">Options</button>
              <div id="UItopRight">
               <button id="undo">Undo</button>
               <button id="redo">Redo</button>
@@ -144,6 +135,11 @@
       <label>Y:</label>
       <input id="resY" type="number" value="0">
       <button id="resizeconfirm">Ok</button>
+      </div>
+      <div id="UIopt" style="visibility:hidden;">
+        <p>Options</p>
+    
+      <button id="UIoptSave">Save</button>
       </div>
    
    <div id="canvasdiv" >
