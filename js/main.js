@@ -1018,6 +1018,7 @@ if(!ColorSelected){
   for(let i = 0; i < colors.length;i++){
     colors[i].classList.remove("primaryColor");
     colors[i].classList.remove("selected");
+    colors[i].classList.remove("bothColor");
   }
   colors[colors.length-1].classList.add("primaryColor");
   oncolorleft=colors.length-1;
@@ -1030,6 +1031,7 @@ if(!ColorSelected){
   for(let i = 0; i < colors.length;i++){
     colors[i].classList.remove("secondaryColor");
     colors[i].classList.remove("selected");
+    colors[i].classList.remove("bothColor");
   }
   colors[colors.length-1].classList.add("secondaryColor");
   oncolorright=colors.length-1;
@@ -1120,17 +1122,51 @@ function Color_add(Color,bool){
 }
 
 document.getElementById("removeColorP").addEventListener("click",function(){
-
+  let fix = true;
  if(colors.length==0){return;}
+ if(oncolorleft > colors.length-1){
+
+  oncolorleft = colors.length-1;
+  for(let i = 0; i < colors.length;i++){
+   
+    colors[i].classList.remove("primaryColor");
+    colors[i].classList.remove("bothColor");
+    colors[i].classList.remove("selected");
+  }
+  colors[oncolorleft].classList.add("primaryColor");
+  if(colors[oncolorleft].classList.contains("secondaryColor")){
+    colors[oncolorleft].classList.add("bothColor");
+  }
+  return;}
+  if(oncolorleft==oncolorright){
+ 
+    oncolorright+=999;
+    fix = false;
+  }
+
   var child = colors[oncolorleft];
 
   if(oncolorleft<colors.length-1){
       document.getElementById("colorpalette").removeChild(child);
       if(colors.length==0){return;}
       lineColor = colors[oncolorleft].getAttribute("style").split(" ")[1].split(";")[0];
+      for(let i = 0; i < colors.length;i++){
+   
+        colors[i].classList.remove("primaryColor");
+        colors[i].classList.remove("bothColor");
+        colors[i].classList.remove("selected");
+      }
+      
       colors[oncolorleft].classList.add("primaryColor");
+      if(colors[oncolorleft].classList.contains("secondaryColor")){
+        colors[oncolorleft].classList.add("bothColor");
+      }
       Color_set(false,lineColor);
       InitializeColorPicker(false,lineColor);
+      Update_Colors();
+      if(oncolorleft <= oncolorright){
+        oncolorright--;
+      }
     return;
   }
   if(oncolorleft>0){
@@ -1139,22 +1175,78 @@ document.getElementById("removeColorP").addEventListener("click",function(){
  
   
   lineColor = colors[oncolorleft].getAttribute("style").split(" ")[1].split(";")[0];
+  for(let i = 0; i < colors.length;i++){
+   
+    colors[i].classList.remove("primaryColor");
+    colors[i].classList.remove("bothColor");
+    colors[i].classList.remove("selected");
+  }
   colors[oncolorleft].classList.add("primaryColor");
+  if(colors[oncolorleft].classList.contains("secondaryColor")){
+    colors[oncolorleft].classList.add("bothColor");
+  }
  Color_set(false,lineColor);
   InitializeColorPicker(false,lineColor);
   document.getElementById("colorpalette").removeChild(child);
+  if(oncolorright > colors.length-1 && fix){oncolorright = colors.length-1; return;}
+  if(oncolorleft > colors.length-1){oncolorleft = colors.length-1; return;}
+  Update_Colors();
 });
 document.getElementById("removeColorS").addEventListener("click",function(){
+  let fix = true;
+  if(colors.length==0){return;} if(oncolorright > colors.length-1){
+
+    oncolorright = colors.length-1;
+    for(let i = 0; i < colors.length;i++){
+      colors[i].classList.remove("secondaryColor");
+      colors[i].classList.remove("bothColor");
+      colors[i].classList.remove("selected");
+    }
+    colors[oncolorright].classList.add("secondaryColor");
+    if(colors[oncolorright].classList.contains("primaryColor")){
+      colors[oncolorright].classList.add("bothColor");
+    }
+    return;}
+    if(oncolorleft==oncolorright){
+    
+      oncolorleft+=999;
+      fix = false;
+    }
   var child = colors[oncolorright];
-  if(oncolorright==0){
+  
+
+  if(oncolorright<colors.length-1){
+      document.getElementById("colorpalette").removeChild(child);
+      if(colors.length==0){return;}
+      lineColorS = colors[oncolorright].getAttribute("style").split(" ")[1].split(";")[0];
+      colors[oncolorright].classList.add("secondaryColor");
+      if(colors[oncolorright].classList.contains("primaryColor")){
+        colors[oncolorright].classList.add("bothColor");
+      }
+      Color_set(true,lineColorS);
+      InitializeColorPicker(true,lineColorS);
+      Update_Colors();
+      if(oncolorright <= oncolorleft){
+        oncolorleft--;
+      }
     return;
   }
-  oncolorright--;
+  if(oncolorright>0){
+     oncolorright--;
+  }
+ 
+  
   lineColorS = colors[oncolorright].getAttribute("style").split(" ")[1].split(";")[0];
-  colors[oncolorright].classList.add("primaryColor");
- Color_set(false,lineColorS);
-  InitializeColorPicker(false,lineColorS);
+  colors[oncolorright].classList.add("secondaryColor");
+  if(colors[oncolorright].classList.contains("primaryColor")){
+    colors[oncolorright].classList.add("bothColor");
+  }
+ Color_set(true,lineColorS);
+  InitializeColorPicker(true,lineColorS);
   document.getElementById("colorpalette").removeChild(child);
+  if(oncolorright > colors.length-1){oncolorright = colors.length-1; return;}
+  if(oncolorleft > colors.length-1 && fix){oncolorleft = colors.length-1; return;}
+  Update_Colors();
 });
 function InitializeColorPalette(palette){
 for(let i = 0;i < palette.length;i++){
@@ -1164,6 +1256,7 @@ for(let i = 0;i < palette.length;i++){
 for(let i = 0; i < colors.length;i++){
   colors[i].classList.remove("secondaryColor");
   colors[i].classList.remove("primaryColor");
+  colors[i].classList.remove("bothColor");
   colors[i].classList.remove("selected");
 }
 colors[0].classList.add("primaryColor");
@@ -1601,8 +1694,12 @@ PolyPreview();
         for(let i = 0; i < colors.length;i++){
           colors[i].classList.remove("primaryColor");
           colors[i].classList.remove("selected");
+          colors[i].classList.remove("bothColor");
         }
         colors[oncolor].classList.add("primaryColor");
+        if(colors[oncolor].classList.contains("secondaryColor")){
+          colors[oncolor].classList.add("bothColor");
+        }
         oncolorleft=oncolor;
         lineColor = setcolor;
               Color_set(false,setcolor);
@@ -1615,8 +1712,12 @@ PolyPreview();
         for(let i = 0; i < colors.length;i++){
           colors[i].classList.remove("secondaryColor");
           colors[i].classList.remove("selected");
+          colors[i].classList.remove("bothColor");
         }
         colors[oncolor].classList.add("secondaryColor");
+        if(colors[oncolor].classList.contains("primaryColor")){
+          colors[oncolor].classList.add("bothColor");
+        }
         oncolorright=oncolor; console.log("set");
         lineColorS = setcolor;    Color_set(true,setcolor);
          if(rightDouble|| (colorpicker.style.visibility == "visible")){
@@ -3405,7 +3506,7 @@ ScrollUpdate();
    trtx.fillRect(0,360-i,1,1);
  }
 */
-InitializeColorPalette(["rgba(0,0,0,1)","rgba(255,255,255,1)"]);
+InitializeColorPalette(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)",]);
 }
 Init();
 /*
