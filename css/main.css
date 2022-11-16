@@ -11,6 +11,29 @@
 
   --menu-top-height: 35px;
 }
+
+
+::-webkit-scrollbar {
+  width: 15px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #333333; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(150, 150, 150); 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(147, 147, 147); 
+}
+
+
+
 html {
 
     font-size: 8px;
@@ -157,7 +180,7 @@ background-color: #000000;
 }
 #UIright{
   height: 100%;
-  width: 160px;
+  width: 180px;
   z-index: 3;
   position: fixed;
   right: 0px;
@@ -173,11 +196,22 @@ left: 2px;
   width: 52px;
   height: 52px;
 }
+#colorpalette_select{
+  position: relative;
+  top: -7px;
+  left: 0px;
+}
 .smallicon {
   position: absolute;
   top: -4px;
   width: 32px;
   height: 32px;
+}
+.tinyicon {
+  position: relative;
+  top:-2px;
+  width: 24px;
+  height: 24px;
 }
 .smallbuttonimg {
 
@@ -193,10 +227,29 @@ button {
   width: 52px;
   height: 25px;
   background-color: #bfbfbf;
+  
+  border-left:  2px solid #ffffff;
+  border-top:2px solid #ffffff;
+  border-bottom:2px solid #404040;
+  border-right:2px solid #404040;
+  
   margin: 2px;
   /*border: 0px;*/
   padding: 0px;
 }
+/*
+button:hover{
+  background-color: #cfcfcf;
+}
+*/
+button:active{
+  /*background-color: #939393;*/
+  border-left:  2px solid #404040;
+  border-top:2px solid #404040;
+  border-bottom:2px solid #ffffff;
+  border-right:2px solid #ffffff;
+}
+
 input {
   font-size: 10px;
   width: 104px;
@@ -291,16 +344,27 @@ padding: 0px;
 #colorpalette{
   position: relative;
   left: 4px;
-  width: 155px;
+  width: 170px;
+  height: 85px;
  
   padding-top: 2px;
   background-color: #344837;
+  overflow-y: scroll;
+}
+#colorpalette_header,#colorpalette_footer {
+  position: relative;
+left: 4px;
+  width: 170px;
+  height: 25px;
+ 
+  padding-top: 2px;
+  background-color: #2e8e3c;
 }
 .colorPick{
   position: relative;
-  left: 4px;
-  margin-left: 2px;
-  width: 155px;
+  left: 19px;
+  margin-left: 4px;
+  width: 170px;
   height: 48px;
   border-bottom: #1d8b31 solid 4px;
   padding-top: 2px;

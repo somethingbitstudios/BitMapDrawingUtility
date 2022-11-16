@@ -9,7 +9,7 @@
 </head>
 
  <body> 
- 
+
    <div id="background"></div>
         <div id="UIleft">
       
@@ -76,12 +76,30 @@
 </div>
 
           </div>
-
-        
-          <div id="colorpalette">
+<div id="colorpalette_wrapper"> 
+  <div id="colorpalette_header">
+            <select id="colorpalette_select">
+              <option>default</option>
+              <option>test</option>
+            </select>
+            <button id="gg" class="tinyicon"><img class="smallbuttonimg" src="./icons/add.png" width="16" height="16"></button>
+            <button id="gg" class="tinyicon"><img class="smallbuttonimg" src="./icons/subtract.png" width="16" height="16"></button>
+             
+           </div>
+<div id="colorpalette">
+         
            
-           
-          </div>
+</div>
+<div id="colorpalette_footer">
+  
+  <button id="importPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/upload.png" width="16" height="16"></button>
+  <button id="importPaletteOR" class="tinyicon"><img class="smallbuttonimg" src="./icons/add.png" width="16" height="16"></button>
+  <button id="subtractPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/subtract.png" width="16" height="16"></button>
+  <button id="exportPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/download.png" width="16" height="16"></button>
+  
+ </div>
+</div>
+          
           <div class="colorPick" >
            
            
@@ -154,8 +172,8 @@
             
  
    
-    
-
+     <input type="file" id="importFilePal" style="visibility: hidden;">
+     <input type="file" id="importFilePalOR" style="visibility: hidden;">
  </body>
  <script  src="./js/main.js" ></script>
 

@@ -74,7 +74,7 @@ function BinaryToHex(string){
 }
 }
 function HexToBinary(string){
-  switch(string){
+  switch(string.toLowerCase()){
   case("0"):
     return "0000";
     break;
@@ -159,6 +159,7 @@ let HEX2 = string[1];
 HEX1 = HexToBinary(HEX1);
 HEX2 = HexToBinary(HEX2); 
 let Binary = HEX1+HEX2;
+
 let Decimal = 0;
 //binary to decimal
 for(let i = 0;i < 8;i++){
@@ -186,6 +187,7 @@ function HEXtoRGBA(hex){
   let hex1 = hex.substring(1,3); hex1 = Number(HexToDecimal(hex1));
   let hex2 = hex.substring(3,5); hex2 = Number(HexToDecimal(hex2));
   let hex3 = hex.substring(5,7); hex3 = Number(HexToDecimal(hex3));
+  
 let hexa = 0;
   if(hex.length == 7){
   hexa = 255;
@@ -195,6 +197,7 @@ let hexa = 0;
 
   hexa = (hexa/255)+"";
   hexa = Number(hexa.substring(0,4));
+
   return ("rgba("+hex1+","+hex2+","+hex3+","+hexa+")");
 }
 function RGBAtoHSLA(rgba){
@@ -309,15 +312,81 @@ return "rgba("+Math.round(rgb.r)+","+Math.round(rgb.g)+","+Math.round(rgb.b)+","
 function ALLToRGBA(value){
   if(value.includes("rgba(")){
     return value;
+  }else if(value.includes("rgb(")){
+    return "rgba"+value.split("b")[1].split(")")[0]+",1)";
   }else if (value.includes("#")){
     return HEXtoRGBA(value);
   }else if (value.includes("hsla(")){
     return HSLAtoRGBA(value);
-  }else{
+  }
+  else if(value.includes("hsl(")){
+    return HSLAtoRGBA("hsla"+value.split("l")[1].split(")")[0]+",1)");
+  }else if(value.includes(",")){
     return "rgba("+value+")";
+  }
+  else{
+    return "rgba(0,0,0,1)";
   }
   
 }
+
+
+
+/////////////////////
+//FILE MANIPULATION//
+/////////////////////
+function ImportPalette(text,name){
+var lines = text.split("\n");
+console.log(name);
+var cArray = [];
+for(let i = 0;i<lines.length;i++){
+  if(lines[i].includes("//")){
+    if(lines[i].split("//")[0].trim().length > 0){
+       cArray.push(lines[i].split("//")[0]);
+    }
+   
+ 
+  }
+  else if(lines[i].trim().length > 0){
+
+  
+  cArray.push(lines[i]);
+ 
+  }
+  
+
+  
+
+}
+
+InitializeColorPalette(cArray,name);
+}
+function ImportPaletteOR(text,name){
+  var lines = text.split("\n");
+  console.log(name);
+  var cArray = [];
+  for(let i = 0;i<lines.length;i++){
+    if(lines[i].includes("//")){
+      if(lines[i].split("//")[0].trim().length > 0){
+         cArray.push(lines[i].split("//")[0]);
+      }
+     
+   
+    }
+    else if(lines[i].trim().length > 0){
+  
+    
+    cArray.push(lines[i]);
+   
+    }
+    
+  
+    
+  
+  }
+  
+  InitializeColorPaletteOR(cArray,name);
+  }
 ////////
 //MAIN//
 ////////
@@ -960,6 +1029,52 @@ var Color = "rgba(0,0,0,1)"; //color being modified
 var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
 
     //ELEMENTS//
+const ImportFilePalette = document.getElementById("importFilePal");
+const ImportPaletteButton = document.getElementById("importPalette");
+
+ImportPaletteButton.addEventListener("click",function(){
+ImportFilePalette.click();
+});
+ImportFilePalette.addEventListener("change",function(){
+
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    
+    ImportPalette(reader.result,this.files[0].name.split(".")[0]);
+    
+  }, false);
+
+ 
+  reader.readAsText(this.files[0]);
+
+
+
+});
+
+const ImportFilePaletteOR = document.getElementById("importFilePalOR");
+const ImportPaletteButtonOR= document.getElementById("importPaletteOR");
+
+ImportPaletteButtonOR.addEventListener("click",function(){
+ImportFilePaletteOR.click();
+});
+ImportFilePaletteOR.addEventListener("change",function(){
+
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    
+    ImportPaletteOR(reader.result,this.files[0].name.split(".")[0]);
+    
+  }, false);
+
+ 
+  reader.readAsText(this.files[0]);
+
+
+
+});
+
     let hexElem = document.getElementById("hex");
     let rgbaElem = document.getElementById("rgba");
     let hslaElem = document.getElementById("hsla");
@@ -1013,7 +1128,7 @@ if(!ColorSelected){
   lineColor = Color;
   //PRIMARY_COLOR.style.backgroundColor = Color;
   Color_set(false,Color);
-  Color_add(Color,false);
+  Color_add(Color);
   EditedColor=Color;
   for(let i = 0; i < colors.length;i++){
     colors[i].classList.remove("primaryColor");
@@ -1026,7 +1141,7 @@ if(!ColorSelected){
   lineColorS = Color;
   //SECONDARY_COLOR.style.backgroundColor = Color;
   Color_set(true,Color);
-  Color_add(Color,true);
+  Color_add(Color);
   EditedColor=Color;
   for(let i = 0; i < colors.length;i++){
     colors[i].classList.remove("secondaryColor");
@@ -1110,7 +1225,13 @@ if(color == oldColor){
   }
 
 }
-function Color_add(Color,bool){
+function Palette_clear(){
+  document.getElementById("colorpalette").innerHTML="";
+}
+function Color_add(Color){
+ 
+  Color = ALLToRGBA(Color);
+
   //add color to colors
   var colr = document.createElement("button");
   colr.classList.add("color");
@@ -1248,9 +1369,9 @@ document.getElementById("removeColorS").addEventListener("click",function(){
   if(oncolorleft > colors.length-1 && fix){oncolorleft = colors.length-1; return;}
   Update_Colors();
 });
-function InitializeColorPalette(palette){
+function InitializeColorPalette(palette,name){
 for(let i = 0;i < palette.length;i++){
-  Color_add(palette[i],(i%2==0));
+  Color_add(palette[i]);
 }
 
 for(let i = 0; i < colors.length;i++){
@@ -1261,10 +1382,44 @@ for(let i = 0; i < colors.length;i++){
 }
 colors[0].classList.add("primaryColor");
 oncolorleft=0;
+  let color = colors[0].getAttribute("style");
+color = color.split(" ")[1];
+color = color.split(";")[0];
+Color_set(false,color);
 colors[1].classList.add("secondaryColor");
 oncolorright=1;
+color = colors[1].getAttribute("style");
+color = color.split(" ")[1];
+color = color.split(";")[0];
+Color_set(true,color);
 
 }
+function InitializeColorPaletteOR(palette,name){
+  Palette_clear();
+  for(let i = 0;i < palette.length;i++){
+    Color_add(palette[i]);
+  }
+  
+  for(let i = 0; i < colors.length;i++){
+    colors[i].classList.remove("secondaryColor");
+    colors[i].classList.remove("primaryColor");
+    colors[i].classList.remove("bothColor");
+    colors[i].classList.remove("selected");
+  }
+  colors[0].classList.add("primaryColor");
+  oncolorleft=0;
+    let color = colors[0].getAttribute("style");
+  color = color.split(" ")[1];
+  color = color.split(";")[0];
+  Color_set(false,color);
+  colors[1].classList.add("secondaryColor");
+  oncolorright=1;
+  color = colors[1].getAttribute("style");
+  color = color.split(" ")[1];
+  color = color.split(";")[0];
+  Color_set(true,color);
+  
+  }
 let hex = document.getElementById("hex");
 hex.addEventListener("focusout",function(){
 //validate
@@ -1473,9 +1628,10 @@ function UpdatePos(){
       downPos.y = pos.y;
       downIntPos.x = ~~ pos.x;
       downIntPos.y = ~~ pos.y;
+      hoveredON = hoveringON;
       switch(e.button){
         case(0): //console.log("left");
-        hoveredON = hoveringON;
+        
        
          left = true;
          if(leftClicked){
@@ -1718,7 +1874,7 @@ PolyPreview();
         if(colors[oncolor].classList.contains("primaryColor")){
           colors[oncolor].classList.add("bothColor");
         }
-        oncolorright=oncolor; console.log("set");
+        oncolorright=oncolor; 
         lineColorS = setcolor;    Color_set(true,setcolor);
          if(rightDouble|| (colorpicker.style.visibility == "visible")){
           colorpicker.style.visibility = "visible";
@@ -1867,7 +2023,7 @@ default:
       //AbsLastPos.y = AbsPos.y;
       //lastPos.y = pos.y;
        UpdatePos();
-    if(middle){
+    if(middle && (hoveredON=="canvas"||hoveredON=="background")){
       MoveCanvas();
       return true;
     }
@@ -1875,8 +2031,8 @@ default:
     });
     
     document.addEventListener('wheel', function(e){
-    
-      if(e.wheelDelta > 0){
+    if(hoveringON!="canvas"&&hoveringON!="background"){return;}
+      if(e.wheelDelta > 0 ){
     
     
         if(canvasSize.x >= resolution.x/4 && canvasSize.x < resolution.x*2){
@@ -3506,7 +3662,7 @@ ScrollUpdate();
    trtx.fillRect(0,360-i,1,1);
  }
 */
-InitializeColorPalette(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)","rgba(255,255,255,1)",]);
+InitializeColorPalette(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
 }
 Init();
 /*
