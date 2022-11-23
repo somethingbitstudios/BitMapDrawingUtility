@@ -16,6 +16,12 @@ function download(){
   link.remove();
 }
 
+function arrayRemove(arr, value) { 
+    
+  return arr.filter(function(ele){ 
+      return ele != value; 
+  });
+}
 
 
 //////////////
@@ -329,15 +335,87 @@ function ALLToRGBA(value){
   }
   
 }
+function ColorsToArray(){
+  var arr = [];
+  for(let i = 0;i< colors.length;i++){
+    arr.push(colors[i].getAttribute("style").split(" ")[1].split(";")[0]);
+  }
+  return arr;
+}
 
 
 
+
+//palette//
+let colorpalettes = [];//name is last item of arrays within
+let colorpaletteindex=0;
+let palettelist = document.getElementById("colorpalette_select");
+palettelist.onchange = function(){
+
+Palette_clear();
+LoadPalette(palettelist.value);
+}
+function AddPaletteToList(cs,name){
+  cs.push(name);
+colorpalettes.push(cs);
+UpdatePaletteList();
+SelectPalette(colorpalettes.length-1);
+LoadPalette(colorpalettes.length-1);
+
+//update list
+}
+function UpdatePaletteList(){
+  palettelist.innerHTML="";
+  for(let i = 0;i< colorpalettes.length;i++){
+      var temp = document.createElement("option");
+      temp.innerHTML= colorpalettes[i][colorpalettes[i].length-1];
+      temp.value = i;
+      palettelist.appendChild(temp);
+  }
+
+}
+function SelectPalette(index){
+  for(let i = 0;i<palettelist.children.length;i++){
+    palettelist.children[i].setAttribute("selected",false);
+  }
+  palettelist.children[index].setAttribute("selected",true);
+}
+function LoadPalette(index){
+  movedColor=null;
+  colorpaletteindex=index;
+  var palette = colorpalettes[index].map((x) => x);
+  palette.pop();//removes name
+ 
+  for(let i = 0;i < palette.length;i++){
+    Color_add(palette[i]);
+  }
+  Color_last();
+  for(let i = 0; i < colors.length;i++){
+    colors[i].classList.remove("secondaryColor");
+    colors[i].classList.remove("primaryColor");
+    colors[i].classList.remove("bothColor");
+    colors[i].classList.remove("selected");
+  }
+  if(colors.length==0){return;}
+  colors[0].classList.add("primaryColor");
+  oncolorleft=0;
+    let color = colors[0].getAttribute("style");
+  color = color.split(" ")[1];
+  color = color.split(";")[0];
+  Color_set(false,color);
+  colors[1].classList.add("secondaryColor");
+  oncolorright=1;
+  color = colors[1].getAttribute("style");
+  color = color.split(" ")[1];
+  color = color.split(";")[0];
+  Color_set(true,color);
+}
 /////////////////////
 //FILE MANIPULATION//
 /////////////////////
 function ImportPalette(text,name){
 var lines = text.split("\n");
-console.log(name);
+
 var cArray = [];
 for(let i = 0;i<lines.length;i++){
   if(lines[i].includes("//")){
@@ -357,13 +435,78 @@ for(let i = 0;i<lines.length;i++){
 
   
 
-}
+};
 
 InitializeColorPalette(cArray,name);
 }
+function SubtractPalette(text){
+  var lines = text.split("\n");
+
+  var cArray = [];
+  for(let i = 0;i<lines.length;i++){
+    if(lines[i].includes("//")){
+      if(lines[i].split("//")[0].trim().length > 0){
+         cArray.push(lines[i].split("//")[0]);
+      }
+     
+   
+    }
+    else if(lines[i].trim().length > 0){
+  
+    //convert cArray to rgba to compare
+    cArray.push(ALLToRGBA(lines[i]));
+   
+    }
+    
+  
+    
+  
+  }
+ 
+
+  
+
+  var bArray = [];
+  for(let i = 0; i < colors.length;i++){
+    bArray.push(colors[i].getAttribute("style").split(" ")[1].split(";")[0]);
+  }
+
+
+  bArray = bArray.filter(function(val,idx,array){
+    if(cArray.includes(val)){
+      //return val;
+      cArray = arrayRemove(cArray,val);
+    }else{
+      return val;
+    }
+  });
+
+ 
+  bArray.push( colorpalettes[colorpaletteindex][ colorpalettes[colorpaletteindex].length-1]);
+   
+  colorpalettes[colorpaletteindex] = bArray;
+
+  Palette_clear();
+  LoadPalette(colorpaletteindex)
+  }
+function ExportPalette(name){
+  var cArray = [];
+  for(let i = 0; i < colors.length;i++){
+    cArray.push(colors[i].getAttribute("style").split(" ")[1].split(";")[0]);
+  }
+
+
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:;charset=utf-8,' + encodeURIComponent(cArray.join("\n")));
+  element.setAttribute('download', name+".cpt");
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
 function ImportPaletteOR(text,name){
   var lines = text.split("\n");
-  console.log(name);
+  
   var cArray = [];
   for(let i = 0;i<lines.length;i++){
     if(lines[i].includes("//")){
@@ -1029,6 +1172,39 @@ var Color = "rgba(0,0,0,1)"; //color being modified
 var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
 
     //ELEMENTS//
+const NewPalette = document.getElementById("newPalette");
+NewPalette.onmousedown = function(){
+  var pal = [];
+  InitializeColorPaletteOR(pal,"Custom");
+}
+const DeletePalette = document.getElementById("delPalette");
+DeletePalette.onmousedown = function(){
+  if(colorpalettes.length > 0){
+      
+      colorpalettes.splice(colorpaletteindex,1);
+    
+colorpaletteindex--;
+
+if(colorpaletteindex < 0){
+ colorpaletteindex=0;
+}
+if(colorpalettes.length == 0){
+  var pal = [];
+  InitializeColorPaletteOR(pal,"Custom");
+}
+
+ 
+ UpdatePaletteList();
+ SelectPalette(colorpaletteindex);
+ Palette_clear();
+ LoadPalette(colorpaletteindex);
+ Palette_clear();
+LoadPalette(palettelist.value);
+  }
+ 
+}
+
+
 const ImportFilePalette = document.getElementById("importFilePal");
 const ImportPaletteButton = document.getElementById("importPalette");
 
@@ -1040,8 +1216,8 @@ ImportFilePalette.addEventListener("change",function(){
 
   const reader = new FileReader();
   reader.addEventListener("load", () => {
-    
-    ImportPalette(reader.result,this.files[0].name.split(".")[0]);
+   
+    ImportPalette(reader.result,this.files[0].name.split(".")[0]);ImportFilePalette.value = null;
     
   }, false);
 
@@ -1075,6 +1251,34 @@ ImportFilePaletteOR.addEventListener("change",function(){
 
 });
 
+const SubtractFilePalette = document.getElementById("subtractFilePal");
+const SubtractPaletteButton = document.getElementById("subtractPalette");
+
+SubtractPaletteButton.addEventListener("click",function(){
+  SubtractFilePalette.click();
+});
+SubtractFilePalette.addEventListener("change",function(){
+
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+   
+    SubtractPalette(reader.result);SubtractFilePalette.value = null;
+    
+  }, false);
+
+ 
+  reader.readAsText(this.files[0]);
+
+
+
+});
+
+const ExportPaletteButton= document.getElementById("exportPalette");
+
+ExportPaletteButton.addEventListener("click",function(){
+ ExportPalette(colorpalettes[colorpaletteindex][colorpalettes[colorpaletteindex].length-1]);
+});
     let hexElem = document.getElementById("hex");
     let rgbaElem = document.getElementById("rgba");
     let hslaElem = document.getElementById("hsla");
@@ -1142,6 +1346,7 @@ if(!ColorSelected){
   //SECONDARY_COLOR.style.backgroundColor = Color;
   Color_set(true,Color);
   Color_add(Color);
+  
   EditedColor=Color;
   for(let i = 0; i < colors.length;i++){
     colors[i].classList.remove("secondaryColor");
@@ -1241,6 +1446,65 @@ function Color_add(Color){
   Update_Colors();
   
 }
+function Color_last(){
+ 
+  let Color = "rgba(0,0,0,0)";
+//remove color
+var tmp = document.getElementById("colr");
+if(tmp!=null){
+  document.getElementById("colorpalette").removeChild(tmp);
+}
+tmp = document.getElementById("colrI");
+if(tmp!=null){
+  document.getElementById("colorpalette").removeChild(tmp);
+}
+
+  //add color to colors
+  var colr = document.createElement("button");
+  colr.classList.add("colorE");
+  colr.id="colr";
+ var img = document.createElement("img");
+ img.src = "./icons/plusW.png";
+ img.width=16;
+ img.height=16;
+ img.style.position="absolute"
+ img.style.left="-2px";
+ img.style.top="-2px";
+
+
+
+ 
+
+
+ colr.appendChild(img);
+ 
+  colr.onmouseover = function(){
+  
+    oncolor=-1;
+  }
+  colr.setAttribute("style","background-color: "+Color+";");
+  colr.style.position="relative";
+  colr.style.top="-6px";
+  colr.style.marginBottom="-10px";
+  colr.onmousedown = function(e){
+    colrDown =true;
+ 
+  }
+  document.getElementById("colorpalette").appendChild(colr);
+  colr = document.createElement("button");
+  colr.classList.add("colorE");
+  colr.style.visibility="hidden";
+colr.id="colrI";
+
+
+  document.getElementById("colorpalette").appendChild(colr);
+  Update_Colors();
+  
+}
+
+
+
+
 
 document.getElementById("removeColorP").addEventListener("click",function(){
   let fix = true;
@@ -1370,36 +1634,11 @@ document.getElementById("removeColorS").addEventListener("click",function(){
   Update_Colors();
 });
 function InitializeColorPalette(palette,name){
-for(let i = 0;i < palette.length;i++){
-  Color_add(palette[i]);
-}
 
-for(let i = 0; i < colors.length;i++){
-  colors[i].classList.remove("secondaryColor");
-  colors[i].classList.remove("primaryColor");
-  colors[i].classList.remove("bothColor");
-  colors[i].classList.remove("selected");
-}
-colors[0].classList.add("primaryColor");
-oncolorleft=0;
-  let color = colors[0].getAttribute("style");
-color = color.split(" ")[1];
-color = color.split(";")[0];
-Color_set(false,color);
-colors[1].classList.add("secondaryColor");
-oncolorright=1;
-color = colors[1].getAttribute("style");
-color = color.split(" ")[1];
-color = color.split(";")[0];
-Color_set(true,color);
-
-}
-function InitializeColorPaletteOR(palette,name){
-  Palette_clear();
   for(let i = 0;i < palette.length;i++){
     Color_add(palette[i]);
   }
-  
+  Color_last();
   for(let i = 0; i < colors.length;i++){
     colors[i].classList.remove("secondaryColor");
     colors[i].classList.remove("primaryColor");
@@ -1419,6 +1658,13 @@ function InitializeColorPaletteOR(palette,name){
   color = color.split(";")[0];
   Color_set(true,color);
   
+//AddPaletteToList(palette,name);
+
+}
+function InitializeColorPaletteOR(palette,name){
+  Palette_clear();
+  
+  AddPaletteToList(palette,name);
   }
 let hex = document.getElementById("hex");
 hex.addEventListener("focusout",function(){
@@ -1477,13 +1723,20 @@ hsla.addEventListener("focusout",function(){
 
  
 });
+
+
+
+
 let setcolor = "rbg(0,0,0,255)";
 let oncolor=-1; 
 let oncolorleft=-1;
 let oncolorright=-1;
  let colors = document.getElementsByClassName("color");
+ let movedColor = null;
+ let movedIdx = null;
+ let movedColorObj = document.getElementById("movedColorObj");
 function Update_Colors(){
-
+  colors = document.getElementsByClassName("color");
 for (let i = 0; i < colors.length;i++){
   colors[i].onmouseover = function() {
     colors[i].classList.add("selected");
@@ -1497,7 +1750,10 @@ for (let i = 0; i < colors.length;i++){
   }
 
   colors[i].onmouseout = function(){
-    oncolor = -1;
+    if(!middle){
+       oncolor = -1;
+    }
+   
     colors[i].classList.remove("selected");
   }
   
@@ -1508,7 +1764,7 @@ Update_Colors();
 
 
 
-
+var colrDown=false;
 
 
 /////////
@@ -1518,6 +1774,13 @@ Update_Colors();
     //HOVER//
 let hoveringON;
 let hoveredON; //When mousedown
+document.getElementById("colorpalette").onmouseover = function(){
+  hoveringON = "colorpalette";
+  }
+document.getElementById("colorpalette").onmouseout = function(){
+    hoveringON = "none";
+    //oncolor = -1;
+    }
 uiCanvas.onmouseover = function(){
 hoveringON = "canvas";
 }
@@ -1844,9 +2107,42 @@ PolyPreview();
         break;
       }
     
-    
-       if(oncolor != -1){
+      if(colrDown){
+          colrDown=false;
+      
+        Color_add("rgba(0,0,0,1)");
+            if(left){
+              colorpicker.style.visibility = "visible";
+              ColorSelected = false;
+              Update_Colors();
+              for(let i = 0; i < colors.length;i++){
+                colors[i].classList.remove("primaryColor");
+        
+              }
+              colors[colors.length-1].classList.add("primaryColor");
+              InitializeColorPicker(false,"rgba(0,0,0,1)");
+            }  
+            if(right){
+              colorpicker.style.visibility = "visible";
+              ColorSelected = true;
+              for(let i = 0; i < colors.length;i++){
+                colors[i].classList.remove("secondaryColor");
+               
+              }
+              colors[colors.length-1].classList.add("secondaryColor");
+              InitializeColorPicker(true,"rgba(0,0,0,1)");
+            }
+           
+          Color_last();
+        }
+      
+             
+       if(hoveringON=="colorpalette" && oncolor != -1){
+      
+          
+        
       if(left){
+      
         for(let i = 0; i < colors.length;i++){
           colors[i].classList.remove("primaryColor");
           colors[i].classList.remove("selected");
@@ -1884,9 +2180,20 @@ PolyPreview();
       }else if(middle){
         //move+ color
   
-          console.log("move");
+          movedColor = colors[oncolor];
+          movedIdx = oncolor;
+          colors[oncolor].onmouseout = function(){
+
+          };
+          document.getElementById("colorpalette").removeChild(colors[oncolor]);
           
-         
+
+          Update_Colors();
+          
+         movedColorObj.style.visibility = "visible";
+         movedColorObj.style.left = e.clientX+"px";
+         movedColorObj.style.top = e.clientY-2+"px";
+         movedColorObj.style.backgroundColor = movedColor.style.backgroundColor;
       
       }
      }
@@ -1971,7 +2278,70 @@ default:
       }
     }
      break;
-        case(1): /*console.log("middle");*/ middle = false; break;
+        case(1): /*console.log("middle");*/ middle = false;
+
+
+
+
+
+        if(movedColor != null){
+         
+            movedColorObj.style.left = e.clientX+"px";
+            movedColorObj.style.top = e.clientY-2+"px";
+            movedColorObj.style.visibility = "hidden";
+            movedColor.classList.remove("selected");
+  
+         if(hoveringON == "colorpalette"){
+           var arr = ColorsToArray();
+            if(oncolor < 0){
+            oncolor=colors.length;
+           }
+          if(oncolor <= oncolorleft && movedIdx>oncolorleft){
+            oncolorleft++;
+          }
+          if(oncolor <= oncolorright&& movedIdx>oncolorright){
+            oncolorright++;
+          }
+          if(oncolor >= oncolorleft && movedIdx<oncolorleft){
+            oncolorleft--;
+          }
+          if(oncolor >= oncolorright&& movedIdx<oncolorright){
+            oncolorright--;
+          }
+          
+
+           arr.splice(oncolor,0,movedColor.getAttribute("style").split(" ")[1].split(";")[0]);
+       
+           var lert = {l:oncolorleft,r:oncolorright};
+          InitializeColorPaletteOR(arr,"test");
+          for(let i = 0; i < colors.length;i++){
+            colors[i].classList.remove("secondaryColor");
+            colors[i].classList.remove("primaryColor");
+            colors[i].classList.remove("bothColor");
+            colors[i].classList.remove("selected");
+          }
+          oncolorleft=lert.l;
+    let color = colors[oncolorleft].getAttribute("style");
+  color = color.split(" ")[1];
+  color = color.split(";")[0];
+  Color_set(false,color);
+  colors[oncolorleft].classList.add("primaryColor");
+  oncolorright=lert.r;
+  color = colors[oncolorright].getAttribute("style");
+  color = color.split(" ")[1];
+  color = color.split(";")[0];
+  Color_set(true,color);
+  colors[oncolorright].classList.add("secondaryColor");
+          Update_Colors();
+          if(colors[oncolorleft].classList.contains("secondaryColor") && colors[oncolorleft].classList.contains("primaryColor")){
+            colors[oncolorleft].classList.add("bothColor");
+          }
+        }
+        movedColor=null;
+        }
+        
+        
+        break;
         case(2): /*console.log("right");*/ right = false;
         rightDouble=false;
         rightClicked = true;
@@ -2026,6 +2396,20 @@ default:
     if(middle && (hoveredON=="canvas"||hoveredON=="background")){
       MoveCanvas();
       return true;
+    }else if(middle && movedColor != null){
+      //move+ color
+
+        //movedColor = colors[oncolor];
+       // document.getElementById("colorpalette").removeChild(colors[oncolor]);
+        
+
+        //Update_Colors();
+        
+       //movedColorObj.style.visibility = "visible";
+       movedColorObj.style.left = e.clientX+"px";
+       movedColorObj.style.top = e.clientY-2+"px";
+       //movedColorObj.style.backgroundColor = movedColor.style.backgroundColor;
+    
     }
       Draw();
     });
@@ -3662,7 +4046,7 @@ ScrollUpdate();
    trtx.fillRect(0,360-i,1,1);
  }
 */
-InitializeColorPalette(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
+InitializeColorPaletteOR(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
 }
 Init();
 /*

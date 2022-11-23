@@ -82,8 +82,8 @@
               <option>default</option>
               <option>test</option>
             </select>
-            <button id="gg" class="tinyicon"><img class="smallbuttonimg" src="./icons/add.png" width="16" height="16"></button>
-            <button id="gg" class="tinyicon"><img class="smallbuttonimg" src="./icons/subtract.png" width="16" height="16"></button>
+            <button id="newPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/add.png" width="16" height="16"></button>
+            <button id="delPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/subtract.png" width="16" height="16"></button>
              
            </div>
 <div id="colorpalette">
@@ -92,8 +92,8 @@
 </div>
 <div id="colorpalette_footer">
   
-  <button id="importPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/upload.png" width="16" height="16"></button>
-  <button id="importPaletteOR" class="tinyicon"><img class="smallbuttonimg" src="./icons/add.png" width="16" height="16"></button>
+   <button id="importPaletteOR" class="tinyicon"><img class="smallbuttonimg" src="./icons/upload.png" width="16" height="16"></button>
+   <button id="importPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/add.png" width="16" height="16"></button>
   <button id="subtractPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/subtract.png" width="16" height="16"></button>
   <button id="exportPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/download.png" width="16" height="16"></button>
   
@@ -171,9 +171,10 @@
    </div>
             
  
-   
+   <button id="movedColorObj"class="colorE" style="background-color: rgba(0,0,0,1);visibility: hidden; position: fixed;z-index: 16; margin: -15px;"></button>
      <input type="file" id="importFilePal" style="visibility: hidden;">
      <input type="file" id="importFilePalOR" style="visibility: hidden;">
+     <input type="file" id="subtractFilePal" style="visibility: hidden;">
  </body>
  <script  src="./js/main.js" ></script>
 
