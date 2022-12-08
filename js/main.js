@@ -1,3 +1,14 @@
+var temp = 0; //tempstorage for frog
+var TempImg;
+var ImageFlip = {x:false,y:false};
+
+
+var busy = false;
+var busyTask = "NONE";
+var busyParams = [];
+
+
+var br = false; //break?
 ////////////
 //EXTERNAL//
 ////////////
@@ -342,7 +353,73 @@ function ColorsToArray(){
   }
   return arr;
 }
+/////////
+//IMAGE//
+/////////
+function ImageTransform(img,rX,rY,flipX,flipY){
+  if(rX == 0 || rY == 0){return new ImageData(1,1)}
+ var imagedt = new ImageData(rX,rY);
 
+ var resratioX = img.width/rX;
+ var resratioY = img.height/rY;
+
+if(ImageFlip.x == false && ImageFlip.y==false){
+  for(let i = 0;i<imagedt.height;i++){
+ for(let j = 0;j<imagedt.width;j++){
+  let I = Math.floor(i*resratioY);
+  
+  let J = Math.floor(j*resratioX);
+
+  imagedt.data[i*imagedt.width*4+j*4]=img.data[I*img.width*4+J*4];
+  imagedt.data[i*imagedt.width*4+j*4+1]=img.data[I*img.width*4+J*4+1];
+  imagedt.data[i*imagedt.width*4+j*4+2]=img.data[I*img.width*4+J*4+2];
+  imagedt.data[i*imagedt.width*4+j*4+3]=img.data[I*img.width*4+J*4+3];
+ }
+}
+}else if(ImageFlip.x==true && ImageFlip.y==false){
+  for(let i = 0;i<imagedt.height;i++){
+    for(let j = 0;j<imagedt.width;j++){
+     let I = Math.floor(i*resratioY);
+     
+     let J = Math.floor((imagedt.width-j)*resratioX);
+   
+     imagedt.data[i*imagedt.width*4+j*4]=img.data[I*img.width*4+J*4];
+     imagedt.data[i*imagedt.width*4+j*4+1]=img.data[I*img.width*4+J*4+1];
+     imagedt.data[i*imagedt.width*4+j*4+2]=img.data[I*img.width*4+J*4+2];
+     imagedt.data[i*imagedt.width*4+j*4+3]=img.data[I*img.width*4+J*4+3];
+    }
+   }
+}else if(ImageFlip.x==false && ImageFlip.y==true){
+  for(let i = 0;i<imagedt.height;i++){
+    for(let j = 0;j<imagedt.width;j++){
+     let I = Math.floor((imagedt.height-i)*resratioY);
+     
+     let J = Math.floor(j*resratioX);
+   
+     imagedt.data[i*imagedt.width*4+j*4]=img.data[I*img.width*4+J*4];
+     imagedt.data[i*imagedt.width*4+j*4+1]=img.data[I*img.width*4+J*4+1];
+     imagedt.data[i*imagedt.width*4+j*4+2]=img.data[I*img.width*4+J*4+2];
+     imagedt.data[i*imagedt.width*4+j*4+3]=img.data[I*img.width*4+J*4+3];
+    }
+   }
+}else if(ImageFlip.x==true && ImageFlip.y==true){
+  for(let i = 0;i<imagedt.height;i++){
+    for(let j = 0;j<imagedt.width;j++){
+     let I = Math.floor((imagedt.height-i)*resratioY);
+     let J = Math.floor((imagedt.width-j)*resratioX);
+   
+     imagedt.data[i*imagedt.width*4+j*4]=img.data[I*img.width*4+J*4];
+     imagedt.data[i*imagedt.width*4+j*4+1]=img.data[I*img.width*4+J*4+1];
+     imagedt.data[i*imagedt.width*4+j*4+2]=img.data[I*img.width*4+J*4+2];
+     imagedt.data[i*imagedt.width*4+j*4+3]=img.data[I*img.width*4+J*4+3];
+    }
+   }
+}
+
+
+
+return imagedt;
+}
 
 
 
@@ -351,7 +428,7 @@ let colorpalettes = [];//name is last item of arrays within
 let colorpaletteindex=0;
 let palettelist = document.getElementById("colorpalette_select");
 palettelist.onchange = function(){
-
+SavePalette(colorpaletteindex);
 Palette_clear();
 LoadPalette(palettelist.value);
 }
@@ -380,7 +457,27 @@ function SelectPalette(index){
   }
   palettelist.children[index].setAttribute("selected",true);
 }
+function SavePalette(index){
+  var name =   colorpalettes[colorpaletteindex] [  colorpalettes[colorpaletteindex].length-1 ];
+  
+  colors = document.getElementsByClassName("color");
+  var colorarr = [];
+  Update_Colors();
+for (let i = 0; i < colors.length;i++){
+  
+  let color = colors[i].getAttribute("style");
+  color = color.split(" ")[1];
+  
+  color = color.split(";")[0];
+ colorarr.push(color);
+
+ 
+}
+colorarr.push(name);
+colorpalettes[colorpaletteindex] = colorarr; 
+}
 function LoadPalette(index){
+  //SavePalette();
   movedColor=null;
   colorpaletteindex=index;
   var palette = colorpalettes[index].map((x) => x);
@@ -554,6 +651,7 @@ if(Qindex != -1){
  // console.log(StateQueue.length);
 }
 function SQ_UNDO(){
+  DisableSelectPoints();
   if(StateQueue.length<2){return;}
 if(Qindex==-1){
   Qindex=StateQueue.length-2;
@@ -565,6 +663,7 @@ Qindex--;
 ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
 }
 function SQ_REDO(){
+  DisableSelectPoints();
   if(Qindex == -1){return;}
   if(Qindex == StateQueue.length-1){Qindex=-1;return;}
   Qindex++;
@@ -662,12 +761,50 @@ var lineCapS = 'butt';
 var lineColorS = "rgba(255,255,255,1)";
 
 var EditedColor = "";
+
+
+
+
+//SELECT UI
+const SelectPoints=[];
+SelectPoints.push(document.getElementById("SelectUpLeft"));
+SelectPoints.push(document.getElementById("SelectUp"));
+SelectPoints.push(document.getElementById("SelectUpRight"));
+SelectPoints.push(document.getElementById("SelectRight"));
+SelectPoints.push(document.getElementById("SelectDownRight"));
+SelectPoints.push(document.getElementById("SelectDown"));
+SelectPoints.push(document.getElementById("SelectDownLeft"));
+SelectPoints.push(document.getElementById("SelectLeft"));
+SelectPoints.push(document.getElementById("SelectRotate"));
+
+for(let i =0;i< SelectPoints.length;i++){
+  SelectPoints[i].onmouseover = function(){
+    hoveringON="points";
+  };
+  SelectPoints[i].onmouseout = function(){
+    hoveringON="none";
+  };
+  SelectPoints[i].onmousedown = function(){
+   busy=true;
+   busyTask="SELECTRESIZE";
+   busyParams = [];
+   busyParams.push(i);
+  };
+  SelectPoints[i].onmouseup = function(){
+    busy=false;
+  };
+}
 var selectFill ="rgba(100,150,255,0.4)";
 var SelectActive = false; //if true, area is  selected
 var SelectDragging = false;
 var SelectArea;
+var SelectAreaT;
 var SelectPos = {x:-1,y:-1,w:0,h:0};
 var LastDir = -1;
+//copy paste atd
+
+
+
     //fill//
 
 var fillTool = false;
@@ -1341,6 +1478,7 @@ if(!ColorSelected){
   }
   colors[colors.length-1].classList.add("primaryColor");
   oncolorleft=colors.length-1;
+  Color_last();
 }else{
   lineColorS = Color;
   //SECONDARY_COLOR.style.backgroundColor = Color;
@@ -1355,6 +1493,7 @@ if(!ColorSelected){
   }
   colors[colors.length-1].classList.add("secondaryColor");
   oncolorright=colors.length-1;
+  Color_last();
 }
 });
 const ColorButtonEdit = document.getElementById("ColorButtonEdit");
@@ -1446,6 +1585,9 @@ function Color_add(Color){
   Update_Colors();
   
 }
+function Color_read(i){
+
+}
 function Color_last(){
  
   let Color = "rgba(0,0,0,0)";
@@ -1488,7 +1630,6 @@ if(tmp!=null){
   colr.style.marginBottom="-10px";
   colr.onmousedown = function(e){
     colrDown =true;
- 
   }
   document.getElementById("colorpalette").appendChild(colr);
   colr = document.createElement("button");
@@ -1733,6 +1874,7 @@ let oncolorleft=-1;
 let oncolorright=-1;
  let colors = document.getElementsByClassName("color");
  let movedColor = null;
+ let movedColorSelection = null;
  let movedIdx = null;
  let movedColorObj = document.getElementById("movedColorObj");
 function Update_Colors(){
@@ -1783,9 +1925,11 @@ document.getElementById("colorpalette").onmouseout = function(){
     }
 uiCanvas.onmouseover = function(){
 hoveringON = "canvas";
+
 }
 uiCanvas.onmouseout = function(){
 hoveringON = "none";
+
 }
 background.onmouseover = function(){
 hoveringON = "background";
@@ -1961,7 +2105,7 @@ if(hoveredON == "canvas" || hoveredON == "background"){
 uictx.clearRect(0,0,resolution.x,resolution.y);
 uictx.fillStyle=selectFill;
 RenderSelectUI();
- 
+
 }
 break;
 
@@ -2109,7 +2253,7 @@ PolyPreview();
     
       if(colrDown){
           colrDown=false;
-      
+  
         Color_add("rgba(0,0,0,1)");
             if(left){
               colorpicker.style.visibility = "visible";
@@ -2117,7 +2261,7 @@ PolyPreview();
               Update_Colors();
               for(let i = 0; i < colors.length;i++){
                 colors[i].classList.remove("primaryColor");
-        
+                colors[i].classList.remove("bothColor");
               }
               colors[colors.length-1].classList.add("primaryColor");
               InitializeColorPicker(false,"rgba(0,0,0,1)");
@@ -2127,7 +2271,7 @@ PolyPreview();
               ColorSelected = true;
               for(let i = 0; i < colors.length;i++){
                 colors[i].classList.remove("secondaryColor");
-               
+                colors[i].classList.remove("bothColor");
               }
               colors[colors.length-1].classList.add("secondaryColor");
               InitializeColorPicker(true,"rgba(0,0,0,1)");
@@ -2185,6 +2329,15 @@ PolyPreview();
           colors[oncolor].onmouseout = function(){
 
           };
+          if(colors[oncolor].classList.contains("primaryColor")){
+              movedColorSelection=0;
+          }
+          if(colors[oncolor].classList.contains("secondaryColor")){
+            movedColorSelection=1;
+        }
+        if(colors[oncolor].classList.contains("primaryColor")&&colors[oncolor].classList.contains("secondaryColor")){
+          movedColorSelection=2;
+        }
           document.getElementById("colorpalette").removeChild(colors[oncolor]);
           
 
@@ -2194,6 +2347,20 @@ PolyPreview();
          movedColorObj.style.left = e.clientX+"px";
          movedColorObj.style.top = e.clientY-2+"px";
          movedColorObj.style.backgroundColor = movedColor.style.backgroundColor;
+         movedColorObj.classList.remove("primaryColor");
+         movedColorObj.classList.remove("secondaryColor");
+         movedColorObj.classList.remove("bothColor");
+         switch(movedColorSelection){
+          case(0):
+          movedColorObj.classList.add("primaryColor");
+          break;
+          case(1):
+          movedColorObj.classList.add("secondaryColor");
+          break;
+          case(2):
+          movedColorObj.classList.add("bothColor");
+          break;
+         }
       
       }
      }
@@ -2212,6 +2379,7 @@ PolyPreview();
    
         switch(e.button){
         case(0): /*console.log("left");*/ left = false;
+        busy=false;
         leftClicked = true;
         leftDouble=false;
         setTimeout(function(){
@@ -2226,7 +2394,9 @@ PolyPreview();
           
           SelectDragging = false;
           SelectActive=true;
-          return;
+       
+      
+            return;
          }
         if(hoveredON == "canvas"||hoveredON=="background"){ 
         
@@ -2269,6 +2439,11 @@ default:
      case("select"):
       SelectPr();
       RenderSelectUI();
+      setTimeout(function(){
+         hoveringON="points";
+         EnableSelectPoints();
+      },1);
+     
      //pctx
      break;
       }
@@ -2285,7 +2460,7 @@ default:
 
 
         if(movedColor != null){
-         
+       
             movedColorObj.style.left = e.clientX+"px";
             movedColorObj.style.top = e.clientY-2+"px";
             movedColorObj.style.visibility = "hidden";
@@ -2311,7 +2486,20 @@ default:
           
 
            arr.splice(oncolor,0,movedColor.getAttribute("style").split(" ")[1].split(";")[0]);
-       
+         switch(movedColorSelection){
+          case(0): 
+          oncolorleft=oncolor;
+          break;
+          case(1): 
+          oncolorright=oncolor;
+          break;
+          case(2): 
+          oncolorleft=oncolor;
+          oncolorright=oncolor;
+
+          break;
+         }
+         movedColorSelection=null;
            var lert = {l:oncolorleft,r:oncolorright};
           InitializeColorPaletteOR(arr,"test");
           for(let i = 0; i < colors.length;i++){
@@ -2415,7 +2603,9 @@ default:
     });
     
     document.addEventListener('wheel', function(e){
-    if(hoveringON!="canvas"&&hoveringON!="background"){return;}
+   
+    if(hoveringON!="canvas"&&hoveringON!="background"&&hoveringON!="points"){return;}
+    
       if(e.wheelDelta > 0 ){
     
     
@@ -2516,7 +2706,7 @@ default:
         
       }
     }                              
-      
+    UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
       },true);
     
     
@@ -3127,6 +3317,36 @@ if(intPos.x >= lrtb.left && intPos.x <= lrtb.right && intPos.y >= lrtb.top && in
 }
 return false;
 }
+function UpdateSelectPoints(lowx,highx,lowy,highy){
+  SelectPoints[0].style.left=lowx.x/resScale-8+"px";
+  SelectPoints[0].style.top=lowy.y/resScale-8+"px"; 
+  SelectPoints[1].style.left=((lowx.x+highx.x)/2+0.5)/resScale-8+"px";
+  SelectPoints[1].style.top=(lowy.y)/resScale-8+"px";
+  SelectPoints[2].style.left=(highx.x+1)/resScale-8+"px";
+  SelectPoints[2].style.top=(lowy.y)/resScale-8+"px"; 
+  SelectPoints[3].style.left=(highx.x+1)/resScale-8+"px";
+  SelectPoints[3].style.top=((lowy.y+highy.y)/2+0.5)/resScale-8+"px";
+  SelectPoints[4].style.left=(highx.x+1)/resScale-8+"px";
+  SelectPoints[4].style.top=(highy.y+1)/resScale-8+"px"; 
+  SelectPoints[5].style.left=((lowx.x+highx.x)/2+0.5)/resScale-8+"px";
+  SelectPoints[5].style.top=(highy.y+1)/resScale-8+"px";
+  SelectPoints[6].style.left=lowx.x/resScale-8+"px";
+  SelectPoints[6].style.top=(highy.y+1)/resScale-8+"px"; 
+  SelectPoints[7].style.left=(lowx.x)/resScale-8+"px";
+  SelectPoints[7].style.top=((lowy.y+highy.y)/2+0.5)/resScale-8+"px";
+  SelectPoints[8].style.left=((lowx.x+highx.x)/2+0.5)/resScale-8+"px";
+  SelectPoints[8].style.top=(lowy.y)/resScale-32+"px";
+}
+function EnableSelectPoints(){
+  for(let i = 0; i < SelectPoints.length;i++){
+    SelectPoints[i].style.visibility = "visible";
+  }
+}
+function DisableSelectPoints(){
+  for(let i = 0; i < SelectPoints.length;i++){
+    SelectPoints[i].style.visibility = "hidden";
+  }
+}
 function RenderSelectUI(){
   //make rect from downpos to pos on ui
 
@@ -3144,24 +3364,34 @@ uictx.clearRect(downIntPos.x,downIntPos.y,lastIntPos.x-downIntPos.x+1,lastIntPos
  uictx.clearRect(lastIntPos.x,downIntPos.y,downIntPos.x-lastIntPos.x+1,lastIntPos.y-downIntPos.y+1);
     break;
   }
+
   if(downIntPos.x <= intPos.x  && downIntPos.y <= intPos.y ){
     
   uictx.fillRect(downIntPos.x,downIntPos.y,intPos.x-downIntPos.x+1,intPos.y-downIntPos.y+1);
+UpdateSelectPoints(downIntPos,intPos,downIntPos,intPos);
+  //SelectPoints[1].style.top=(downIntPos.y+intPos.x)/2/resScale-8+"px"; 
   LastDir=0;
   }
   else if(downIntPos.x > intPos.x  && downIntPos.y > intPos.y ){
    
   uictx.fillRect(intPos.x,intPos.y,downIntPos.x-intPos.x+1,downIntPos.y-intPos.y+1);
+  UpdateSelectPoints(intPos,downIntPos,intPos,downIntPos);
+
+  //SelectPoints[1].style.top=(downIntPos.y+intPos.x)/2/resScale-8+"px"; 
   LastDir=1;
   } 
   else if(downIntPos.x <= intPos.x  && downIntPos.y > intPos.y ){
    
   uictx.fillRect(downIntPos.x,intPos.y,intPos.x-downIntPos.x+1,downIntPos.y-intPos.y+1);
+  UpdateSelectPoints(downIntPos,intPos,intPos,downIntPos);
+  //SelectPoints[1].style.top=(downIntPos.y+intPos.x)/2/resScale-8+"px"; 
   LastDir=2;
   }
   else if(downIntPos.x > intPos.x  && downIntPos.y <= intPos.y ){
    
   uictx.fillRect(intPos.x,downIntPos.y,downIntPos.x-intPos.x+1,intPos.y-downIntPos.y+1);
+  UpdateSelectPoints(intPos,downIntPos,downIntPos,intPos);
+  //SelectPoints[1].style.top=(downIntPos.y+intPos.x)/2/resScale-8+"px"; 
   LastDir=3;
   } 
   
@@ -3174,8 +3404,9 @@ function SelectPr(){
   if(downIntPos.x <= upIntPos.x  && downIntPos.y <= upIntPos.y ){
     lrtb.left = downIntPos.x;lrtb.right=upIntPos.x;lrtb.top=downIntPos.y;lrtb.bottom=upIntPos.y;
     SelectArea = ctx.getImageData(downIntPos.x,downIntPos.y,upIntPos.x-downIntPos.x+1,upIntPos.y-downIntPos.y+1);
+    SelectAreaT=SelectArea;
     ctx.clearRect(downIntPos.x,downIntPos.y,upIntPos.x-downIntPos.x+1,upIntPos.y-downIntPos.y+1);
-    pctx.putImageData(new ImageData(SelectArea.data,upIntPos.x-downIntPos.x+1),downIntPos.x,downIntPos.y);
+    pctx.putImageData(new ImageData(SelectAreaT.data,upIntPos.x-downIntPos.x+1),downIntPos.x,downIntPos.y);
     SelectPos.x = downIntPos.x;   SelectPos.y = downIntPos.y; SelectPos.w=upIntPos.x-downIntPos.x+1; SelectPos.h=upIntPos.y-downIntPos.y+1;
     LastDir=0;
     }
@@ -3184,8 +3415,9 @@ function SelectPr(){
     //uictx.fillRect(upIntPos.x,upIntPos.y,downIntPos.x-upIntPos.x+1,downIntPos.y-upIntPos.y+1);
     lrtb.right = downIntPos.x;lrtb.left=upIntPos.x;lrtb.bottom=downIntPos.y;lrtb.top=upIntPos.y;
     SelectArea = ctx.getImageData(upIntPos.x,upIntPos.y,downIntPos.x-upIntPos.x+1,downIntPos.y-upIntPos.y+1);
+    SelectAreaT=SelectArea;
     ctx.clearRect(upIntPos.x,upIntPos.y,downIntPos.x-upIntPos.x+1,downIntPos.y-upIntPos.y+1);
-    pctx.putImageData(new ImageData(SelectArea.data,downIntPos.x-upIntPos.x+1),upIntPos.x,upIntPos.y);
+    pctx.putImageData(new ImageData(SelectAreaT.data,downIntPos.x-upIntPos.x+1),upIntPos.x,upIntPos.y);
     SelectPos.x = upIntPos.x;   SelectPos.y = upIntPos.y; SelectPos.w=downIntPos.x-upIntPos.x+1;SelectPos.h=downIntPos.y-upIntPos.y+1;
     LastDir=1;
     } 
@@ -3193,8 +3425,9 @@ function SelectPr(){
       lrtb.left = downIntPos.x;lrtb.right=upIntPos.x;lrtb.bottom=downIntPos.y;lrtb.top=upIntPos.y;
     //uictx.fillRect(downIntPos.x,upIntPos.y,upIntPos.x-downIntPos.x+1,downIntPos.y-upIntPos.y+1);
     SelectArea = ctx.getImageData(downIntPos.x,upIntPos.y,upIntPos.x-downIntPos.x+1,downIntPos.y-upIntPos.y+1);
+    SelectAreaT=SelectArea;
     ctx.clearRect(downIntPos.x,upIntPos.y,upIntPos.x-downIntPos.x+1,downIntPos.y-upIntPos.y+1);
-    pctx.putImageData(new ImageData(SelectArea.data,upIntPos.x-downIntPos.x+1),downIntPos.x,upIntPos.y);
+    pctx.putImageData(new ImageData(SelectAreaT.data,upIntPos.x-downIntPos.x+1),downIntPos.x,upIntPos.y);
     SelectPos.x = downIntPos.x;   SelectPos.y = upIntPos.y;SelectPos.w=upIntPos.x-downIntPos.x+1;SelectPos.h=downIntPos.y-upIntPos.y+1;
     LastDir=2;
     }
@@ -3203,8 +3436,9 @@ function SelectPr(){
     //uictx.fillRect(upIntPos.x,downIntPos.y,downIntPos.x-upIntPos.x+1,upIntPos.y-downIntPos.y+1);
     lrtb.right = downIntPos.x;lrtb.left=upIntPos.x;lrtb.top=downIntPos.y;lrtb.bottom=upIntPos.y;
     SelectArea = ctx.getImageData(upIntPos.x,downIntPos.y,downIntPos.x-upIntPos.x+1,upIntPos.y-downIntPos.y+1);
+    SelectAreaT=SelectArea;
     ctx.clearRect(upIntPos.x,downIntPos.y,downIntPos.x-upIntPos.x+1,upIntPos.y-downIntPos.y+1);
-    pctx.putImageData(new ImageData(SelectArea.data,downIntPos.x-upIntPos.x+1),upIntPos.x,downIntPos.y);
+    pctx.putImageData(new ImageData(SelectAreaT.data,downIntPos.x-upIntPos.x+1),upIntPos.x,downIntPos.y);
       SelectPos.x = upIntPos.x;   SelectPos.y = downIntPos.y;SelectPos.w=downIntPos.x-upIntPos.x+1;SelectPos.h=upIntPos.y-downIntPos.y+1;
     LastDir=3;
     } 
@@ -3215,7 +3449,8 @@ function MoveSelectedPr(relX,relY){
   pctx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
   uictx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
   SelectPos.x = SelectPos.x+relX;   SelectPos.y = SelectPos.y+relY;
-  pctx.putImageData(new ImageData(SelectArea.data,SelectPos.w),SelectPos.x,SelectPos.y);
+  UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
+  pctx.putImageData(new ImageData(SelectAreaT.data,SelectPos.w),SelectPos.x,SelectPos.y);
   uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
 
 }
@@ -3227,16 +3462,312 @@ function ConfirmSelect(){
   uictx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
   //ctx.putImageData(new ImageData(SelectArea.data,SelectPos.w),SelectPos.x,SelectPos.y);
   //putImageDataTransparent(ctx,SelectArea.data,SelectPos.x,SelectPos.y,SelectPos.w); 
-  putImageDataOptimized(ctx,SelectArea.data,SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+  putImageDataOptimized(ctx,SelectAreaT.data,SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
   SelectActive=false;
   SelectDragging=false;
  
   SQ_SAVE();
+  DisableSelectPoints();
+  ImageFlip.x=false;
+  ImageFlip.y=false;
 }
+function SelectResize_Check(X,Y,POSX,POSY,params,switchxy){
+
+  switch(switchxy){
+    case(0):
+if(X<intPos.x &&Y<intPos.y){
+    temp = params[0]+4;
+    if(temp > 7){temp-=8;}
+    ImageFlip.x = !ImageFlip.x ;
+    ImageFlip.y= !ImageFlip.y ;
+    params[0]=temp;//bottomright
+    SelectPos.x = X
+    SelectPos.y = Y;
+    SelectPos.w = intPos.x-POSX;
+    SelectPos.h = intPos.y-POSY;
+    br = true;
+   
+   
+    return; 
+  }
+  if(X<intPos.x){  
+    ImageFlip.x = !ImageFlip.x ;
+ 
+       temp = params[0]+2;
+    if(temp > 7){temp-=8;}
+    params[0]=temp;//topright
+  
+    //SelectArea = TempImg;
+  }
+  if(Y<intPos.y){ 
+   
+    ImageFlip.y= !ImageFlip.y ;
+      temp = params[0]+6;
+    if(temp > 7){temp-=8;}
+    params[0]=temp;//bottomleft
+    //SelectArea = TempImg;
+
+  }
+    break;
+    case(1):
+    if(X>intPos.x &&Y<intPos.y){
+      temp = params[0]+4;
+      if(temp > 7){temp-=8;}
+      
+      params[0]=temp;//bottomright
+      SelectPos.x = intPos.x;
+      SelectPos.y = Y;
+      SelectPos.w = intPos.x-POSX;
+      SelectPos.h = intPos.y-POSY;
+      br = true;
+      ImageFlip.x = !ImageFlip.x ;
+      ImageFlip.y= !ImageFlip.y ;
+      
+      return; 
+    }
+  
+     if(X>intPos.x ){
+      temp = params[0]+6;
+      if(temp > 7){temp-=8;}
+      params[0]=temp;//topright
+      ImageFlip.x = !ImageFlip.x ;
+   
+     
+    }
+  
+  
+    if(Y<intPos.y){
+        temp = params[0]+2;
+      if(temp > 7){temp-=8;}
+      params[0]=temp;//bottomleft
+     
+      ImageFlip.y= !ImageFlip.y ;
+
+    }
+    break;
+    case(2):
+    if(X<intPos.x &&Y>intPos.y){
+      temp = params[0]+4;
+      if(temp > 7){temp-=8;}
+      
+      params[0]=temp;//bottomright
+      SelectPos.x = X
+      SelectPos.y = intPos.y;
+      SelectPos.w = intPos.x-POSX;
+      SelectPos.h = intPos.y-POSY;
+      br = true;
+      ImageFlip.x = !ImageFlip.x ;
+    ImageFlip.y= !ImageFlip.y ;
+   
+      return; 
+    }
+    if(X<intPos.x){
+         temp = params[0]+6;
+      if(temp > 7){temp-=8;}
+      params[0]=temp;//topright
+      ImageFlip.x = !ImageFlip.x ;
+     
+      
+    }
+    if(Y>intPos.y){
+        temp = params[0]+2;
+      if(temp > 7){temp-=8;}
+      params[0]=temp;//bottomleft
+     
+      ImageFlip.y= !ImageFlip.y ;
+     
+    }
+    break;
+    case(3):
+    if(X>intPos.x &&Y>intPos.y){
+      temp = params[0]+4;
+      if(temp > 7){temp-=8;}
+      
+      params[0]=temp;//bottomright
+      SelectPos.x = intPos.x;
+      SelectPos.y = intPos.y;
+      SelectPos.w = intPos.x-POSX;
+      SelectPos.h = intPos.y-POSY;
+      br = true;
+      ImageFlip.x = !ImageFlip.x ;
+      ImageFlip.y= !ImageFlip.y ;
+    
+      return; 
+    }
+    if(X>intPos.x){
+         temp = params[0]+2;
+      if(temp > 7){temp-=8;}
+      params[0]=temp;//topright
+      ImageFlip.x = !ImageFlip.x ;
+    
+    
+    
+    }
+    if(Y>intPos.y){
+        temp = params[0]+6;
+      if(temp > 7){temp-=8;}
+      params[0]=temp;//bottomleft
+     
+      ImageFlip.y= !ImageFlip.y ;
+ 
+    }
+    break;
+  }
+  
+}
+function SelectResize_Check_SingleAxis(XY,AnchorPoint,params){
+if(!XY){//X
+ if(intPos.x <= AnchorPoint && params[0]==3){
+    params[0] = 7;//left
+    ImageFlip.x= !ImageFlip.x ;
+  }
+  if(intPos.x >= AnchorPoint&& params[0]==7){
+    params[0] = 3;//right
+    ImageFlip.x= !ImageFlip.x ;
+  }
+
+ 
+}else{//Y
+  if(intPos.y <= AnchorPoint && params[0]==5){
+    params[0] = 1;//top
+   
+    ImageFlip.y= !ImageFlip.y ;
+  }
+  if(intPos.y >= AnchorPoint && params[0]==1){
+    params[0] = 5;//bottom
+    
+    ImageFlip.y= !ImageFlip.y ;
+  }
+
+}
+ 
+
+
+}
+function SelectResize(params){
+  console.log(params[0]);
+  switch(params[0]){// which point
+case(0)://topleft
+
+SelectResize_Check(SelectPos.x+SelectPos.w,SelectPos.y+SelectPos.h,SelectPos.x,SelectPos.y,params,0);
+SelectResizeFromTo(SelectPos.x+SelectPos.w,SelectPos.y+SelectPos.h,intPos.x,intPos.y);
+
+break;
+
+case(1)://top
+
+SelectResize_Check_SingleAxis(true,SelectPos.y+SelectPos.h,params);
+SelectResizeFromTo(SelectPos.x+SelectPos.w,SelectPos.y+SelectPos.h,SelectPos.x,intPos.y);
+
+break;
+
+case(2)://topright
+
+
+SelectResize_Check(SelectPos.x,SelectPos.y+SelectPos.h,SelectPos.x,SelectPos.y,params,1);
+SelectResizeFromTo(SelectPos.x,SelectPos.y+SelectPos.h,intPos.x,intPos.y);
+break;
+
+
+case(3)://right
+
+SelectResize_Check_SingleAxis(false,SelectPos.x,params);
+SelectResizeFromTo(SelectPos.x,SelectPos.y+SelectPos.h,intPos.x,SelectPos.y);
+
+break;
+
+case(4)://bottomright
+
+SelectResize_Check(SelectPos.x,SelectPos.y,SelectPos.x,SelectPos.y,params,3);
+SelectResizeFromTo(SelectPos.x,SelectPos.y,intPos.x,intPos.y);
+break;
+case(5)://bottom
+
+SelectResize_Check_SingleAxis(true,SelectPos.y,params);
+SelectResizeFromTo(SelectPos.x+SelectPos.w,SelectPos.y,SelectPos.x,intPos.y);
+
+break;
+
+case(6)://bottomleft
+
+
+SelectResize_Check(SelectPos.x+SelectPos.w,SelectPos.y,SelectPos.x,SelectPos.y,params,2);
+SelectResizeFromTo(SelectPos.x+SelectPos.w,SelectPos.y,intPos.x,intPos.y);
+break;
+case(7)://left
+
+SelectResize_Check_SingleAxis(false,SelectPos.x+SelectPos.w,params);
+SelectResizeFromTo(SelectPos.x+SelectPos.w,SelectPos.y+SelectPos.h,intPos.x,SelectPos.y);
+
+break;
+
+
+
+  }
+ 
+}
+function SelectResizeFromTo(AnchorX,AnchorY,x,y){
+  pctx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+  uictx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+  
+  
+  
+  
+
+if(AnchorX< x){
+SelectPos.w = x-AnchorX;
+SelectPos.x = AnchorX;
+}else{
+  SelectPos.w = AnchorX-x;
+SelectPos.x = x;
+}
+if(AnchorY< y){
+  SelectPos.h = y-AnchorY;
+  SelectPos.y = AnchorY;
+  }else{
+    SelectPos.h = AnchorY-y;
+  SelectPos.y = y;
+  }
+lrtb.top = SelectPos.y;
+lrtb.bottom = SelectPos.y+SelectPos.h;
+lrtb.left = SelectPos.x;
+lrtb.right =  SelectPos.x+ SelectPos.w;
+
+
+
+  //change picture
+
+var tempImage = ImageTransform(SelectArea,SelectPos.w,SelectPos.h);
+
+
+
+
+
+
+
+//save
+  UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
+  pctx.putImageData(tempImage,SelectPos.x,SelectPos.y);
+  uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+
+SelectAreaT=tempImage;
+
+
+}
+
 //DRAW CODE
 function Draw(){
       //COLORPICKER//
- 
+ if(busy){
+  switch(busyTask){
+    case("SELECTRESIZE"):
+    SelectResize(busyParams);
+    break;
+  }
+
+
+  return;
+ }
   switch(hoveredON){ 
  
     case("colorpicker"):
@@ -3583,7 +4114,7 @@ ScrollUpdate();
 ctx.drawImage(img,0,0);
 if(SelectActive){
 
-  pctx.putImageData(SelectArea,SelectPos.x,SelectPos.y);
+  pctx.putImageData(SelectAreaT,SelectPos.x,SelectPos.y);
   uictx.fillStyle = selectFill;
   uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
   console.log(SelectPos);
@@ -3643,6 +4174,7 @@ Import.addEventListener("change",function(e){
 
   const Actx = canv.getContext("2d");  Actx.drawImage(image, 0, 0);
   SelectArea = Actx.getImageData(0,0,image.width,image.height);
+  SelectAreaT=SelectArea;
 
    SelectActive = true;
   SelectPos.x = 0;
@@ -3655,7 +4187,7 @@ Import.addEventListener("change",function(e){
   lrtb.bottom = image.height;//0+height
 
 
-  pctx.putImageData(SelectArea,0,0);
+  pctx.putImageData(SelectAreaT,0,0);
   uictx.fillStyle = selectFill;
   uictx.fillRect(0,0,image.width,image.height);
  
