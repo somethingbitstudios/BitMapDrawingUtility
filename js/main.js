@@ -1,17 +1,1012 @@
+//#region vars
+//#region global
 var temp = 0; //tempstorage for frog
 var TempImg;
 var ImageFlip = {x:false,y:false};
-
+var ImageVector = {x:0,y:0};
 
 var busy = false;
 var busyTask = "NONE";
 var busyParams = [];
 
-
 var br = false; //break?
-////////////
-//EXTERNAL//
-////////////
+
+
+var TICK = 0;
+let E;
+var Qindex = -1;
+var StateQueue = []; //max size- 32?
+var QueueSize = 128;
+var SQchanged = true;
+//#endregion
+//#region UI
+
+
+let LeftHidden = false;
+let UIUndo = document.getElementById("undo");
+UIUndo.addEventListener("click",SQ_UNDO);
+let UIRedo = document.getElementById("redo");
+UIRedo.addEventListener("click",SQ_REDO);
+let UILeft = document.getElementById("UIleft");
+let UILeftToggle = document.getElementById("left");
+UILeftToggle.addEventListener("click",function(x){
+if(LeftHidden){
+  UILeft.style.visibility = "visible";
+}else{
+  UILeft.style.visibility = "hidden";
+}
+LeftHidden = !LeftHidden;
+});
+let RightHidden = false;
+let UIRight = document.getElementById("UIright");
+let UIRightToggle = document.getElementById("right");
+UIRightToggle.addEventListener("click",function(x){
+if(RightHidden){
+  UIRight.style.visibility = "visible";
+}else{
+  UIRight.style.visibility = "hidden";
+}
+RightHidden = !RightHidden;
+});
+let Input_tick = document.getElementById("tick");
+Input_tick.addEventListener("input",function(e){
+  if(Input_tick.value < 2001 && Input_tick.value > -1){
+      TICK = Input_tick.value;
+  }else{
+    TICK = 0;
+    Input_tick.value = 0;
+  }
+
+
+});
+let Input_lnW = document.getElementById("lnW");
+Input_lnW.addEventListener("input",function(e){
+  if(Input_lnW.value < 1024 && Input_lnW.value > 0){
+    lineWidth = Input_lnW.value;
+}else{
+  lineWidth = 1;
+  Input_lnW.value = 1;
+}
+
+});
+
+    //FILE MENU//
+let New = document.getElementById("new");
+New.addEventListener("click",function(e){
+ctx.clearRect(0,0,resolution.x,resolution.y);  
+previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);   
+uiCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);   
+});
+let Resize = document.getElementById("resize");
+let UIResize = document.getElementById("UIres");
+Resize.addEventListener("click",function(e){
+  UIOptions.style.visibility = "hidden";
+  if(UIResize.style.visibility == "hidden"){
+    UIResize.style.visibility = "visible";
+    document.getElementById("resX").value = resolution.x;
+    document.getElementById("resY").value = resolution.y;
+  }else{
+    UIResize.style.visibility = "hidden";
+  }
+
+
+  
+});
+let Options = document.getElementById("options");
+let UIOptions = document.getElementById("UIopt");
+Options.addEventListener("click",function(e){
+  UIResize.style.visibility = "hidden";
+  if(UIOptions.style.visibility == "hidden"){
+    UIOptions.style.visibility = "visible";
+  //get values
+  }else{
+    UIOptions.style.visibility = "hidden";
+  }
+
+
+});
+document.getElementById("resizeconfirm").addEventListener("click",function(e){ 
+ 
+  var sx = Number(document.getElementById("resX").value);
+  var sy =  Number(document.getElementById("resY").value);
+var img = new Image();
+  canvas.toBlob(function(blob) {
+    const url = URL.createObjectURL(blob);
+  img.src = url;
+  });
+img.onload = function(){
+
+  canvasSize.x = sx;
+  canvasSize.y = sy
+  resolution.x = sx;
+  resolution.y = sy;
+
+  div.style.height = ""+canvasSize.y+"px";
+  div.style.width = ""+canvasSize.x+"px";
+  UpdateCanvas();
+  div.style.left = "119px";
+  div.style.top = "40px";
+  ChangeRes();
+ScrollUpdate();
+
+ctx.drawImage(img,0,0);
+if(SelectActive){
+
+  pctx.putImageData(SelectAreaT,SelectPos.x,SelectPos.y);
+  uictx.fillStyle = selectFill;
+  uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+  console.log(SelectPos);
+}
+}
+
+
+
+
+
+});
+let Save = document.getElementById("save");
+let OpenButton = document.getElementById("fileClick");
+let Open = document.getElementById("open");
+let ImportButton = document.getElementById("impClick");
+let Import = document.getElementById("import");
+Save.addEventListener("click",download);
+OpenButton.addEventListener("click",function(e){
+Open.click();
+});
+ImportButton.addEventListener("click",function(e){
+  Import.click();
+  });
+Open.addEventListener("change",function(e){
+  var image = new Image();
+  image.onload = function(){
+canvasSize.x = image.width;
+canvasSize.y = image.height;
+resolution.x = image.width;
+resolution.y = image.height;
+
+ChangeRes();
+ScrollUpdate();
+
+
+
+div.style.height = ""+canvasSize.y+"px";
+div.style.width = ""+canvasSize.x+"px";
+UpdateCanvas();
+
+ ctx.drawImage(image,0,0);
+  }
+  image.src = URL.createObjectURL(this.files[0]);
+  
+ 
+});
+Import.addEventListener("change",function(e){
+  ConfirmSelect();
+  
+  var image = new Image();
+  image.onload = function(){
+    
+  //make image selected
+  const canv = document.createElement("canvas");
+  canv.width = image.width;
+  canv.height = image.height;
+
+  const Actx = canv.getContext("2d");  Actx.drawImage(image, 0, 0);
+  SelectArea = Actx.getImageData(0,0,image.width,image.height);
+  SelectAreaT=SelectArea;
+
+   SelectActive = true;
+  SelectPos.x = 0;
+  SelectPos.y = 0;
+  SelectPos.w = image.width;
+  SelectPos.h = image.height;
+  lrtb.left = 0;  //not the same as pos
+  lrtb.top = 0;
+  lrtb.right = image.width;  //0+width
+  lrtb.bottom = image.height;//0+height
+
+
+  pctx.putImageData(SelectAreaT,0,0);
+  uictx.fillStyle = selectFill;
+  uictx.fillRect(0,0,image.width,image.height);
+  EnableSelectPoints();
+  }
+  image.src = URL.createObjectURL(this.files[0]);
+  
+ 
+});
+
+
+
+
+let select = false; //false=PRIMARY,true=SECONDARY
+let PRIMARYtoolSELECT;
+let SECONDARYtoolSELECT; 
+
+let Button_primary = document.getElementById("primary");
+let Button_secondary = document.getElementById("secondary");
+Button_primary.addEventListener("click",function(e) {
+  select = false;
+  Button_primary.classList.add("selectP");
+  Button_secondary.classList.remove("selectS");
+  });
+  Button_secondary.addEventListener("click",function(e) {
+    select = true;
+    Button_primary.classList.remove("selectP");
+    Button_secondary.classList.add("selectS");
+    });
+let Button_pencil = document.getElementById("pencil");
+let Button_line = document.getElementById("line");
+let Button_poly = document.getElementById("poly");
+let Button_fill = document.getElementById("fill");
+let Button_picker = document.getElementById("picker");
+let Button_select = document.getElementById("select");
+let Button_eraser = document.getElementById("eraser");
+PRIMARYtoolSELECT = Button_pencil;
+SECONDARYtoolSELECT = Button_eraser;
+
+let Menu_Tool = document.getElementById("toolmenu");
+      //FUNC//
+function CreateIcon(img,id){
+  let temp = document.createElement("button");
+  let imgobj = document.createElement("img");
+  imgobj.src = img;
+  imgobj.width = 48;
+  imgobj.height = 48;
+  temp.appendChild(imgobj);
+  temp.classList.add("icon");
+  temp.id = id;
+
+
+
+
+  //BUTTONCLICK
+  temp.addEventListener("click", function(e) {
+console.log(id);
+if(!select){
+  PRIMARY_MODE = id;
+}else{
+  SECONDARY_MODE = id;
+}
+
+  });
+  return temp;
+}
+
+
+
+
+document.getElementById("cancel_colorpicker").addEventListener("click",function(e){
+colorpicker.style.visibility = "hidden";
+});
+    //TOOLS//
+Button_pencil.addEventListener("click",function(e) {
+if(!select){
+PRIMARY = "pencil";
+}else{
+SECONDARY = "pencil";
+}
+
+UIbuttonCLICK(Button_pencil);
+
+});
+Button_line.addEventListener("click",function(e) {
+  if(!select){
+    PRIMARY = "line";
+    }else{
+    SECONDARY = "line";
+    }
+  UIbuttonCLICK(Button_line);
+  });
+  Button_poly.addEventListener("click",function(e) {
+    if(!select){
+      PRIMARY = "poly";
+      }else{
+      SECONDARY = "poly";
+      }
+    UIbuttonCLICK(Button_poly);
+    });
+    Button_fill.addEventListener("click",function(e) {
+      if(!select){
+        PRIMARY = "fill";
+        PRIMARY_MODE = "FILL_MODE_INST";
+        }else{
+        SECONDARY = "fill";
+        }
+      UIbuttonCLICK(Button_fill);
+      });
+      Button_picker.addEventListener("click",function(e) {
+        if(!select){
+          PRIMARY = "picker";
+          PRIMARY_MODE = "PICKER_TRANSPARENT";
+          }else{
+          SECONDARY = "picker";
+          }
+        UIbuttonCLICK(Button_picker);
+        });
+      Button_select.addEventListener("click",function(e) {
+        if(!select){
+          PRIMARY = "select";
+          }else{
+          SECONDARY = "select";
+          }
+        UIbuttonCLICK(Button_select);
+        });
+        Button_eraser.addEventListener("click",function(e) {
+          if(!select){
+            PRIMARY = "eraser";
+            }else{
+            SECONDARY = "eraser";
+            }
+          UIbuttonCLICK(Button_eraser);
+          });
+
+
+
+//#endregion
+//#region canvas
+    //VARS//
+var canvasSize = {x: 960,y: 600}
+var resolution = {x:240,y:150}
+var resScale = 0.25; //for mouse
+
+
+    //ELEMENTS//
+var uiCanvas = document.getElementById("uicanvas"); var uictx = uiCanvas.getContext("2d");
+
+var previewCanvas = document.getElementById("previewcanvas");var pctx = previewCanvas.getContext("2d");
+
+var canvas = document.getElementById("canvas");var ctx = canvas.getContext("2d");
+let background = document.getElementById("background");
+var div = document.getElementById("canvasdiv");
+div.style.height = ""+canvasSize.y+"px";
+div.style.width = ""+canvasSize.x+"px";
+//#endregion
+//#region palette
+let colorpalettes = [];//name is last item of arrays within
+let colorpaletteindex=0;
+let palettelist = document.getElementById("colorpalette_select");
+palettelist.onchange = function(){
+SavePalette(colorpaletteindex);
+Palette_clear();
+LoadPalette(palettelist.value);
+}
+//#endregion
+//#region tool
+
+
+  var selected = false; //false = primary,true = secondary
+var PRIMARY = "pencil";
+var PRIMARY_MODE = "PENCIL_MODE_BASIC";
+var lineWidth = 1;
+var lineCap = 'butt';
+var lineColor = "rgba(0,0,0,1)";
+
+var SECONDARY = "eraser";
+var SECONDARY_MODE = "ERASER_MODE_BASIC";
+var lineWidthS = 0.1;
+var lineCapS = 'butt';
+var lineColorS = "rgba(255,255,255,1)";
+
+var EditedColor = "";
+
+
+//#endregion
+//#region Select
+
+//SELECT UI
+const SelectPoints=[];
+SelectPoints.push(document.getElementById("SelectUpLeft"));
+SelectPoints.push(document.getElementById("SelectUp"));
+SelectPoints.push(document.getElementById("SelectUpRight"));
+SelectPoints.push(document.getElementById("SelectRight"));
+SelectPoints.push(document.getElementById("SelectDownRight"));
+SelectPoints.push(document.getElementById("SelectDown"));
+SelectPoints.push(document.getElementById("SelectDownLeft"));
+SelectPoints.push(document.getElementById("SelectLeft"));
+SelectPoints.push(document.getElementById("SelectRotate"));
+
+for(let i =0;i< SelectPoints.length;i++){
+  SelectPoints[i].onmouseover = function(){
+    hoveringON="points";
+  };
+  SelectPoints[i].onmouseout = function(){
+    hoveringON="none";
+  };
+  SelectPoints[i].onmousedown = function(){
+   busy=true;
+   busyTask="SELECTRESIZE";
+   busyParams = [];
+   busyParams.push(i);
+   ImageVector = {x:0,y:0};
+  };
+  SelectPoints[i].onmouseup = function(){
+    busy=false;
+  };
+}
+var selectFill ="rgba(100,150,255,0.4)";
+var SelectActive = false; //if true, area is  selected
+var SelectDragging = false;
+var SelectArea;
+var SelectAreaT;
+var SelectPos = {x:-1,y:-1,w:0,h:0};
+var LastDir = -1;
+//#endregion
+//#region 
+var polysides = 4;
+//#endregion
+//#region fill
+ var fillTool = false;
+var OS_canvas;
+var OS_fillColor;
+
+var tobefilledpos = [];
+var lastfilledpos = []; //also seeds
+var filledcolor;
+var lastfilledlenght = 0;
+var fillUpdate;
+var filling = false;
+
+
+
+var upSeeded = false;
+var downSeeded = false;
+
+//#endregion
+//#region colorpalette
+
+
+    //VARS//
+    var ColorCords = {x:255,y:0}
+var Color = "rgba(0,0,0,1)"; //color being modified
+var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
+
+    //ELEMENTS//
+const NewPalette = document.getElementById("newPalette");
+NewPalette.onmousedown = function(){
+  var pal = [];
+  InitializeColorPaletteOR(pal,"Custom");
+}
+const DeletePalette = document.getElementById("delPalette");
+DeletePalette.onmousedown = function(){
+  if(colorpalettes.length > 0){
+      
+      colorpalettes.splice(colorpaletteindex,1);
+    
+colorpaletteindex--;
+
+if(colorpaletteindex < 0){
+ colorpaletteindex=0;
+}
+if(colorpalettes.length == 0){
+  var pal = [];
+  InitializeColorPaletteOR(pal,"Custom");
+}
+
+ 
+ UpdatePaletteList();
+ SelectPalette(colorpaletteindex);
+ Palette_clear();
+ LoadPalette(colorpaletteindex);
+ Palette_clear();
+LoadPalette(palettelist.value);
+  }
+ 
+}
+
+//#endregion
+//#region colorpalette_UI
+
+const ImportFilePalette = document.getElementById("importFilePal");
+const ImportPaletteButton = document.getElementById("importPalette");
+
+ImportPaletteButton.addEventListener("click",function(){
+ImportFilePalette.click();
+});
+ImportFilePalette.addEventListener("change",function(){
+
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+   
+    ImportPalette(reader.result,this.files[0].name.split(".")[0]);ImportFilePalette.value = null;
+    
+  }, false);
+
+ 
+  reader.readAsText(this.files[0]);
+
+
+
+});
+
+const ImportFilePaletteOR = document.getElementById("importFilePalOR");
+const ImportPaletteButtonOR= document.getElementById("importPaletteOR");
+
+ImportPaletteButtonOR.addEventListener("click",function(){
+ImportFilePaletteOR.click();
+});
+ImportFilePaletteOR.addEventListener("change",function(){
+
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    
+    ImportPaletteOR(reader.result,this.files[0].name.split(".")[0]);
+    
+  }, false);
+
+ 
+  reader.readAsText(this.files[0]);
+
+
+
+});
+
+const SubtractFilePalette = document.getElementById("subtractFilePal");
+const SubtractPaletteButton = document.getElementById("subtractPalette");
+
+SubtractPaletteButton.addEventListener("click",function(){
+  SubtractFilePalette.click();
+});
+SubtractFilePalette.addEventListener("change",function(){
+
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+   
+    SubtractPalette(reader.result);SubtractFilePalette.value = null;
+    
+  }, false);
+
+ 
+  reader.readAsText(this.files[0]);
+
+
+
+});
+
+const ExportPaletteButton= document.getElementById("exportPalette");
+
+ExportPaletteButton.addEventListener("click",function(){
+ ExportPalette(colorpalettes[colorpaletteindex][colorpalettes[colorpaletteindex].length-1]);
+});
+    let hexElem = document.getElementById("hex");
+    let rgbaElem = document.getElementById("rgba");
+    let hslaElem = document.getElementById("hsla");
+let colorpickerBackground = document.getElementById("colorCanvasGradient"); //SATURATIONxLEVEL gradient
+let cpbtx = colorpickerBackground.getContext("2d");
+colorpickerBackground.width = 256;
+colorpickerBackground.height = 256;
+let huepickerBackground = document.getElementById("hueCanvasGradient"); //HUE gradient
+let htx = huepickerBackground.getContext("2d");
+huepickerBackground.width = 1;
+huepickerBackground.height = 360;
+let trpickerBackground = document.getElementById("trCanvasGradient"); //TRANSPARENTCY gradient
+let trtx = trpickerBackground.getContext("2d");
+trpickerBackground.width = 1;
+trpickerBackground.height = 360;
+
+    //UI//
+const PRIMARY_COLOR = document.getElementById("PRIMARYCOLORcanvas");
+PRIMARY_COLOR.width = 1;
+PRIMARY_COLOR.height = 1;
+PRIMARY_COLOR.addEventListener("click",function(e){
+  colorpicker.style.visibility = "visible";
+  ColorSelected = false;
+  InitializeColorPicker(false,lineColor);
+});
+const SECONDARY_COLOR = document.getElementById("SECONDARYCOLORcanvas");
+SECONDARY_COLOR.width = 1;
+SECONDARY_COLOR.height = 1;
+PRIMARY_COLOR.getContext("2d").fillStyle = "rgb(0,0,0)";
+PRIMARY_COLOR.getContext("2d").clearRect(0,0,1,1);
+PRIMARY_COLOR.getContext("2d").fillRect(0,0,1,1);
+SECONDARY_COLOR.getContext("2d").fillStyle = "rgb(255,255,255)";
+SECONDARY_COLOR.getContext("2d").clearRect(0,0,1,1);
+SECONDARY_COLOR.getContext("2d").fillRect(0,0,1,1);
+SECONDARY_COLOR.addEventListener("click",function(e){
+  colorpicker.style.visibility = "visible";
+  ColorSelected = true;
+  InitializeColorPicker(true,lineColorS);
+});
+const CurrentColor = document.getElementById("CurrentColor");
+CurrentColor.width = 1;
+CurrentColor.height = 1;
+CurrentColor.getContext("2d").fillStyle = "rgba(255,0,0,1)";
+CurrentColor.getContext("2d").fillRect(0,0,1,1);
+const styleCPE = getComputedStyle(document.querySelector('#colorpicker'));
+const colorpicker = document.getElementById("colorpicker");
+const ColorButtonNew = document.getElementById("ColorButtonNew");
+ColorButtonNew.addEventListener("click",function(){
+  Color = ALLToRGBA(Color);
+if(!ColorSelected){
+  lineColor = Color;
+  //PRIMARY_COLOR.style.backgroundColor = Color;
+  Color_set(false,Color);
+  Color_add(Color);
+  EditedColor=Color;
+  for(let i = 0; i < colors.length;i++){
+    colors[i].classList.remove("primaryColor");
+    colors[i].classList.remove("selected");
+    colors[i].classList.remove("bothColor");
+  }
+  colors[colors.length-1].classList.add("primaryColor");
+  oncolorleft=colors.length-1;
+  Color_last();
+}else{
+  lineColorS = Color;
+  //SECONDARY_COLOR.style.backgroundColor = Color;
+  Color_set(true,Color);
+  Color_add(Color);
+  
+  EditedColor=Color;
+  for(let i = 0; i < colors.length;i++){
+    colors[i].classList.remove("secondaryColor");
+    colors[i].classList.remove("selected");
+    colors[i].classList.remove("bothColor");
+  }
+  colors[colors.length-1].classList.add("secondaryColor");
+  oncolorright=colors.length-1;
+  Color_last();
+}
+});
+const ColorButtonEdit = document.getElementById("ColorButtonEdit");
+ColorButtonEdit.addEventListener("click",function(){
+
+  Color = ALLToRGBA(Color);
+if(!ColorSelected){
+  lineColor = Color;
+  //PRIMARY_COLOR.style.backgroundColor = Color;
+  Color_edit(EditedColor,Color,false);
+  EditedColor=Color;
+  Color_set(false,Color);
+}else{
+  lineColorS = Color;
+  Color_edit(EditedColor,Color,true);
+  EditedColor=Color;
+  //SECONDARY_COLOR.style.backgroundColor = Color;
+  Color_set(true,Color);
+}
+});
+
+
+
+document.getElementById("removeColorP").addEventListener("click",function(){
+  let fix = true;
+ if(colors.length==0){return;}
+ if(oncolorleft > colors.length-1){
+
+  oncolorleft = colors.length-1;
+  for(let i = 0; i < colors.length;i++){
+   
+    colors[i].classList.remove("primaryColor");
+    colors[i].classList.remove("bothColor");
+    colors[i].classList.remove("selected");
+  }
+  colors[oncolorleft].classList.add("primaryColor");
+  if(colors[oncolorleft].classList.contains("secondaryColor")){
+    colors[oncolorleft].classList.add("bothColor");
+  }
+  return;}
+  if(oncolorleft==oncolorright){
+ 
+    oncolorright+=999;
+    fix = false;
+  }
+
+  var child = colors[oncolorleft];
+
+  if(oncolorleft<colors.length-1){
+      document.getElementById("colorpalette").removeChild(child);
+      if(colors.length==0){return;}
+      lineColor = colors[oncolorleft].getAttribute("style").split(" ")[1].split(";")[0];
+      for(let i = 0; i < colors.length;i++){
+   
+        colors[i].classList.remove("primaryColor");
+        colors[i].classList.remove("bothColor");
+        colors[i].classList.remove("selected");
+      }
+      
+      colors[oncolorleft].classList.add("primaryColor");
+      if(colors[oncolorleft].classList.contains("secondaryColor")){
+        colors[oncolorleft].classList.add("bothColor");
+      }
+      Color_set(false,lineColor);
+      InitializeColorPicker(false,lineColor);
+      Update_Colors();
+      if(oncolorleft <= oncolorright){
+        oncolorright--;
+      }
+    return;
+  }
+  if(oncolorleft>0){
+     oncolorleft--;
+  }
+ 
+  
+  lineColor = colors[oncolorleft].getAttribute("style").split(" ")[1].split(";")[0];
+  for(let i = 0; i < colors.length;i++){
+   
+    colors[i].classList.remove("primaryColor");
+    colors[i].classList.remove("bothColor");
+    colors[i].classList.remove("selected");
+  }
+  colors[oncolorleft].classList.add("primaryColor");
+  if(colors[oncolorleft].classList.contains("secondaryColor")){
+    colors[oncolorleft].classList.add("bothColor");
+  }
+ Color_set(false,lineColor);
+  InitializeColorPicker(false,lineColor);
+  document.getElementById("colorpalette").removeChild(child);
+  if(oncolorright > colors.length-1 && fix){oncolorright = colors.length-1; return;}
+  if(oncolorleft > colors.length-1){oncolorleft = colors.length-1; return;}
+  Update_Colors();
+});
+document.getElementById("removeColorS").addEventListener("click",function(){
+  let fix = true;
+  if(colors.length==0){return;} if(oncolorright > colors.length-1){
+
+    oncolorright = colors.length-1;
+    for(let i = 0; i < colors.length;i++){
+      colors[i].classList.remove("secondaryColor");
+      colors[i].classList.remove("bothColor");
+      colors[i].classList.remove("selected");
+    }
+    colors[oncolorright].classList.add("secondaryColor");
+    if(colors[oncolorright].classList.contains("primaryColor")){
+      colors[oncolorright].classList.add("bothColor");
+    }
+    return;}
+    if(oncolorleft==oncolorright){
+    
+      oncolorleft+=999;
+      fix = false;
+    }
+  var child = colors[oncolorright];
+  
+
+  if(oncolorright<colors.length-1){
+      document.getElementById("colorpalette").removeChild(child);
+      if(colors.length==0){return;}
+      lineColorS = colors[oncolorright].getAttribute("style").split(" ")[1].split(";")[0];
+      colors[oncolorright].classList.add("secondaryColor");
+      if(colors[oncolorright].classList.contains("primaryColor")){
+        colors[oncolorright].classList.add("bothColor");
+      }
+      Color_set(true,lineColorS);
+      InitializeColorPicker(true,lineColorS);
+      Update_Colors();
+      if(oncolorright <= oncolorleft){
+        oncolorleft--;
+      }
+    return;
+  }
+  if(oncolorright>0){
+     oncolorright--;
+  }
+ 
+  
+  lineColorS = colors[oncolorright].getAttribute("style").split(" ")[1].split(";")[0];
+  colors[oncolorright].classList.add("secondaryColor");
+  if(colors[oncolorright].classList.contains("primaryColor")){
+    colors[oncolorright].classList.add("bothColor");
+  }
+ Color_set(true,lineColorS);
+  InitializeColorPicker(true,lineColorS);
+  document.getElementById("colorpalette").removeChild(child);
+  if(oncolorright > colors.length-1){oncolorright = colors.length-1; return;}
+  if(oncolorleft > colors.length-1 && fix){oncolorleft = colors.length-1; return;}
+  Update_Colors();
+});
+let hex = document.getElementById("hex");
+hex.addEventListener("focusout",function(){
+//validate
+if(hex.value.length == 7 || hex.value.length == 9){
+  if(hex.value.includes("#")){
+    var rgba = HEXtoRGBA(hex.value);
+ChangeColor(rgba);
+UpdateColorCode(rgba);
+
+      var huetemp = RGBAtoHSLA(rgba).split("hsla(")[1].split(")")[0].split(",")[0];
+      var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
+//console.log(huetemp);
+      UpdateColorPicker(hue);
+      UpdateWholeColorPicker(rgba);
+  }
+
+}
+});
+let rgba = document.getElementById("rgba");
+rgba.addEventListener("focusout",function(){
+//validate
+
+  if(rgba.value.includes("rgba(")||rgba.value.includes("rgb(")){
+    
+    ChangeColor(rgba.value);
+    UpdateColorCode(rgba.value);
+    
+          var huetemp = RGBAtoHSLA(rgba.value).split("hsla(")[1].split(")")[0].split(",")[0];
+          var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
+    //console.log(huetemp);
+          UpdateColorPicker(hue);
+          UpdateWholeColorPicker(rgba.value);
+    ChangeColor(rgba.value);
+  }
+});
+let hsla = document.getElementById("hsla");
+hsla.addEventListener("focusout",function(){
+//validate
+
+  if(hsla.value.includes("hsla(")||hsla.value.includes("hsl(")){
+
+
+    var rgba = HSLAtoRGBA(hsla.value);
+    ChangeColor(rgba);
+    UpdateColorCode(rgba);
+    
+          var huetemp = RGBAtoHSLA(rgba).split("hsla(")[1].split(")")[0].split(",")[0];
+          var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
+    //console.log(huetemp);
+          UpdateColorPicker(hue);
+          UpdateWholeColorPicker(rgba);
+  
+  }
+
+
+ 
+});
+
+
+
+
+let setcolor = "rbg(0,0,0,255)";
+let oncolor=-1; 
+let oncolorleft=-1;
+let oncolorright=-1;
+ let colors = document.getElementsByClassName("color");
+ let movedColor = null;
+ let movedColorSelection = null;
+ let movedIdx = null;
+ let movedColorObj = document.getElementById("movedColorObj");
+function Update_Colors(){
+  colors = document.getElementsByClassName("color");
+for (let i = 0; i < colors.length;i++){
+  colors[i].onmouseover = function() {
+    colors[i].classList.add("selected");
+  let color = colors[i].getAttribute("style");
+  color = color.split(" ")[1];
+  
+  color = color.split(";")[0];
+ 
+  setcolor = color;
+  oncolor = i;
+  }
+
+  colors[i].onmouseout = function(){
+    if(!middle){
+       oncolor = -1;
+    }
+   
+    colors[i].classList.remove("selected");
+  }
+  
+}
+}
+Update_Colors();
+
+
+
+
+var colrDown=false;
+
+//#endregion
+//#region mouse
+    //HOVER//
+let hoveringON;
+let hoveredON; //When mousedown
+document.getElementById("colorpalette").onmouseover = function(){
+  hoveringON = "colorpalette";
+  }
+document.getElementById("colorpalette").onmouseout = function(){
+    hoveringON = "none";
+    //oncolor = -1;
+    }
+uiCanvas.onmouseover = function(){
+hoveringON = "canvas";
+
+}
+uiCanvas.onmouseout = function(){
+hoveringON = "none";
+
+}
+background.onmouseover = function(){
+hoveringON = "background";
+}
+background.onmouseout = function(){
+//hoverBackground = false;
+hoveringON = "none";
+}
+
+//color mouse changes
+colorpickerBackground.onmouseover = function(){
+hoveringON = "colorpicker";
+}
+colorpickerBackground.onmouseout = function(){
+hoveringON = "none";
+}
+
+ let colorPickerCursor = document.getElementById("gradientcursor");
+colorPickerCursor.onmouseover = function(){
+  hoveringON = "colorpicker";
+  }
+  colorPickerCursor.onmouseout = function(){
+    hoveringON = "none";
+    }
+
+
+    huepickerBackground.onmouseover = function(){
+      hoveringON = "huepicker";
+      }
+      huepickerBackground.onmouseout = function(){
+      hoveringON = "none";
+      }
+      
+       let huePickerCursor = document.getElementById("huecursor");
+      huePickerCursor.onmouseover = function(){
+        hoveringON = "huepicker";
+        }
+        colorPickerCursor.onmouseout = function(){
+          hoveringON = "none";
+          }
+
+
+
+    trpickerBackground.onmouseover = function(){
+      hoveringON = "trpicker";
+      }
+      trpickerBackground.onmouseout = function(){
+      hoveringON = "none";
+      }
+      
+       let trPickerCursor = document.getElementById("trcursor");
+      trPickerCursor.onmouseover = function(){
+        hoveringON = "trpicker";
+        }
+        colorPickerCursor.onmouseout = function(){
+          hoveringON = "none";
+          }
+      //MOUSE//
+var DoubleClickSpeed = 130;//ms
+var left = false;
+var leftDouble = false;
+var leftClicked = false;
+var middle = false;
+var right = false;
+var rightDouble = false;
+var rightClicked = false;
+var canvasOffset = {x:0,y:0}
+
+var pos = {x:0,y:0}//current position on canvas
+var intPos = {x:0,y:0}//int
+var lastPos = {x:-1, y:-1}//last position on canvas
+var downPos = {x:0, y:0}//last clicked position on canvas
+var downIntPos = {x:0,y:0}//int
+var upPos = {x:0, y:0}//last let go position on canvas
+var upIntPos = {x:0,y:0}//int
+let perfectPos = {x:0,y:0}//last confirmed pixel on canvas
+let previewPos = {x:0,y:0}//last previewed pixel in pp pencil mode
+let lastIntPos = {x:0,y:0}
+var AbsPos = {x:0,y:0}
+var AbsLastPos = {x:0,y:0}
+
+//#endregion
+//#region select
+var lrtb = {left:1,right:-1,top:1,bottom:-1};
+//#endregion
+//#endregion
+
+//#region functions
+//#region external
 function sleep(millis)
 {
     var date = new Date();
@@ -33,11 +1028,8 @@ function arrayRemove(arr, value) {
       return ele != value; 
   });
 }
-
-
-//////////////
-//CONVERSION//
-//////////////
+//#endregion
+//#region conversion
 function BinaryToHex(string){
   switch(string){
   case("0000"):
@@ -353,9 +1345,77 @@ function ColorsToArray(){
   }
   return arr;
 }
-/////////
-//IMAGE//
-/////////
+//#endregion
+//#region main
+function SQ_SAVE(){
+
+  var canv = ctx.getImageData(0,0,resolution.x,resolution.y).data;
+if(Qindex != -1){
+  StateQueue.splice(Qindex+1,StateQueue.length-Qindex);
+}
+
+  StateQueue.push( canv);
+  if(StateQueue.length > QueueSize){
+    StateQueue.splice(0,1);
+  }
+  Qindex = -1;  
+ // console.log(StateQueue.length);
+}
+function SQ_UNDO(){
+  DisableSelectPoints();
+  if(StateQueue.length<2){return;}
+if(Qindex==-1){
+  Qindex=StateQueue.length-2;
+}else if (Qindex>0){
+Qindex--;
+}
+
+
+ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
+}
+function SQ_REDO(){
+  DisableSelectPoints();
+  if(Qindex == -1){return;}
+  if(Qindex == StateQueue.length-1){Qindex=-1;return;}
+  Qindex++;
+
+  ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
+}
+//#endregion
+//#region array
+
+function ColorArray_Equal(arr1,arr2,tolerance){
+  var same = 0;
+  arr1[0] = Number(arr1[0]);
+  arr1[1] = Number(arr1[1]);
+  arr1[2] = Number(arr1[2]);
+
+  arr2[0] = Number(arr2[0]);
+  arr2[1] = Number(arr2[1]);
+  arr2[2] = Number(arr2[2]);
+  if(arr1[0]>=arr2[0]-tolerance && arr1[0]<=arr2[0]+tolerance){same++;}
+  if(arr1[1]>=arr2[1]-tolerance && arr1[1]<=arr2[1]+tolerance){same++;}
+  if(arr1[2]>=arr2[2]-tolerance && arr1[2]<=arr2[2]+tolerance){same++;}
+  if(same == 3){
+    return true;
+  }return false;
+}
+function ArrayEqual(arr1,arr2){
+  if(arr1.length != arr2.length){
+    return false;
+  }
+  for(let i = 0; i < arr1.length;i++){
+    if(arr1[i]!=arr2[i]){
+      return false;
+    }
+  }
+  return true;
+  }
+  
+  
+
+//#endregion
+//#region image
 function ImageTransform(img,rX,rY,flipX,flipY){
   if(rX == 0 || rY == 0){return new ImageData(1,1)}
  var imagedt = new ImageData(rX,rY);
@@ -420,18 +1480,49 @@ if(ImageFlip.x == false && ImageFlip.y==false){
 
 return imagedt;
 }
+//#endregion
+//#region imagedata to ctx
 
+  function putImageDataTransparent(ctx,array,x,y,w){
+    
+    
+    for(let r = 0; r < array.length/4/w;r++){
+       for(let j = 0; j < w;j++){
+        let i = r*4*w+j*4
+        ctx.fillStyle = "rgba("+array[i]+","+array[i+1]+","+array[i+2]+","+array[i+3]/255+")";
+        ctx.fillRect(x+j,y+r,1,1);
+      }
+    }
+     
+    
+    
+   
+  }
+function putImageDataOptimized(ctx,array,x,y,w,h){
+var ctxArray = ctx.getImageData(x,y,w,h).data;
 
+for(let i = 0;i < array.length;i+=4){
 
-//palette//
-let colorpalettes = [];//name is last item of arrays within
-let colorpaletteindex=0;
-let palettelist = document.getElementById("colorpalette_select");
-palettelist.onchange = function(){
-SavePalette(colorpaletteindex);
-Palette_clear();
-LoadPalette(palettelist.value);
+var tr0 = ctxArray[i+3]/255;
+var tr1 = array[i+3]/255;
+array[i] = ((array[i]*tr1)+(ctxArray[i]*((1-tr1)*tr0)));
+array[i+1] = ((array[i+1]*tr1)+(ctxArray[i+1]*((1-tr1)*tr0)));
+array[i+2] = ((array[i+2]*tr1)+(ctxArray[i+2]*((1-tr1)*tr0)));
+if(array[i+3]+ctxArray[i+3] > 255){
+  array[i+3] = 255;
+}else{
+  array[i+3] = array[i+3]+ctxArray[i+3]; 
 }
+
+}
+ctx.putImageData(new ImageData(array,w),x,y);
+
+}
+
+
+//#endregion
+//#region palette
+
 function AddPaletteToList(cs,name){
   cs.push(name);
 colorpalettes.push(cs);
@@ -507,101 +1598,8 @@ function LoadPalette(index){
   color = color.split(";")[0];
   Color_set(true,color);
 }
-/////////////////////
-//FILE MANIPULATION//
-/////////////////////
+//#region file manipulation
 function ImportPalette(text,name){
-var lines = text.split("\n");
-
-var cArray = [];
-for(let i = 0;i<lines.length;i++){
-  if(lines[i].includes("//")){
-    if(lines[i].split("//")[0].trim().length > 0){
-       cArray.push(lines[i].split("//")[0]);
-    }
-   
- 
-  }
-  else if(lines[i].trim().length > 0){
-
-  
-  cArray.push(lines[i]);
- 
-  }
-  
-
-  
-
-};
-
-InitializeColorPalette(cArray,name);
-}
-function SubtractPalette(text){
-  var lines = text.split("\n");
-
-  var cArray = [];
-  for(let i = 0;i<lines.length;i++){
-    if(lines[i].includes("//")){
-      if(lines[i].split("//")[0].trim().length > 0){
-         cArray.push(lines[i].split("//")[0]);
-      }
-     
-   
-    }
-    else if(lines[i].trim().length > 0){
-  
-    //convert cArray to rgba to compare
-    cArray.push(ALLToRGBA(lines[i]));
-   
-    }
-    
-  
-    
-  
-  }
- 
-
-  
-
-  var bArray = [];
-  for(let i = 0; i < colors.length;i++){
-    bArray.push(colors[i].getAttribute("style").split(" ")[1].split(";")[0]);
-  }
-
-
-  bArray = bArray.filter(function(val,idx,array){
-    if(cArray.includes(val)){
-      //return val;
-      cArray = arrayRemove(cArray,val);
-    }else{
-      return val;
-    }
-  });
-
- 
-  bArray.push( colorpalettes[colorpaletteindex][ colorpalettes[colorpaletteindex].length-1]);
-   
-  colorpalettes[colorpaletteindex] = bArray;
-
-  Palette_clear();
-  LoadPalette(colorpaletteindex)
-  }
-function ExportPalette(name){
-  var cArray = [];
-  for(let i = 0; i < colors.length;i++){
-    cArray.push(colors[i].getAttribute("style").split(" ")[1].split(";")[0]);
-  }
-
-
-  var element = document.createElement('a');
-  element.setAttribute('href', 'data:;charset=utf-8,' + encodeURIComponent(cArray.join("\n")));
-  element.setAttribute('download', name+".cpt");
-  element.style.display = 'none';
-  document.body.appendChild(element);
-  element.click();
-  document.body.removeChild(element);
-}
-function ImportPaletteOR(text,name){
   var lines = text.split("\n");
   
   var cArray = [];
@@ -623,897 +1621,277 @@ function ImportPaletteOR(text,name){
   
     
   
-  }
-  
-  InitializeColorPaletteOR(cArray,name);
-  }
-////////
-//MAIN//
-////////
-    //VARS//
-var TICK = 0;
-let E;
-var Qindex = -1;
-var StateQueue = []; //max size- 32?
-var SQchanged = true;
-function SQ_SAVE(){
-
-  var canv = ctx.getImageData(0,0,resolution.x,resolution.y).data;
-if(Qindex != -1){
-  StateQueue.splice(Qindex+1,StateQueue.length-Qindex);
-}
-
-  StateQueue.push( canv);
-  if(StateQueue.length > 64){
-    StateQueue.splice(0,1);
-  }
-  Qindex = -1;  
- // console.log(StateQueue.length);
-}
-function SQ_UNDO(){
-  DisableSelectPoints();
-  if(StateQueue.length<2){return;}
-if(Qindex==-1){
-  Qindex=StateQueue.length-2;
-}else if (Qindex>0){
-Qindex--;
-}
-
-
-ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
-}
-function SQ_REDO(){
-  DisableSelectPoints();
-  if(Qindex == -1){return;}
-  if(Qindex == StateQueue.length-1){Qindex=-1;return;}
-  Qindex++;
-
-  ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
-}
-
-    
-
-function ColorArray_Equal(arr1,arr2,tolerance){
-  var same = 0;
-  arr1[0] = Number(arr1[0]);
-  arr1[1] = Number(arr1[1]);
-  arr1[2] = Number(arr1[2]);
-
-  arr2[0] = Number(arr2[0]);
-  arr2[1] = Number(arr2[1]);
-  arr2[2] = Number(arr2[2]);
-  if(arr1[0]>=arr2[0]-tolerance && arr1[0]<=arr2[0]+tolerance){same++;}
-  if(arr1[1]>=arr2[1]-tolerance && arr1[1]<=arr2[1]+tolerance){same++;}
-  if(arr1[2]>=arr2[2]-tolerance && arr1[2]<=arr2[2]+tolerance){same++;}
-  if(same == 3){
-    return true;
-  }return false;
-}
-
-//////////
-//CANVAS//
-//////////
-
-    //VARS//
-var canvasSize = {x: 960,y: 600}
-var resolution = {x:240,y:150}
-var resScale = 0.25; //for mouse
-
-
-    //ELEMENTS//
-var uiCanvas = document.getElementById("uicanvas"); var uictx = uiCanvas.getContext("2d");
-
-var previewCanvas = document.getElementById("previewcanvas");var pctx = previewCanvas.getContext("2d");
-
-var canvas = document.getElementById("canvas");var ctx = canvas.getContext("2d");
-let background = document.getElementById("background");
-var div = document.getElementById("canvasdiv");
-div.style.height = ""+canvasSize.y+"px";
-div.style.width = ""+canvasSize.x+"px";
-
-    //FUNC//
-function UpdateCanvas(){
-  canvas.height = resolution.y;
-  canvas.width = resolution.x;
-  previewCanvas.height = resolution.y;
-  previewCanvas.width = resolution.x;
-  uiCanvas.height = resolution.y;
-  uiCanvas.width = resolution.x;
-}
-function ChangeRes(){
-  if(resolution.x > resolution.y){
-    resScale =  resolution.x / canvasSize.x;
-  }
-  else{
-    resScale =  resolution.y / canvasSize.y; 
-  }
-canvas.style.backgroundSize = 200/resolution.x  + "%";
-}
-function ScrollUpdate(){
-var rect = canvas.getBoundingClientRect();
- canvasOffset.x = rect.left;
- canvasOffset.y = rect.top;
-}
-
-function MoveCanvas(){
-
-  div.style.left = canvasOffset.x + ((AbsPos.x-AbsLastPos.x))+"px";
-  div.style.top = canvasOffset.y +((AbsPos.y-AbsLastPos.y))+"px";
-  
-  ScrollUpdate();
-  }
-
-////////
-//TOOL//
-////////
-    //VARS//
-  var selected = false; //false = primary,true = secondary
-var PRIMARY = "pencil";
-var PRIMARY_MODE = "PENCIL_MODE_BASIC";
-var lineWidth = 1;
-var lineCap = 'butt';
-var lineColor = "rgba(0,0,0,1)";
-
-var SECONDARY = "eraser";
-var SECONDARY_MODE = "ERASER_MODE_BASIC";
-var lineWidthS = 0.1;
-var lineCapS = 'butt';
-var lineColorS = "rgba(255,255,255,1)";
-
-var EditedColor = "";
-
-
-
-
-//SELECT UI
-const SelectPoints=[];
-SelectPoints.push(document.getElementById("SelectUpLeft"));
-SelectPoints.push(document.getElementById("SelectUp"));
-SelectPoints.push(document.getElementById("SelectUpRight"));
-SelectPoints.push(document.getElementById("SelectRight"));
-SelectPoints.push(document.getElementById("SelectDownRight"));
-SelectPoints.push(document.getElementById("SelectDown"));
-SelectPoints.push(document.getElementById("SelectDownLeft"));
-SelectPoints.push(document.getElementById("SelectLeft"));
-SelectPoints.push(document.getElementById("SelectRotate"));
-
-for(let i =0;i< SelectPoints.length;i++){
-  SelectPoints[i].onmouseover = function(){
-    hoveringON="points";
   };
-  SelectPoints[i].onmouseout = function(){
-    hoveringON="none";
-  };
-  SelectPoints[i].onmousedown = function(){
-   busy=true;
-   busyTask="SELECTRESIZE";
-   busyParams = [];
-   busyParams.push(i);
-  };
-  SelectPoints[i].onmouseup = function(){
-    busy=false;
-  };
-}
-var selectFill ="rgba(100,150,255,0.4)";
-var SelectActive = false; //if true, area is  selected
-var SelectDragging = false;
-var SelectArea;
-var SelectAreaT;
-var SelectPos = {x:-1,y:-1,w:0,h:0};
-var LastDir = -1;
-//copy paste atd
-
-
-
-    //fill//
-
-var fillTool = false;
-
-
-
-
-    //poly//
-var polysides = 4;
-
-
-//OS-off screen fill
-
-var OS_canvas;
-var OS_fillColor;
-
-var tobefilledpos = [];
-var lastfilledpos = []; //also seeds
-var filledcolor;
-var lastfilledlenght = 0;
-var fillUpdate;
-var filling = false;
-
-
-
-var upSeeded = false;
-var downSeeded = false;
-
-function PolyPreview(){
-  switch(polysides){
-    case(2):
-   
-    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
-
-    break;
-    case(4):
-   //rect
-    
-    Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth);
-
-    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth);
-
-    Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-
-    Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-
-
-    Line(true,pctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth);
-
-    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth);
-
-    Line(true,pctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
-    if(intPos.x != downIntPos.x || intPos.y != downIntPos.y ){
-          pctx.clearRect(intPos.x,intPos.y,1,1);
-    }
-
-    Line(true,pctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth);
-
-    break;
+  
+  InitializeColorPalette(cArray,name);
   }
+  function SubtractPalette(text){
+    var lines = text.split("\n");
   
-  }
-
-
-  function PolyDraw(){
-    switch(polysides){
-      case(2):
-     
-      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
-  
-      break;
-      case(4):
-     //rect
-      
-      Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth);
-  
-      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth);
-  
-      Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-
-      Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-      pctx.clearRect(downIntPos.x,downIntPos.y,1,1);
-      ctx.fillRect(downIntPos.x,downIntPos.y,1,1);
-      Line(true,ctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth);
-  
-      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth);
-  
-      Line(true,ctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
-      ctx.clearRect(intPos.x,intPos.y,1,1);
-      Line(true,ctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth);
-  
-      break;
-    }
-    
-    }
-  
-function FourWayFill(){
-  lastfilledlenght = lastfilledpos.length;
-  for(let i = 0;i< lastfilledlenght;i++){
-      FillAround();
-      
-  }
-  if(tobefilledpos.length==0){
-    clearInterval(fillUpdate);
-  filling = false;
-  }else{
-  
-    lastfilledpos = tobefilledpos;
-    tobefilledpos = [];
-  }
-}
-
-
-function ScanlineFill(){
-  //XY expected to be most left, different color right of the x
-  for(let i = 0; i < lastfilledpos.length;i++){
-      downSeeded =  false;
-  upSeeded = false;
-    FillLine(lastfilledpos[0]);
-    lastfilledpos.splice(0, 1);
-  }
-  if(lastfilledpos.length < 1){
-    //clearInterval(fillUpdate);
-   //ctx.putImageData(OS_canvas,0,0);
-    //console.log("complete");
-    filling = false;
-    clearInterval(fillUpdate);
-  
-  }
-
-}
-
-function OS_ScanlineFill(){
-   //XY expected to be most left, different color right of the x
-   for(let i = 0; i < lastfilledpos.length;i++){
-    downSeeded =  false;
-upSeeded = false;
-  OS_FillLine(lastfilledpos[0]);
-  lastfilledpos.splice(0, 1);
-}
-if(lastfilledpos.length < 1){
-  //clearInterval(fillUpdate);
-  ctx.putImageData(OS_canvas,0,0);
-  //console.log("complete");
-  filling = false;
-
-}
-
-}
-function FillLine(xy){
-while( String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor) && xy.x < resolution.x){
-  ctx.fillRect(xy.x,xy.y,1,1);
-
-  if(xy.y+1 < resolution.y){
-    
-    if(String(ctx.getImageData(xy.x,xy.y+1,1,1).data)==String(filledcolor)){ 
+    var cArray = [];
+    for(let i = 0;i<lines.length;i++){
+      if(lines[i].includes("//")){
+        if(lines[i].split("//")[0].trim().length > 0){
+           cArray.push(lines[i].split("//")[0]);
+        }
        
-      if(!downSeeded){
-        var tempCords = {x:xy.x,y:xy.y+1};
-        while (String(ctx.getImageData(tempCords.x,tempCords.y,1,1).data)==String(filledcolor)){
-
-          if(tempCords.x <= 0){
-            tempCords.x--;
-            break;
-               
-          }tempCords.x--;
-          
-        
-        }
-        tempCords.x++;
-        lastfilledpos.push({x:tempCords.x,y:tempCords.y});
-        downSeeded = true;
-      }
-  }else{
-    downSeeded = false;
-  }
-  }
-  if(xy.y > 0){
-     if(String(ctx.getImageData(xy.x,xy.y-1,1,1).data)==String(filledcolor)){
-      if(!upSeeded){
-        var tempCords = {x:xy.x,y:xy.y-1};
-        while (String(ctx.getImageData(tempCords.x,tempCords.y,1,1).data)==String(filledcolor)){
-
-          if(tempCords.x <= 0){
-            tempCords.x--;
-            break;
-               
-          }tempCords.x--;
-          
-        
-        }
-        tempCords.x++;
-        lastfilledpos.push({x:tempCords.x,y:tempCords.y});
-    upSeeded = true;
-      }
-  }else{
-    upSeeded = false;
-  }
-  }
-  xy.x++;
-}
-}
-function ArrayEqual(arr1,arr2){
-if(arr1.length != arr2.length){
-  return false;
-}
-for(let i = 0; i < arr1.length;i++){
-  if(arr1[i]!=arr2[i]){
-    return false;
-  }
-}
-return true;
-}
-function OS_GetPixel(xy){
-  //return OS_canvas[]
-  return [OS_canvas.data[(xy.x+xy.y*resolution.x)* 4],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+1],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+2],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+3]];
-}
-function OS_SetPixel(xy,color,add){
-  //console.log("set");
-  if(!add){ // with no regard to alpha
-      OS_canvas.data[(xy.x+xy.y*resolution.x)* 4] = color[0];
-  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+1] = color[1];
-  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+2] = color[2];
-  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+3] = color[3];
-  }else{
-
-  }
-
-}
-function OS_FillLine(xy){
-//ctx.get... = OS_GetPixel ale je to array
-//console.log(filledcolor);
-//console.log(OS_GetPixel(xy));
-  while( ArrayEqual(OS_GetPixel(xy),filledcolor) && xy.x < resolution.x){
-   OS_SetPixel(xy,OS_fillColor,false);
-  
-    if(xy.y+1 < resolution.y){
-       var tempCords = {x:xy.x,y:xy.y+1};
-      if(ArrayEqual(OS_GetPixel(tempCords),filledcolor)){ 
-         
-        if(!downSeeded){
-         
-          while (ArrayEqual(OS_GetPixel(tempCords),filledcolor)){
-  
-            if(tempCords.x <= 0){
-              tempCords.x--;
-              break;
-                 
-            }tempCords.x--;
-            
-          
-          }
-          tempCords.x++;
-          lastfilledpos.push({x:tempCords.x,y:tempCords.y});
-          downSeeded = true;
-        }
-    }else{
-      downSeeded = false;
-    }
-    }
-    if(xy.y > 0){ 
-        tempCords = {x:xy.x,y:xy.y-1};
-        if(ArrayEqual(OS_GetPixel(tempCords),filledcolor)){ 
-        if(!upSeeded){
-       
-          while (ArrayEqual(OS_GetPixel(tempCords),filledcolor)){
-  
-            if(tempCords.x <= 0){
-              tempCords.x--;
-              break;
-                 
-            }tempCords.x--;
-            
-          
-          }
-          tempCords.x++;
-          lastfilledpos.push({x:tempCords.x,y:tempCords.y});
-      upSeeded = true;
-        }
-    }else{
-      upSeeded = false;
-    }
-    }
-    xy.x++;
-  }
-}
-function FillAround(){
-  let cordX = lastfilledpos[lastfilledpos.length-1].x;
-  let cordY = lastfilledpos[lastfilledpos.length-1].y;
-
-  lastfilledpos.pop();  
-  if(cordX>=resolution.x||cordY>=resolution.y||cordX<0||cordY<0){
-    
-     return;
      
-   }
-  
-  FillPixel(cordX+1,cordY);
-  FillPixel(cordX-1,cordY);
-  FillPixel(cordX,cordY+1);
-  FillPixel(cordX,cordY-1);
-  
-}
-  function FillPixel(cX,cY){
-   
-   
-       var pixel = ctx.getImageData(cX,cY,1,1).data;
-
-    //if(pixel[0]==filledcolor[0]&&pixel[1]==filledcolor[1]&&pixel[2]==filledcolor[2]&&pixel[3]==filledcolor[3]){
-     if(String(pixel)==String(filledcolor)){
-      ctx.fillRect(cX,cY,1,1);
-      tobefilledpos.push({x:cX,y:cY});
+      }
+      else if(lines[i].trim().length > 0){
+    
+      //convert cArray to rgba to compare
+      cArray.push(ALLToRGBA(lines[i]));
+     
+      }
+      
+    
+      
+    
     }
+   
+  
+    
+  
+    var bArray = [];
+    for(let i = 0; i < colors.length;i++){
+      bArray.push(colors[i].getAttribute("style").split(" ")[1].split(";")[0]);
+    }
+  
+  
+    bArray = bArray.filter(function(val,idx,array){
+      if(cArray.includes(val)){
+        //return val;
+        cArray = arrayRemove(cArray,val);
+      }else{
+        return val;
+      }
+    });
+  
+   
+    bArray.push( colorpalettes[colorpaletteindex][ colorpalettes[colorpaletteindex].length-1]);
+     
+    colorpalettes[colorpaletteindex] = bArray;
+  
+    Palette_clear();
+    LoadPalette(colorpaletteindex)
+    }
+  function ExportPalette(name){
+    var cArray = [];
+    for(let i = 0; i < colors.length;i++){
+      cArray.push(colors[i].getAttribute("style").split(" ")[1].split(";")[0]);
+    }
+  
+  
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:;charset=utf-8,' + encodeURIComponent(cArray.join("\n")));
+    element.setAttribute('download', name+".cpt");
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
+  function ImportPaletteOR(text,name){
+    var lines = text.split("\n");
+    
+    var cArray = [];
+    for(let i = 0;i<lines.length;i++){
+      if(lines[i].includes("//")){
+        if(lines[i].split("//")[0].trim().length > 0){
+           cArray.push(lines[i].split("//")[0]);
+        }
+       
+     
+      }
+      else if(lines[i].trim().length > 0){
+    
+      
+      cArray.push(lines[i]);
+     
+      }
+      
+    
+      
+    
     }
     
+    InitializeColorPaletteOR(cArray,name);
+    }
+    //#endregion
+//#endregion
+//#region colorpalette
+
+
+function UpdateColor(color){
+  color = ALLToRGBA(color);
+  //console.log(color);
  
+  if(!selected){
+    lineColor = color;
+    PRIMARY_COLOR.style.backgroundColor = Color;
   
+  }else{
+    lineColorS = color;
+    SECONDARY_COLOR.style.backgroundColor = color;
+  }
 
+ ColorPickerUpdate(color);
+  //ChangeColor(color);
+  //UpdateColorCode(color);
 
-
-
-////////////////
-//COLORPALETTE//
-////////////////
-    //FUNC//
-    function UpdateColor(color){
-      color = ALLToRGBA(color);
-      //console.log(color);
-     
-      if(!selected){
-        lineColor = color;
-        PRIMARY_COLOR.style.backgroundColor = Color;
-      
-      }else{
-        lineColorS = color;
-        SECONDARY_COLOR.style.backgroundColor = color;
-      }
-    
-     ColorPickerUpdate(color);
-      //ChangeColor(color);
-      //UpdateColorCode(color);
-
-      //var huetemp = RGBAtoHSLA(color).split("hsla(")[1].split(")")[0].split(",")[0];
-      //var hue = HSLAtoRGBA("hsla("+huetemp+",100,100,1)");
+  //var huetemp = RGBAtoHSLA(color).split("hsla(")[1].split(")")[0].split(",")[0];
+  //var hue = HSLAtoRGBA("hsla("+huetemp+",100,100,1)");
 //console.log(huetemp);
-      //UpdateColorPicker(hue);
-      //UpdateWholeColorPicker(color);
+  //UpdateColorPicker(hue);
+  //UpdateWholeColorPicker(color);
 
-    }
-    
-    function ColorPickerUpdate(color){
-      UpdateColorCode(color);
-      UpdateWholeColorPicker(color);
-      var huetemp = RGBAtoHSLA(color).split("hsla(")[1].split(")")[0].split(",")[0];
-      var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
-      UpdateColorPicker(hue);
-         ChangeColor(color);
-    
-      UpdateTransparent(color);
-      var cords = FindColorOnPicker(color);
+}
 
-      //colorPickerCursor.style.top = (cords.y/2)-8 +"px";
-      //colorPickerCursor.style.left = (cords.x/2)-8 +"px";
+function ColorPickerUpdate(color){
+  UpdateColorCode(color);
+  UpdateWholeColorPicker(color);
+  var huetemp = RGBAtoHSLA(color).split("hsla(")[1].split(")")[0].split(",")[0];
+  var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
+  UpdateColorPicker(hue);
+     ChangeColor(color);
 
-   
-      //console.log(cords);
+  UpdateTransparent(color);
+  var cords = FindColorOnPicker(color);
+
+  //colorPickerCursor.style.top = (cords.y/2)-8 +"px";
+  //colorPickerCursor.style.left = (cords.x/2)-8 +"px";
 
 
-      var x = cords.x/2 + 2;
-      var y = cords.y/2 + 2;
-      if(x > 127){x=127;}
-      if(y > 127){y=127;}
-      if(x < 3){x=0;}
-      if(y < 3){y=0;}
-      //UI
-       colorPickerCursor.style.left = (x-8)+"px";
-      colorPickerCursor.style.top = (y-8)+"px";
+  //console.log(cords);
 
-      ColorCords.x = x*2;
-      ColorCords.y = y*2;
-    
 
-       //UpdateTransparent(Color);
-       //UpdateColorCode(Color);
-    }
-    function InitializeColorPicker(secondary,color){
-      EditedColor=color;
-      if(secondary){
-        document.getElementById("labelColor").innerHTML = "SECONDARY";
-        ColorPickerUpdate(color);
-      }else{
-        document.getElementById("labelColor").innerHTML = "PRIMARY";
-        ColorPickerUpdate(color);
-      }
-    }
-    function FindColorOnPicker(color){
-      var ColorArray = color.split("rgba(")[1].split(")")[0].split(",");
-      //console.log(ColorArray);
-      var pickerImage = colorpickerBackground.getContext("2d").getImageData(0,0,256,256);
-      for(let i = 0; i < 255; i++){
-        for(let j = 0;j<255;j++){
-          //each pixel
-         
-            //return OS_canvas[]
-            var pixel = [pickerImage.data[(i+j*256)* 4],pickerImage.data[(i+j*256)* 4+1],pickerImage.data[(i+j*256)* 4+2]];
-            if(ColorArray_Equal(ColorArray,pixel,3)){
-              return {x:i,y:j};
-            }
+  var x = cords.x/2 + 2;
+  var y = cords.y/2 + 2;
+  if(x > 127){x=127;}
+  if(y > 127){y=127;}
+  if(x < 3){x=0;}
+  if(y < 3){y=0;}
+  //UI
+   colorPickerCursor.style.left = (x-8)+"px";
+  colorPickerCursor.style.top = (y-8)+"px";
+
+  ColorCords.x = x*2;
+  ColorCords.y = y*2;
+
+
+   //UpdateTransparent(Color);
+   //UpdateColorCode(Color);
+}
+function InitializeColorPicker(secondary,color){
+  EditedColor=color;
+  if(secondary){
+    document.getElementById("labelColor").innerHTML = "SECONDARY";
+    ColorPickerUpdate(color);
+  }else{
+    document.getElementById("labelColor").innerHTML = "PRIMARY";
+    ColorPickerUpdate(color);
+  }
+}
+function FindColorOnPicker(color){
+  var ColorArray = color.split("rgba(")[1].split(")")[0].split(",");
+  //console.log(ColorArray);
+  var pickerImage = colorpickerBackground.getContext("2d").getImageData(0,0,256,256);
+  for(let i = 0; i < 255; i++){
+    for(let j = 0;j<255;j++){
+      //each pixel
+     
+        //return OS_canvas[]
+        var pixel = [pickerImage.data[(i+j*256)* 4],pickerImage.data[(i+j*256)* 4+1],pickerImage.data[(i+j*256)* 4+2]];
+        if(ColorArray_Equal(ColorArray,pixel,3)){
+          return {x:i,y:j};
         }
-      }
-
-      return {x:0,y:0};
     }
-    function UpdateWholeColorPicker(color){
-      var hsla = RGBAtoHSLA(color);
-    
-  let h = Number(hsla.split("hsla(")[1].split(",")[0])/2.8;
-  let s = Number(hsla.split("hsla(")[1].split(",")[1])*255/100;
-  let v = Number(hsla.split("hsla(")[1].split(",")[2])*255/100;
-  let a = Number(hsla.split(")")[0].split("hsla(")[1].split(",")[3])*127;
+  }
+
+  return {x:0,y:0};
+}
+function UpdateWholeColorPicker(color){
+  var hsla = RGBAtoHSLA(color);
+
+let h = Number(hsla.split("hsla(")[1].split(",")[0])/2.8;
+let s = Number(hsla.split("hsla(")[1].split(",")[1])*255/100;
+let v = Number(hsla.split("hsla(")[1].split(",")[2])*255/100;
+let a = Number(hsla.split(")")[0].split("hsla(")[1].split(",")[3])*127;
 //really bad, does not matter tho
 var left = s/(1+(v/255))-8;
 
 var top = 119 -((v*(1+(s/255)))/2);
 if(top < -8){
-  top = -8;
+top = -8;
 }else if(top > 119){
-  top = 119;
+top = 119;
 }
 
-                                              //<0,1>
-  // s 100 => v * 2 , s 0 => v * 1   s ? => v *(?/255+1)
-  
-   //colorPickerCursor.style.top = top +"px";
-  huePickerCursor.style.top = h-2+"px";
-  trPickerCursor.style.top = 125-a+"px";
+                                          //<0,1>
+// s 100 => v * 2 , s 0 => v * 1   s ? => v *(?/255+1)
+
+//colorPickerCursor.style.top = top +"px";
+huePickerCursor.style.top = h-2+"px";
+trPickerCursor.style.top = 125-a+"px";
 //console.log(125-a);
-    }
-    function UpdateColorCode(color){
-        hexElem.value = RGBAtoHEX(color);
-        rgbaElem.value = color;
-        hslaElem.value = RGBAtoHSLA(color);
-    }
-    function UpdateTransparent(color){
-      let r = color.split(",")[0].split("(")[1];
-      let g = color.split(",")[1];
-      let b = color.split(",")[2];
-      trtx.clearRect(0,0,1,360);
-      for(let i = 0; i < 360;i++){
-        trtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/360)+")";
-        //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
-       //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
-        trtx.fillRect(0,360-i,1,1);
-      }
-     
-    }
-    function UpdateColorPicker(color){ //updates color and transparency ui
-      cpbtx.fillStyle = "rgb(255,255,255)";
-      
-      let r = color.split(",")[0].split("(")[1];
-      let g = color.split(",")[1];
-      let b = color.split(",")[2];
-      cpbtx.fillRect(0,0,256,256);
-      //colored gradient
-      for(let i = 0; i < 256;i++){
-        cpbtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/254)+")";
-       
-        //cpbtx.fillStyle = "rgba(255,0,0,"+(i/255)+")";
-       cpbtx.fillRect(i,0,1,256);
-      }
-      for(let i = 0; i < 256;i++){
-       cpbtx.fillStyle = "rgba(0,0,0,"+(i/254)+")";
-       cpbtx.fillRect(0,i,256,1);
-      }
-      trtx.clearRect(0,0,1,360);
-      for(let i = 0; i < 360;i++){
-        trtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/360)+")";
-        //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
-       //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
-        trtx.fillRect(0,360-i,1,1);
-      }
-      var idk = cpbtx.getImageData(ColorCords.x,ColorCords.y,1,1).data;
-      let Transparency = Color.split(",")[3].split(")")[0];
-    Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparency+")";
-    ChangeColor(Color);
-    UpdateTransparent(Color); //e.log(Color);
-    }
-    function ChangeColor(value){//changes modified color at relevant places
-    
-  CurrentColor.getContext("2d").fillStyle = value;
-  CurrentColor.getContext("2d").clearRect(0,0,1,1);
-    CurrentColor.getContext("2d").fillRect(0,0,1,1);
-       Color = value;
-       //UpdateWholeColorPicker(Color);
 }
-
-    //VARS//
-    var ColorCords = {x:255,y:0}
-var Color = "rgba(0,0,0,1)"; //color being modified
-var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
-
-    //ELEMENTS//
-const NewPalette = document.getElementById("newPalette");
-NewPalette.onmousedown = function(){
-  var pal = [];
-  InitializeColorPaletteOR(pal,"Custom");
+function UpdateColorCode(color){
+    hexElem.value = RGBAtoHEX(color);
+    rgbaElem.value = color;
+    hslaElem.value = RGBAtoHSLA(color);
 }
-const DeletePalette = document.getElementById("delPalette");
-DeletePalette.onmousedown = function(){
-  if(colorpalettes.length > 0){
-      
-      colorpalettes.splice(colorpaletteindex,1);
-    
-colorpaletteindex--;
-
-if(colorpaletteindex < 0){
- colorpaletteindex=0;
-}
-if(colorpalettes.length == 0){
-  var pal = [];
-  InitializeColorPaletteOR(pal,"Custom");
-}
-
- 
- UpdatePaletteList();
- SelectPalette(colorpaletteindex);
- Palette_clear();
- LoadPalette(colorpaletteindex);
- Palette_clear();
-LoadPalette(palettelist.value);
+function UpdateTransparent(color){
+  let r = color.split(",")[0].split("(")[1];
+  let g = color.split(",")[1];
+  let b = color.split(",")[2];
+  trtx.clearRect(0,0,1,360);
+  for(let i = 0; i < 360;i++){
+    trtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/360)+")";
+    //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+   //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+    trtx.fillRect(0,360-i,1,1);
   }
  
 }
-
-
-const ImportFilePalette = document.getElementById("importFilePal");
-const ImportPaletteButton = document.getElementById("importPalette");
-
-ImportPaletteButton.addEventListener("click",function(){
-ImportFilePalette.click();
-});
-ImportFilePalette.addEventListener("change",function(){
-
-
-  const reader = new FileReader();
-  reader.addEventListener("load", () => {
-   
-    ImportPalette(reader.result,this.files[0].name.split(".")[0]);ImportFilePalette.value = null;
-    
-  }, false);
-
- 
-  reader.readAsText(this.files[0]);
-
-
-
-});
-
-const ImportFilePaletteOR = document.getElementById("importFilePalOR");
-const ImportPaletteButtonOR= document.getElementById("importPaletteOR");
-
-ImportPaletteButtonOR.addEventListener("click",function(){
-ImportFilePaletteOR.click();
-});
-ImportFilePaletteOR.addEventListener("change",function(){
-
-
-  const reader = new FileReader();
-  reader.addEventListener("load", () => {
-    
-    ImportPaletteOR(reader.result,this.files[0].name.split(".")[0]);
-    
-  }, false);
-
- 
-  reader.readAsText(this.files[0]);
-
-
-
-});
-
-const SubtractFilePalette = document.getElementById("subtractFilePal");
-const SubtractPaletteButton = document.getElementById("subtractPalette");
-
-SubtractPaletteButton.addEventListener("click",function(){
-  SubtractFilePalette.click();
-});
-SubtractFilePalette.addEventListener("change",function(){
-
-
-  const reader = new FileReader();
-  reader.addEventListener("load", () => {
-   
-    SubtractPalette(reader.result);SubtractFilePalette.value = null;
-    
-  }, false);
-
- 
-  reader.readAsText(this.files[0]);
-
-
-
-});
-
-const ExportPaletteButton= document.getElementById("exportPalette");
-
-ExportPaletteButton.addEventListener("click",function(){
- ExportPalette(colorpalettes[colorpaletteindex][colorpalettes[colorpaletteindex].length-1]);
-});
-    let hexElem = document.getElementById("hex");
-    let rgbaElem = document.getElementById("rgba");
-    let hslaElem = document.getElementById("hsla");
-let colorpickerBackground = document.getElementById("colorCanvasGradient"); //SATURATIONxLEVEL gradient
-let cpbtx = colorpickerBackground.getContext("2d");
-colorpickerBackground.width = 256;
-colorpickerBackground.height = 256;
-let huepickerBackground = document.getElementById("hueCanvasGradient"); //HUE gradient
-let htx = huepickerBackground.getContext("2d");
-huepickerBackground.width = 1;
-huepickerBackground.height = 360;
-let trpickerBackground = document.getElementById("trCanvasGradient"); //TRANSPARENTCY gradient
-let trtx = trpickerBackground.getContext("2d");
-trpickerBackground.width = 1;
-trpickerBackground.height = 360;
-
-    //UI//
-const PRIMARY_COLOR = document.getElementById("PRIMARYCOLORcanvas");
-PRIMARY_COLOR.width = 1;
-PRIMARY_COLOR.height = 1;
-PRIMARY_COLOR.addEventListener("click",function(e){
-  colorpicker.style.visibility = "visible";
-  ColorSelected = false;
-  InitializeColorPicker(false,lineColor);
-});
-const SECONDARY_COLOR = document.getElementById("SECONDARYCOLORcanvas");
-SECONDARY_COLOR.width = 1;
-SECONDARY_COLOR.height = 1;
-PRIMARY_COLOR.getContext("2d").fillStyle = "rgb(0,0,0)";
-PRIMARY_COLOR.getContext("2d").clearRect(0,0,1,1);
-PRIMARY_COLOR.getContext("2d").fillRect(0,0,1,1);
-SECONDARY_COLOR.getContext("2d").fillStyle = "rgb(255,255,255)";
-SECONDARY_COLOR.getContext("2d").clearRect(0,0,1,1);
-SECONDARY_COLOR.getContext("2d").fillRect(0,0,1,1);
-SECONDARY_COLOR.addEventListener("click",function(e){
-  colorpicker.style.visibility = "visible";
-  ColorSelected = true;
-  InitializeColorPicker(true,lineColorS);
-});
-const CurrentColor = document.getElementById("CurrentColor");
-CurrentColor.width = 1;
-CurrentColor.height = 1;
-CurrentColor.getContext("2d").fillStyle = "rgba(255,0,0,1)";
-CurrentColor.getContext("2d").fillRect(0,0,1,1);
-const styleCPE = getComputedStyle(document.querySelector('#colorpicker'));
-const colorpicker = document.getElementById("colorpicker");
-const ColorButtonNew = document.getElementById("ColorButtonNew");
-ColorButtonNew.addEventListener("click",function(){
-  Color = ALLToRGBA(Color);
-if(!ColorSelected){
-  lineColor = Color;
-  //PRIMARY_COLOR.style.backgroundColor = Color;
-  Color_set(false,Color);
-  Color_add(Color);
-  EditedColor=Color;
-  for(let i = 0; i < colors.length;i++){
-    colors[i].classList.remove("primaryColor");
-    colors[i].classList.remove("selected");
-    colors[i].classList.remove("bothColor");
-  }
-  colors[colors.length-1].classList.add("primaryColor");
-  oncolorleft=colors.length-1;
-  Color_last();
-}else{
-  lineColorS = Color;
-  //SECONDARY_COLOR.style.backgroundColor = Color;
-  Color_set(true,Color);
-  Color_add(Color);
+function UpdateColorPicker(color){ //updates color and transparency ui
+  cpbtx.fillStyle = "rgb(255,255,255)";
   
-  EditedColor=Color;
-  for(let i = 0; i < colors.length;i++){
-    colors[i].classList.remove("secondaryColor");
-    colors[i].classList.remove("selected");
-    colors[i].classList.remove("bothColor");
+  let r = color.split(",")[0].split("(")[1];
+  let g = color.split(",")[1];
+  let b = color.split(",")[2];
+  cpbtx.fillRect(0,0,256,256);
+  //colored gradient
+  for(let i = 0; i < 256;i++){
+    cpbtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/254)+")";
+   
+    //cpbtx.fillStyle = "rgba(255,0,0,"+(i/255)+")";
+   cpbtx.fillRect(i,0,1,256);
   }
-  colors[colors.length-1].classList.add("secondaryColor");
-  oncolorright=colors.length-1;
-  Color_last();
+  for(let i = 0; i < 256;i++){
+   cpbtx.fillStyle = "rgba(0,0,0,"+(i/254)+")";
+   cpbtx.fillRect(0,i,256,1);
+  }
+  trtx.clearRect(0,0,1,360);
+  for(let i = 0; i < 360;i++){
+    trtx.fillStyle = "rgba("+r+","+g+","+b+","+(i/360)+")";
+    //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+   //trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
+    trtx.fillRect(0,360-i,1,1);
+  }
+  var idk = cpbtx.getImageData(ColorCords.x,ColorCords.y,1,1).data;
+  let Transparency = Color.split(",")[3].split(")")[0];
+Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparency+")";
+ChangeColor(Color);
+UpdateTransparent(Color); //e.log(Color);
 }
-});
-const ColorButtonEdit = document.getElementById("ColorButtonEdit");
-ColorButtonEdit.addEventListener("click",function(){
+function ChangeColor(value){//changes modified color at relevant places
 
-  Color = ALLToRGBA(Color);
-if(!ColorSelected){
-  lineColor = Color;
-  //PRIMARY_COLOR.style.backgroundColor = Color;
-  Color_edit(EditedColor,Color,false);
-  EditedColor=Color;
-  Color_set(false,Color);
-}else{
-  lineColorS = Color;
-  Color_edit(EditedColor,Color,true);
-  EditedColor=Color;
-  //SECONDARY_COLOR.style.backgroundColor = Color;
-  Color_set(true,Color);
+CurrentColor.getContext("2d").fillStyle = value;
+CurrentColor.getContext("2d").clearRect(0,0,1,1);
+CurrentColor.getContext("2d").fillRect(0,0,1,1);
+   Color = value;
+   //UpdateWholeColorPicker(Color);
 }
-});
+
 function Color_set(bool,color){
   //console.log(bool + " "+ color);
 if(!bool){
@@ -1642,138 +2020,6 @@ colr.id="colrI";
   Update_Colors();
   
 }
-
-
-
-
-
-document.getElementById("removeColorP").addEventListener("click",function(){
-  let fix = true;
- if(colors.length==0){return;}
- if(oncolorleft > colors.length-1){
-
-  oncolorleft = colors.length-1;
-  for(let i = 0; i < colors.length;i++){
-   
-    colors[i].classList.remove("primaryColor");
-    colors[i].classList.remove("bothColor");
-    colors[i].classList.remove("selected");
-  }
-  colors[oncolorleft].classList.add("primaryColor");
-  if(colors[oncolorleft].classList.contains("secondaryColor")){
-    colors[oncolorleft].classList.add("bothColor");
-  }
-  return;}
-  if(oncolorleft==oncolorright){
- 
-    oncolorright+=999;
-    fix = false;
-  }
-
-  var child = colors[oncolorleft];
-
-  if(oncolorleft<colors.length-1){
-      document.getElementById("colorpalette").removeChild(child);
-      if(colors.length==0){return;}
-      lineColor = colors[oncolorleft].getAttribute("style").split(" ")[1].split(";")[0];
-      for(let i = 0; i < colors.length;i++){
-   
-        colors[i].classList.remove("primaryColor");
-        colors[i].classList.remove("bothColor");
-        colors[i].classList.remove("selected");
-      }
-      
-      colors[oncolorleft].classList.add("primaryColor");
-      if(colors[oncolorleft].classList.contains("secondaryColor")){
-        colors[oncolorleft].classList.add("bothColor");
-      }
-      Color_set(false,lineColor);
-      InitializeColorPicker(false,lineColor);
-      Update_Colors();
-      if(oncolorleft <= oncolorright){
-        oncolorright--;
-      }
-    return;
-  }
-  if(oncolorleft>0){
-     oncolorleft--;
-  }
- 
-  
-  lineColor = colors[oncolorleft].getAttribute("style").split(" ")[1].split(";")[0];
-  for(let i = 0; i < colors.length;i++){
-   
-    colors[i].classList.remove("primaryColor");
-    colors[i].classList.remove("bothColor");
-    colors[i].classList.remove("selected");
-  }
-  colors[oncolorleft].classList.add("primaryColor");
-  if(colors[oncolorleft].classList.contains("secondaryColor")){
-    colors[oncolorleft].classList.add("bothColor");
-  }
- Color_set(false,lineColor);
-  InitializeColorPicker(false,lineColor);
-  document.getElementById("colorpalette").removeChild(child);
-  if(oncolorright > colors.length-1 && fix){oncolorright = colors.length-1; return;}
-  if(oncolorleft > colors.length-1){oncolorleft = colors.length-1; return;}
-  Update_Colors();
-});
-document.getElementById("removeColorS").addEventListener("click",function(){
-  let fix = true;
-  if(colors.length==0){return;} if(oncolorright > colors.length-1){
-
-    oncolorright = colors.length-1;
-    for(let i = 0; i < colors.length;i++){
-      colors[i].classList.remove("secondaryColor");
-      colors[i].classList.remove("bothColor");
-      colors[i].classList.remove("selected");
-    }
-    colors[oncolorright].classList.add("secondaryColor");
-    if(colors[oncolorright].classList.contains("primaryColor")){
-      colors[oncolorright].classList.add("bothColor");
-    }
-    return;}
-    if(oncolorleft==oncolorright){
-    
-      oncolorleft+=999;
-      fix = false;
-    }
-  var child = colors[oncolorright];
-  
-
-  if(oncolorright<colors.length-1){
-      document.getElementById("colorpalette").removeChild(child);
-      if(colors.length==0){return;}
-      lineColorS = colors[oncolorright].getAttribute("style").split(" ")[1].split(";")[0];
-      colors[oncolorright].classList.add("secondaryColor");
-      if(colors[oncolorright].classList.contains("primaryColor")){
-        colors[oncolorright].classList.add("bothColor");
-      }
-      Color_set(true,lineColorS);
-      InitializeColorPicker(true,lineColorS);
-      Update_Colors();
-      if(oncolorright <= oncolorleft){
-        oncolorleft--;
-      }
-    return;
-  }
-  if(oncolorright>0){
-     oncolorright--;
-  }
- 
-  
-  lineColorS = colors[oncolorright].getAttribute("style").split(" ")[1].split(";")[0];
-  colors[oncolorright].classList.add("secondaryColor");
-  if(colors[oncolorright].classList.contains("primaryColor")){
-    colors[oncolorright].classList.add("bothColor");
-  }
- Color_set(true,lineColorS);
-  InitializeColorPicker(true,lineColorS);
-  document.getElementById("colorpalette").removeChild(child);
-  if(oncolorright > colors.length-1){oncolorright = colors.length-1; return;}
-  if(oncolorleft > colors.length-1 && fix){oncolorleft = colors.length-1; return;}
-  Update_Colors();
-});
 function InitializeColorPalette(palette,name){
 
   for(let i = 0;i < palette.length;i++){
@@ -1807,209 +2053,240 @@ function InitializeColorPaletteOR(palette,name){
   
   AddPaletteToList(palette,name);
   }
-let hex = document.getElementById("hex");
-hex.addEventListener("focusout",function(){
-//validate
-if(hex.value.length == 7 || hex.value.length == 9){
-  if(hex.value.includes("#")){
-    var rgba = HEXtoRGBA(hex.value);
-ChangeColor(rgba);
-UpdateColorCode(rgba);
-
-      var huetemp = RGBAtoHSLA(rgba).split("hsla(")[1].split(")")[0].split(",")[0];
-      var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
-//console.log(huetemp);
-      UpdateColorPicker(hue);
-      UpdateWholeColorPicker(rgba);
-  }
-
-}
-});
-let rgba = document.getElementById("rgba");
-rgba.addEventListener("focusout",function(){
-//validate
-
-  if(rgba.value.includes("rgba(")||rgba.value.includes("rgb(")){
-    
-    ChangeColor(rgba.value);
-    UpdateColorCode(rgba.value);
-    
-          var huetemp = RGBAtoHSLA(rgba.value).split("hsla(")[1].split(")")[0].split(",")[0];
-          var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
-    //console.log(huetemp);
-          UpdateColorPicker(hue);
-          UpdateWholeColorPicker(rgba.value);
-    ChangeColor(rgba.value);
-  }
-});
-let hsla = document.getElementById("hsla");
-hsla.addEventListener("focusout",function(){
-//validate
-
-  if(hsla.value.includes("hsla(")||hsla.value.includes("hsl(")){
 
 
-    var rgba = HSLAtoRGBA(hsla.value);
-    ChangeColor(rgba);
-    UpdateColorCode(rgba);
-    
-          var huetemp = RGBAtoHSLA(rgba).split("hsla(")[1].split(")")[0].split(",")[0];
-          var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
-    //console.log(huetemp);
-          UpdateColorPicker(hue);
-          UpdateWholeColorPicker(rgba);
+//#endregion
+
+//#region UI
+
+
+function MenuChange() {
   
-  }
-
-
+if(!select){
+  let name;
+  let br;
+  let label,input;
+  switch(PRIMARY){
+    case("pencil"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+     br = document.createElement("br");
+    name.innerHTML = "Pencil";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
  
-});
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
 
+      
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","PENCIL_MODE_BASIC"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","PENCIL_MODE_BLURRY"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","PENCIL_MODE_NOGAPS"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","PENCIL_MODE_PIXEL"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    label = document.createElement("label");
+    label.setAttribute("for","size");
+    label.innerHTML = "Size:";
+    Menu_Tool.appendChild(label);
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    /*
+    input = document.createElement("input");
+    input.id = "size";
+    input.setAttribute("type","number");
+    input.setAttribute("name","size");
+    input.value = 1;
+    input.addEventListener("change", function(e){
+    if(input.value > 0){
+      if(!select){
+        lineWidth = input.value;
+      }else{
+        lineWidthS = input.value;
+      }
 
-
-
-let setcolor = "rbg(0,0,0,255)";
-let oncolor=-1; 
-let oncolorleft=-1;
-let oncolorright=-1;
- let colors = document.getElementsByClassName("color");
- let movedColor = null;
- let movedColorSelection = null;
- let movedIdx = null;
- let movedColorObj = document.getElementById("movedColorObj");
-function Update_Colors(){
-  colors = document.getElementsByClassName("color");
-for (let i = 0; i < colors.length;i++){
-  colors[i].onmouseover = function() {
-    colors[i].classList.add("selected");
-  let color = colors[i].getAttribute("style");
-  color = color.split(" ")[1];
-  
-  color = color.split(";")[0];
- 
-  setcolor = color;
-  oncolor = i;
-  }
-
-  colors[i].onmouseout = function(){
-    if(!middle){
-       oncolor = -1;
     }
+    });
+
+    Menu_Tool.appendChild(input);
+*/
+
+
+
+
+    break;
+
+    case("line"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Line";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC"));
+    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
    
-    colors[i].classList.remove("selected");
+    break;
+
+
+    case("fill"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Fill";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    
+   
+    break;
+    case("picker"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Picker";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    
+   
+    break;
+    case("select"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Picker";
+    Menu_Tool.appendChild(name);
+    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY"));
+    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE"));
+    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT"));
+    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE"));
+    name = document.createElement("p"); 
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    
+   
+    break;
   }
+}
+}
+
+function UIbuttonCLICK(obj){
+  if(select){
+    
+    SECONDARYtoolSELECT.classList.remove("selectS");
+    SECONDARYtoolSELECT.classList.remove("select");
+    SECONDARYtoolSELECT.classList.remove("selectP");
+    if(SECONDARYtoolSELECT == PRIMARYtoolSELECT){
+      
+      PRIMARYtoolSELECT.classList.add("selectP");
+    }
+    if(PRIMARYtoolSELECT == obj){
+      obj.classList.remove("selectP");
+      obj.classList.remove("selectS");
+      obj.classList.add("select");
+    }else{
+      obj.classList.remove("select");
+      obj.classList.remove("selectP");
+      obj.classList.add("selectS");
+    }
+SECONDARYtoolSELECT = obj;
+  } else {
+    PRIMARYtoolSELECT.classList.remove("selectS");
+    PRIMARYtoolSELECT.classList.remove("select");
+    PRIMARYtoolSELECT.classList.remove("selectP");
+    if(SECONDARYtoolSELECT == PRIMARYtoolSELECT){
+      
+      SECONDARYtoolSELECT.classList.add("selectS");
+    }
+    if(SECONDARYtoolSELECT == obj){
+      obj.classList.remove("selectP");
+      obj.classList.remove("selectS");
+      obj.classList.add("select");
+    }else{
+      obj.classList.remove("select");
+      obj.classList.remove("selectS");
+      obj.classList.add("selectP");
+    }
+PRIMARYtoolSELECT = obj;
+  }
+  MenuChange();
+ 
+return;
+}
+
+//#endregion
+//#region canvas
+function UpdateCanvas(){
+  canvas.height = resolution.y;
+  canvas.width = resolution.x;
+  previewCanvas.height = resolution.y;
+  previewCanvas.width = resolution.x;
+  uiCanvas.height = resolution.y;
+  uiCanvas.width = resolution.x;
+}
+function ChangeRes(){
+  if(resolution.x > resolution.y){
+    resScale =  resolution.x / canvasSize.x;
+  }
+  else{
+    resScale =  resolution.y / canvasSize.y; 
+  }
+canvas.style.backgroundSize = 200/resolution.x  + "%";
+}
+function ScrollUpdate(){
+var rect = canvas.getBoundingClientRect();
+ canvasOffset.x = rect.left;
+ canvasOffset.y = rect.top;
+}
+
+function MoveCanvas(){
+
+  div.style.left = canvasOffset.x + ((AbsPos.x-AbsLastPos.x))+"px";
+  div.style.top = canvasOffset.y +((AbsPos.y-AbsLastPos.y))+"px";
   
-}
-}
-Update_Colors();
-
-
-
-
-var colrDown=false;
-
-
-/////////
-//MOUSE//
-/////////
-
-    //HOVER//
-let hoveringON;
-let hoveredON; //When mousedown
-document.getElementById("colorpalette").onmouseover = function(){
-  hoveringON = "colorpalette";
+  ScrollUpdate();
   }
-document.getElementById("colorpalette").onmouseout = function(){
-    hoveringON = "none";
-    //oncolor = -1;
-    }
-uiCanvas.onmouseover = function(){
-hoveringON = "canvas";
 
-}
-uiCanvas.onmouseout = function(){
-hoveringON = "none";
-
-}
-background.onmouseover = function(){
-hoveringON = "background";
-}
-background.onmouseout = function(){
-//hoverBackground = false;
-hoveringON = "none";
-}
-
-//color mouse changes
-colorpickerBackground.onmouseover = function(){
-hoveringON = "colorpicker";
-}
-colorpickerBackground.onmouseout = function(){
-hoveringON = "none";
-}
-
- let colorPickerCursor = document.getElementById("gradientcursor");
-colorPickerCursor.onmouseover = function(){
-  hoveringON = "colorpicker";
-  }
-  colorPickerCursor.onmouseout = function(){
-    hoveringON = "none";
-    }
-
-
-    huepickerBackground.onmouseover = function(){
-      hoveringON = "huepicker";
-      }
-      huepickerBackground.onmouseout = function(){
-      hoveringON = "none";
-      }
-      
-       let huePickerCursor = document.getElementById("huecursor");
-      huePickerCursor.onmouseover = function(){
-        hoveringON = "huepicker";
-        }
-        colorPickerCursor.onmouseout = function(){
-          hoveringON = "none";
-          }
-
-
-
-    trpickerBackground.onmouseover = function(){
-      hoveringON = "trpicker";
-      }
-      trpickerBackground.onmouseout = function(){
-      hoveringON = "none";
-      }
-      
-       let trPickerCursor = document.getElementById("trcursor");
-      trPickerCursor.onmouseover = function(){
-        hoveringON = "trpicker";
-        }
-        colorPickerCursor.onmouseout = function(){
-          hoveringON = "none";
-          }
-      //MOUSE//
-var DoubleClickSpeed = 130;//ms
-var left = false;
-var leftDouble = false;
-var leftClicked = false;
-var middle = false;
-var right = false;
-var rightDouble = false;
-var rightClicked = false;
-var canvasOffset = {x:0,y:0}
-
-var pos = {x:0,y:0}//current position on canvas
-var intPos = {x:0,y:0}//int
-var lastPos = {x:-1, y:-1}//last position on canvas
-var downPos = {x:0, y:0}//last clicked position on canvas
-var downIntPos = {x:0,y:0}//int
-var upPos = {x:0, y:0}//last let go position on canvas
-var upIntPos = {x:0,y:0}//int
-let perfectPos = {x:0,y:0}//last confirmed pixel on canvas
-let previewPos = {x:0,y:0}//last previewed pixel in pp pencil mode
-let lastIntPos = {x:0,y:0}
-var AbsPos = {x:0,y:0}
-var AbsLastPos = {x:0,y:0}
+//#endregion
+//#region mouse
 
     //FUNC//
 function UpdatePos(){
@@ -2711,9 +2988,8 @@ default:
     
     
     
-//////////
-//WINDOW//
-//////////
+//#endregion
+//#region window
 window.oncontextmenu = function ()
 {
     return false;
@@ -2722,11 +2998,544 @@ window.onbeforeunload = function() {
   return "wait!";
 };
 
+//#endregion
+
+//#region draw
 
 
-////////
-//DRAW//
-////////
+
+
+
+function Draw(){
+      //COLORPICKER//
+ if(busy){
+  switch(busyTask){
+    case("SELECTRESIZE"):
+    SelectResize(busyParams);
+    break;
+  }
+
+
+  return;
+ }
+  switch(hoveredON){ 
+ 
+    case("colorpicker"):
+     
+ if(left){
+     //let Xoff = styleCPE.left.split("px")[0];
+  //let Yoff = styleCPE.top.split("px")[0];  
+      //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
+    //  console.log(E.clientX);
+      var x = ~~(E.clientX-colorpicker.getBoundingClientRect().left-4);
+      var y = ~~(E.clientY-colorpicker.getBoundingClientRect().top-4);
+      if(x > 127){x=127;}
+      if(y > 127){y=127;}
+      if(x < 0){x=0;}
+      if(y < 0){y=0;}
+      //UI
+       colorPickerCursor.style.left = (x-8)+"px";
+      colorPickerCursor.style.top = (y-8)+"px";
+
+      var idk = cpbtx.getImageData(x*2,y*2,1,1).data;
+      ColorCords.x = x*2;
+      ColorCords.y = y*2;
+      let Transparency = Color.split(",")[3].split(")")[0];
+      
+    Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparency+")";
+    
+      CurrentColor.getContext("2d").fillStyle = Color;
+      CurrentColor.getContext("2d").clearRect(0,0,1,1);
+       CurrentColor.getContext("2d").fillRect(0,0,1,1);
+       UpdateTransparent(Color);
+       UpdateColorCode(Color);
+    }
+    break;
+    case("huepicker"):
+    if(left){
+      //let Xoff = styleCPE.left.split("px")[0];
+      let Yoff = styleCPE.top.split("px")[0];  
+         //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
+         var x = 8;
+         var y = ~~(AbsPos.y-Yoff-6);
+         //if(x > 127){x=127;}
+         if(y > 127){y=127;}
+         //if(x < 0){x=0;}
+         if(y < 0){y=0;}
+         //UI
+         
+          huePickerCursor.style.left = (x-8)+"px";
+         huePickerCursor.style.top = (y-2)+"px";
+         //2.8125 = 360/128
+         var idk = htx.getImageData(0,~~(y*2.8125),1,1).data;
+         let Transparent = Color.split(")")[0].split(",")[3];
+         let tempColor = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparent+")";
+       
+        UpdateColorPicker(tempColor);
+      
+        UpdateColorCode(Color);
+        
+       
+          
+       }
+       break;
+       case("trpicker"):
+    if(left){
+      //let Xoff = styleCPE.left.split("px")[0];
+      let Yoff = styleCPE.top.split("px")[0];  
+         //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
+         var x = 8;
+         var y = ~~(AbsPos.y-Yoff-6);
+         //if(x > 127){x=127;}
+         if(y > 127){y=127;}
+         //if(x < 0){x=0;}
+         if(y < 0){y=0;}
+         //UI
+         
+          trPickerCursor.style.left = (x-8)+"px";
+         trPickerCursor.style.top = (y-2)+"px";
+         //2.8125 = 360/128
+        let Transparency = Number((1-(y*2.8125)/360+"").substring(0,4));
+      let rgb = Color.split("rgba(")[1].split(",");
+    Color = "rgba("+rgb[0]+","+rgb[1]+","+rgb[2]+","+Transparency+")";
+    
+      CurrentColor.getContext("2d").fillStyle = Color;
+      CurrentColor.getContext("2d").clearRect(0,0,1,1);
+       CurrentColor.getContext("2d").fillRect(0,0,1,1);
+       
+       UpdateColorCode(Color);  
+       }
+       break;
+  }
+  
+ 
+      //DRAW//
+  if(hoveredON != "canvas" && hoveredON!= "background"){
+    return;
+  }
+  if(left){
+
+    if(SelectDragging){
+      if(lastIntPos.x != intPos.x || lastIntPos.y != intPos.y){
+        MoveSelectedPr(intPos.x-lastIntPos.x,intPos.y-lastIntPos.y);
+      }
+     
+      return;
+    }
+    switch(PRIMARY){
+      case("pencil"):
+
+
+
+
+          ctx.lineWidth = lineWidth;
+      ctx.beginPath();
+      switch(PRIMARY_MODE){
+case("PENCIL_MODE_BASIC"):
+  ctx.fillRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
+break;
+case("PENCIL_MODE_NOGAPS"):
+
+PerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+ 
+break;
+
+case("PENCIL_MODE_BLURRY"):
+
+ctx.beginPath(); // begin
+
+  ctx.lineWidth = lineWidth/2;
+  ctx.lineCap = "round";
+ 
+if(lastPos.x == pos.x){
+  lastPos.x += 0.1;
+}
+  ctx.moveTo(lastPos.x, lastPos.y); // from
+  
+  ctx.lineTo(pos.x, pos.y); // to
+
+  ctx.stroke(); // draw it!
+break;
+case("PENCIL_MODE_PIXEL"):
+
+//PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+ PixelPerfectPencil(lineWidth);
+break;
+
+      }
+
+     
+      break;
+      case("line"):
+      switch(PRIMARY_MODE){
+        default:
+           Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+      Line(true,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+          break;
+      }
+      
+      break;
+      case("poly"):
+      PolyPreview();
+      break;
+      case("select"):
+      RenderSelectUI();
+      break;
+    }
+
+
+
+
+    /*
+    // update mouse
+    ctx.beginPath();
+    if(PRIMARY == "eraser"){
+      ctx.clearRect(~~pos.x,~~pos.y,1,1);
+    }
+    else{
+      ctx.fillRect(~~pos.x,~~pos.y,1,1);
+    }
+    
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = "#000000";
+    ctx.stroke();
+  
+    pos.x = (E.clientX*resScale)*scale;
+    pos.y = (E.clientY*resScale)*scale;
+    /*
+    ctx.fillRect(~~pos.x+.5,~~pos.y+.5,lineWidth,lineWidth);
+  
+    ctx.fillRect(~~pos.x+.5,~~pos.y+.5,lineWidth,lineWidth);
+    */
+    
+   
+  }
+  else if (right){
+   
+    // update mouse
+    ctx.beginPath();
+    if(SECONDARY == "eraser"){
+      ctx.clearRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
+    }
+    else{
+      ctx.fillRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
+    }
+    
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = "rgba(0,0,0,1)";
+    ctx.stroke();
+  
+  UpdatePos();
+    /*
+    ctx.beginPath();
+  
+    ctx.lineWidth = lineWidthS;
+    ctx.lineCap = lineCapS;
+    ctx.strokeStyle = lineColorS;
+    ctx.moveTo(pos.x, pos.y); 
+    // update mouse
+    pos.x = (e.clientX*resScale)*scale;
+    pos.y = (e.clientY*resScale)*scale;
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke(); 
+    */
+  }
+  else {
+     // update mouse
+    UpdatePos();
+  }
+  
+  
+}
+
+
+//#endregion
+
+//#region poly
+
+function PolyPreview(){
+  switch(polysides){
+    case(2):
+   
+    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+
+    break;
+    case(4):
+   //rect
+    
+    Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth);
+
+    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth);
+
+    Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+
+    Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+
+
+    Line(true,pctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth);
+
+    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth);
+
+    Line(true,pctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+    if(intPos.x != downIntPos.x || intPos.y != downIntPos.y ){
+          pctx.clearRect(intPos.x,intPos.y,1,1);
+    }
+
+    Line(true,pctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth);
+
+    break;
+  }
+  
+  }
+
+
+  function PolyDraw(){
+    switch(polysides){
+      case(2):
+     
+      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+  
+      break;
+      case(4):
+     //rect
+      
+      Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth);
+  
+      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth);
+  
+      Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+
+      Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+      pctx.clearRect(downIntPos.x,downIntPos.y,1,1);
+      ctx.fillRect(downIntPos.x,downIntPos.y,1,1);
+      Line(true,ctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth);
+  
+      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth);
+  
+      Line(true,ctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+      ctx.clearRect(intPos.x,intPos.y,1,1);
+      Line(true,ctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth);
+  
+      break;
+    }
+    
+    }
+  
+//#endregion
+//#region fill
+function FourWayFill(){
+  lastfilledlenght = lastfilledpos.length;
+  for(let i = 0;i< lastfilledlenght;i++){
+      FillAround();
+      
+  }
+  if(tobefilledpos.length==0){
+    clearInterval(fillUpdate);
+  filling = false;
+  }else{
+  
+    lastfilledpos = tobefilledpos;
+    tobefilledpos = [];
+  }
+}
+
+
+function ScanlineFill(){
+  //XY expected to be most left, different color right of the x
+  for(let i = 0; i < lastfilledpos.length;i++){
+      downSeeded =  false;
+  upSeeded = false;
+    FillLine(lastfilledpos[0]);
+    lastfilledpos.splice(0, 1);
+  }
+  if(lastfilledpos.length < 1){
+    //clearInterval(fillUpdate);
+   //ctx.putImageData(OS_canvas,0,0);
+    //console.log("complete");
+    filling = false;
+    clearInterval(fillUpdate);
+  
+  }
+
+}
+
+function OS_ScanlineFill(){
+   //XY expected to be most left, different color right of the x
+   for(let i = 0; i < lastfilledpos.length;i++){
+    downSeeded =  false;
+upSeeded = false;
+  OS_FillLine(lastfilledpos[0]);
+  lastfilledpos.splice(0, 1);
+}
+if(lastfilledpos.length < 1){
+  //clearInterval(fillUpdate);
+  ctx.putImageData(OS_canvas,0,0);
+  //console.log("complete");
+  filling = false;
+
+}
+
+}
+function FillLine(xy){
+while( String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor) && xy.x < resolution.x){
+  ctx.fillRect(xy.x,xy.y,1,1);
+
+  if(xy.y+1 < resolution.y){
+    
+    if(String(ctx.getImageData(xy.x,xy.y+1,1,1).data)==String(filledcolor)){ 
+       
+      if(!downSeeded){
+        var tempCords = {x:xy.x,y:xy.y+1};
+        while (String(ctx.getImageData(tempCords.x,tempCords.y,1,1).data)==String(filledcolor)){
+
+          if(tempCords.x <= 0){
+            tempCords.x--;
+            break;
+               
+          }tempCords.x--;
+          
+        
+        }
+        tempCords.x++;
+        lastfilledpos.push({x:tempCords.x,y:tempCords.y});
+        downSeeded = true;
+      }
+  }else{
+    downSeeded = false;
+  }
+  }
+  if(xy.y > 0){
+     if(String(ctx.getImageData(xy.x,xy.y-1,1,1).data)==String(filledcolor)){
+      if(!upSeeded){
+        var tempCords = {x:xy.x,y:xy.y-1};
+        while (String(ctx.getImageData(tempCords.x,tempCords.y,1,1).data)==String(filledcolor)){
+
+          if(tempCords.x <= 0){
+            tempCords.x--;
+            break;
+               
+          }tempCords.x--;
+          
+        
+        }
+        tempCords.x++;
+        lastfilledpos.push({x:tempCords.x,y:tempCords.y});
+    upSeeded = true;
+      }
+  }else{
+    upSeeded = false;
+  }
+  }
+  xy.x++;
+}
+}
+function OS_GetPixel(xy){
+  //return OS_canvas[]
+  return [OS_canvas.data[(xy.x+xy.y*resolution.x)* 4],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+1],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+2],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+3]];
+}
+function OS_SetPixel(xy,color,add){
+  //console.log("set");
+  if(!add){ // with no regard to alpha
+      OS_canvas.data[(xy.x+xy.y*resolution.x)* 4] = color[0];
+  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+1] = color[1];
+  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+2] = color[2];
+  OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+3] = color[3];
+  }else{
+
+  }
+
+}
+function OS_FillLine(xy){
+//ctx.get... = OS_GetPixel ale je to array
+//console.log(filledcolor);
+//console.log(OS_GetPixel(xy));
+  while( ArrayEqual(OS_GetPixel(xy),filledcolor) && xy.x < resolution.x){
+   OS_SetPixel(xy,OS_fillColor,false);
+  
+    if(xy.y+1 < resolution.y){
+       var tempCords = {x:xy.x,y:xy.y+1};
+      if(ArrayEqual(OS_GetPixel(tempCords),filledcolor)){ 
+         
+        if(!downSeeded){
+         
+          while (ArrayEqual(OS_GetPixel(tempCords),filledcolor)){
+  
+            if(tempCords.x <= 0){
+              tempCords.x--;
+              break;
+                 
+            }tempCords.x--;
+            
+          
+          }
+          tempCords.x++;
+          lastfilledpos.push({x:tempCords.x,y:tempCords.y});
+          downSeeded = true;
+        }
+    }else{
+      downSeeded = false;
+    }
+    }
+    if(xy.y > 0){ 
+        tempCords = {x:xy.x,y:xy.y-1};
+        if(ArrayEqual(OS_GetPixel(tempCords),filledcolor)){ 
+        if(!upSeeded){
+       
+          while (ArrayEqual(OS_GetPixel(tempCords),filledcolor)){
+  
+            if(tempCords.x <= 0){
+              tempCords.x--;
+              break;
+                 
+            }tempCords.x--;
+            
+          
+          }
+          tempCords.x++;
+          lastfilledpos.push({x:tempCords.x,y:tempCords.y});
+      upSeeded = true;
+        }
+    }else{
+      upSeeded = false;
+    }
+    }
+    xy.x++;
+  }
+}
+function FillAround(){
+  let cordX = lastfilledpos[lastfilledpos.length-1].x;
+  let cordY = lastfilledpos[lastfilledpos.length-1].y;
+
+  lastfilledpos.pop();  
+  if(cordX>=resolution.x||cordY>=resolution.y||cordX<0||cordY<0){
+    
+     return;
+     
+   }
+  
+  FillPixel(cordX+1,cordY);
+  FillPixel(cordX-1,cordY);
+  FillPixel(cordX,cordY+1);
+  FillPixel(cordX,cordY-1);
+  
+}
+function FillPixel(cX,cY){
+   
+   
+       var pixel = ctx.getImageData(cX,cY,1,1).data;
+
+    //if(pixel[0]==filledcolor[0]&&pixel[1]==filledcolor[1]&&pixel[2]==filledcolor[2]&&pixel[3]==filledcolor[3]){
+     if(String(pixel)==String(filledcolor)){
+      ctx.fillRect(cX,cY,1,1);
+      tobefilledpos.push({x:cX,y:cY});
+    }
+    }
+//#endregion
+//#region line
+
+
 function PerfectLinePencil(X,Y,x,y,width) {
  
    if(X > x){//DONE
@@ -3271,45 +4080,8 @@ Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,li
   }
 
 
-  function putImageDataTransparent(ctx,array,x,y,w){
-    
-    
-    for(let r = 0; r < array.length/4/w;r++){
-       for(let j = 0; j < w;j++){
-        let i = r*4*w+j*4
-        ctx.fillStyle = "rgba("+array[i]+","+array[i+1]+","+array[i+2]+","+array[i+3]/255+")";
-        ctx.fillRect(x+j,y+r,1,1);
-      }
-    }
-     
-    
-    
-   
-  }
-function putImageDataOptimized(ctx,array,x,y,w,h){
-var ctxArray = ctx.getImageData(x,y,w,h).data;
-
-for(let i = 0;i < array.length;i+=4){
-
-var tr0 = ctxArray[i+3]/255;
-var tr1 = array[i+3]/255;
-array[i] = ((array[i]*tr1)+(ctxArray[i]*((1-tr1)*tr0)));
-array[i+1] = ((array[i+1]*tr1)+(ctxArray[i+1]*((1-tr1)*tr0)));
-array[i+2] = ((array[i+2]*tr1)+(ctxArray[i+2]*((1-tr1)*tr0)));
-if(array[i+3]+ctxArray[i+3] > 255){
-  array[i+3] = 255;
-}else{
-  array[i+3] = array[i+3]+ctxArray[i+3]; 
-}
-
-}
-ctx.putImageData(new ImageData(array,w),x,y);
-
-}
-//////////
-//SELECT//
-//////////
-var lrtb = {left:1,right:-1,top:1,bottom:-1}
+//#endregion
+//#region select
 function IsMouseInArea(){
   
 if(intPos.x >= lrtb.left && intPos.x <= lrtb.right && intPos.y >= lrtb.top && intPos.y <=lrtb.bottom){
@@ -3701,10 +4473,30 @@ SelectResizeFromTo(SelectPos.x+SelectPos.w,SelectPos.y+SelectPos.h,intPos.x,Sele
 
 break;
 
-
+case(8)://rotate
+SelectRotate(SelectPos.x+(SelectPos.w/2),SelectPos.y+(SelectPos.h/2),intPos.x,intPos.y);
+break;
 
   }
  
+}
+function SelectRotate(anchorX,anchorY,rotX,rotY){
+  //pctx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+  //uictx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+
+  //get current vector from center to rotation point
+  var tempVector = {x:anchorX-rotX,y:anchorY-rotY};
+
+  //get angle between current vector and last vector
+  if(ImageVector.x!=0 || ImageVector.y!=0){
+
+    var angle = GetAngleBetweenVectors(ImageVector,tempVector);
+    console.log(angle);
+
+  }
+  ImageVector=tempVector;
+
+
 }
 function SelectResizeFromTo(AnchorX,AnchorY,x,y){
   pctx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
@@ -3755,789 +4547,12 @@ SelectAreaT=tempImage;
 
 }
 
-//DRAW CODE
-function Draw(){
-      //COLORPICKER//
- if(busy){
-  switch(busyTask){
-    case("SELECTRESIZE"):
-    SelectResize(busyParams);
-    break;
-  }
+//#endregion
 
+//#endregion
 
-  return;
- }
-  switch(hoveredON){ 
- 
-    case("colorpicker"):
-     
- if(left){
-     //let Xoff = styleCPE.left.split("px")[0];
-  //let Yoff = styleCPE.top.split("px")[0];  
-      //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
-    //  console.log(E.clientX);
-      var x = ~~(E.clientX-colorpicker.getBoundingClientRect().left-4);
-      var y = ~~(E.clientY-colorpicker.getBoundingClientRect().top-4);
-      if(x > 127){x=127;}
-      if(y > 127){y=127;}
-      if(x < 0){x=0;}
-      if(y < 0){y=0;}
-      //UI
-       colorPickerCursor.style.left = (x-8)+"px";
-      colorPickerCursor.style.top = (y-8)+"px";
-
-      var idk = cpbtx.getImageData(x*2,y*2,1,1).data;
-      ColorCords.x = x*2;
-      ColorCords.y = y*2;
-      let Transparency = Color.split(",")[3].split(")")[0];
-      
-    Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparency+")";
-    
-      CurrentColor.getContext("2d").fillStyle = Color;
-      CurrentColor.getContext("2d").clearRect(0,0,1,1);
-       CurrentColor.getContext("2d").fillRect(0,0,1,1);
-       UpdateTransparent(Color);
-       UpdateColorCode(Color);
-    }
-    break;
-    case("huepicker"):
-    if(left){
-      //let Xoff = styleCPE.left.split("px")[0];
-      let Yoff = styleCPE.top.split("px")[0];  
-         //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
-         var x = 8;
-         var y = ~~(AbsPos.y-Yoff-6);
-         //if(x > 127){x=127;}
-         if(y > 127){y=127;}
-         //if(x < 0){x=0;}
-         if(y < 0){y=0;}
-         //UI
-         
-          huePickerCursor.style.left = (x-8)+"px";
-         huePickerCursor.style.top = (y-2)+"px";
-         //2.8125 = 360/128
-         var idk = htx.getImageData(0,~~(y*2.8125),1,1).data;
-         let Transparent = Color.split(")")[0].split(",")[3];
-         let tempColor = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparent+")";
-       
-        UpdateColorPicker(tempColor);
-      
-        UpdateColorCode(Color);
-        
-       
-          
-       }
-       break;
-       case("trpicker"):
-    if(left){
-      //let Xoff = styleCPE.left.split("px")[0];
-      let Yoff = styleCPE.top.split("px")[0];  
-         //var idk = cpbtx.getImageData(~~(AbsPos.x-Xoff),~~(AbsPos.y-Yoff),1,1).data;
-         var x = 8;
-         var y = ~~(AbsPos.y-Yoff-6);
-         //if(x > 127){x=127;}
-         if(y > 127){y=127;}
-         //if(x < 0){x=0;}
-         if(y < 0){y=0;}
-         //UI
-         
-          trPickerCursor.style.left = (x-8)+"px";
-         trPickerCursor.style.top = (y-2)+"px";
-         //2.8125 = 360/128
-        let Transparency = Number((1-(y*2.8125)/360+"").substring(0,4));
-      let rgb = Color.split("rgba(")[1].split(",");
-    Color = "rgba("+rgb[0]+","+rgb[1]+","+rgb[2]+","+Transparency+")";
-    
-      CurrentColor.getContext("2d").fillStyle = Color;
-      CurrentColor.getContext("2d").clearRect(0,0,1,1);
-       CurrentColor.getContext("2d").fillRect(0,0,1,1);
-       
-       UpdateColorCode(Color);  
-       }
-       break;
-  }
-  
- 
-      //DRAW//
-  if(hoveredON != "canvas" && hoveredON!= "background"){
-    return;
-  }
-  if(left){
-
-    if(SelectDragging){
-      if(lastIntPos.x != intPos.x || lastIntPos.y != intPos.y){
-        MoveSelectedPr(intPos.x-lastIntPos.x,intPos.y-lastIntPos.y);
-      }
-     
-      return;
-    }
-    switch(PRIMARY){
-      case("pencil"):
-
-
-
-
-          ctx.lineWidth = lineWidth;
-      ctx.beginPath();
-      switch(PRIMARY_MODE){
-case("PENCIL_MODE_BASIC"):
-  ctx.fillRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
-break;
-case("PENCIL_MODE_NOGAPS"):
-
-PerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
- 
-break;
-
-case("PENCIL_MODE_BLURRY"):
-
-ctx.beginPath(); // begin
-
-  ctx.lineWidth = lineWidth/2;
-  ctx.lineCap = "round";
- 
-if(lastPos.x == pos.x){
-  lastPos.x += 0.1;
-}
-  ctx.moveTo(lastPos.x, lastPos.y); // from
-  
-  ctx.lineTo(pos.x, pos.y); // to
-
-  ctx.stroke(); // draw it!
-break;
-case("PENCIL_MODE_PIXEL"):
-
-//PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
- PixelPerfectPencil(lineWidth);
-break;
-
-      }
-
-     
-      break;
-      case("line"):
-      switch(PRIMARY_MODE){
-        default:
-           Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-      Line(true,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
-          break;
-      }
-      
-      break;
-      case("poly"):
-      PolyPreview();
-      break;
-      case("select"):
-      RenderSelectUI();
-      break;
-    }
-
-
-
-
-    /*
-    // update mouse
-    ctx.beginPath();
-    if(PRIMARY == "eraser"){
-      ctx.clearRect(~~pos.x,~~pos.y,1,1);
-    }
-    else{
-      ctx.fillRect(~~pos.x,~~pos.y,1,1);
-    }
-    
-    ctx.lineWidth = 0.5;
-    ctx.strokeStyle = "#000000";
-    ctx.stroke();
-  
-    pos.x = (E.clientX*resScale)*scale;
-    pos.y = (E.clientY*resScale)*scale;
-    /*
-    ctx.fillRect(~~pos.x+.5,~~pos.y+.5,lineWidth,lineWidth);
-  
-    ctx.fillRect(~~pos.x+.5,~~pos.y+.5,lineWidth,lineWidth);
-    */
-    
-   
-  }
-  else if (right){
-   
-    // update mouse
-    ctx.beginPath();
-    if(SECONDARY == "eraser"){
-      ctx.clearRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
-    }
-    else{
-      ctx.fillRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
-    }
-    
-    ctx.lineWidth = 0.5;
-    ctx.strokeStyle = "rgba(0,0,0,1)";
-    ctx.stroke();
-  
-  UpdatePos();
-    /*
-    ctx.beginPath();
-  
-    ctx.lineWidth = lineWidthS;
-    ctx.lineCap = lineCapS;
-    ctx.strokeStyle = lineColorS;
-    ctx.moveTo(pos.x, pos.y); 
-    // update mouse
-    pos.x = (e.clientX*resScale)*scale;
-    pos.y = (e.clientY*resScale)*scale;
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke(); 
-    */
-  }
-  else {
-     // update mouse
-    UpdatePos();
-  }
-  
-  
-}
-
-
-
-
-//////////////
-//GENERIC UI//
-//////////////
-let LeftHidden = false;
-let UIUndo = document.getElementById("undo");
-UIUndo.addEventListener("click",SQ_UNDO);
-let UIRedo = document.getElementById("redo");
-UIRedo.addEventListener("click",SQ_REDO);
-let UILeft = document.getElementById("UIleft");
-let UILeftToggle = document.getElementById("left");
-UILeftToggle.addEventListener("click",function(x){
-if(LeftHidden){
-  UILeft.style.visibility = "visible";
-}else{
-  UILeft.style.visibility = "hidden";
-}
-LeftHidden = !LeftHidden;
-});
-let RightHidden = false;
-let UIRight = document.getElementById("UIright");
-let UIRightToggle = document.getElementById("right");
-UIRightToggle.addEventListener("click",function(x){
-if(RightHidden){
-  UIRight.style.visibility = "visible";
-}else{
-  UIRight.style.visibility = "hidden";
-}
-RightHidden = !RightHidden;
-});
-let Input_tick = document.getElementById("tick");
-Input_tick.addEventListener("input",function(e){
-  if(Input_tick.value < 2001 && Input_tick.value > -1){
-      TICK = Input_tick.value;
-  }else{
-    TICK = 0;
-    Input_tick.value = 0;
-  }
-
-
-});
-let Input_lnW = document.getElementById("lnW");
-Input_lnW.addEventListener("input",function(e){
-  if(Input_lnW.value < 1024 && Input_lnW.value > 0){
-    lineWidth = Input_lnW.value;
-}else{
-  lineWidth = 1;
-  Input_lnW.value = 1;
-}
-
-});
-
-    //FILE MENU//
-let New = document.getElementById("new");
-New.addEventListener("click",function(e){
-ctx.clearRect(0,0,resolution.x,resolution.y);  
-previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);   
-uiCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);   
-});
-let Resize = document.getElementById("resize");
-let UIResize = document.getElementById("UIres");
-Resize.addEventListener("click",function(e){
-  UIOptions.style.visibility = "hidden";
-  if(UIResize.style.visibility == "hidden"){
-    UIResize.style.visibility = "visible";
-    document.getElementById("resX").value = resolution.x;
-    document.getElementById("resY").value = resolution.y;
-  }else{
-    UIResize.style.visibility = "hidden";
-  }
-
-
-  
-});
-let Options = document.getElementById("options");
-let UIOptions = document.getElementById("UIopt");
-Options.addEventListener("click",function(e){
-  UIResize.style.visibility = "hidden";
-  if(UIOptions.style.visibility == "hidden"){
-    UIOptions.style.visibility = "visible";
-  //get values
-  }else{
-    UIOptions.style.visibility = "hidden";
-  }
-
-
-});
-document.getElementById("resizeconfirm").addEventListener("click",function(e){ 
- 
-  var sx = Number(document.getElementById("resX").value);
-  var sy =  Number(document.getElementById("resY").value);
-var img = new Image();
-  canvas.toBlob(function(blob) {
-    const url = URL.createObjectURL(blob);
-  img.src = url;
-  });
-img.onload = function(){
-
-  canvasSize.x = sx;
-  canvasSize.y = sy
-  resolution.x = sx;
-  resolution.y = sy;
-
-  div.style.height = ""+canvasSize.y+"px";
-  div.style.width = ""+canvasSize.x+"px";
-  UpdateCanvas();
-  div.style.left = "119px";
-  div.style.top = "40px";
-  ChangeRes();
-ScrollUpdate();
-
-ctx.drawImage(img,0,0);
-if(SelectActive){
-
-  pctx.putImageData(SelectAreaT,SelectPos.x,SelectPos.y);
-  uictx.fillStyle = selectFill;
-  uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
-  console.log(SelectPos);
-}
-}
-
-
-
-
-
-});
-let Save = document.getElementById("save");
-let OpenButton = document.getElementById("fileClick");
-let Open = document.getElementById("open");
-let ImportButton = document.getElementById("impClick");
-let Import = document.getElementById("import");
-Save.addEventListener("click",download);
-OpenButton.addEventListener("click",function(e){
-Open.click();
-});
-ImportButton.addEventListener("click",function(e){
-  Import.click();
-  });
-Open.addEventListener("change",function(e){
-  var image = new Image();
-  image.onload = function(){
-canvasSize.x = image.width;
-canvasSize.y = image.height;
-resolution.x = image.width;
-resolution.y = image.height;
-
-ChangeRes();
-ScrollUpdate();
-
-
-
-div.style.height = ""+canvasSize.y+"px";
-div.style.width = ""+canvasSize.x+"px";
-UpdateCanvas();
-
- ctx.drawImage(image,0,0);
-  }
-  image.src = URL.createObjectURL(this.files[0]);
-  
- 
-});
-Import.addEventListener("change",function(e){
-  ConfirmSelect();
-  
-  var image = new Image();
-  image.onload = function(){
-    
-  //make image selected
-  const canv = document.createElement("canvas");
-  canv.width = image.width;
-  canv.height = image.height;
-
-  const Actx = canv.getContext("2d");  Actx.drawImage(image, 0, 0);
-  SelectArea = Actx.getImageData(0,0,image.width,image.height);
-  SelectAreaT=SelectArea;
-
-   SelectActive = true;
-  SelectPos.x = 0;
-  SelectPos.y = 0;
-  SelectPos.w = image.width;
-  SelectPos.h = image.height;
-  lrtb.left = 0;  //not the same as pos
-  lrtb.top = 0;
-  lrtb.right = image.width;  //0+width
-  lrtb.bottom = image.height;//0+height
-
-
-  pctx.putImageData(SelectAreaT,0,0);
-  uictx.fillStyle = selectFill;
-  uictx.fillRect(0,0,image.width,image.height);
- 
-  }
-  image.src = URL.createObjectURL(this.files[0]);
-  
- 
-});
-
-
-
-
-let select = false; //false=PRIMARY,true=SECONDARY
-let PRIMARYtoolSELECT;
-let SECONDARYtoolSELECT; 
-
-let Button_primary = document.getElementById("primary");
-let Button_secondary = document.getElementById("secondary");
-Button_primary.addEventListener("click",function(e) {
-  select = false;
-  Button_primary.classList.add("selectP");
-  Button_secondary.classList.remove("selectS");
-  });
-  Button_secondary.addEventListener("click",function(e) {
-    select = true;
-    Button_primary.classList.remove("selectP");
-    Button_secondary.classList.add("selectS");
-    });
-let Button_pencil = document.getElementById("pencil");
-let Button_line = document.getElementById("line");
-let Button_poly = document.getElementById("poly");
-let Button_fill = document.getElementById("fill");
-let Button_picker = document.getElementById("picker");
-let Button_select = document.getElementById("select");
-let Button_eraser = document.getElementById("eraser");
-PRIMARYtoolSELECT = Button_pencil;
-SECONDARYtoolSELECT = Button_eraser;
-
-let Menu_Tool = document.getElementById("toolmenu");
-      //FUNC//
-function CreateIcon(img,id){
-  let temp = document.createElement("button");
-  let imgobj = document.createElement("img");
-  imgobj.src = img;
-  imgobj.width = 48;
-  imgobj.height = 48;
-  temp.appendChild(imgobj);
-  temp.classList.add("icon");
-  temp.id = id;
-
-
-
-
-  //BUTTONCLICK
-  temp.addEventListener("click", function(e) {
-console.log(id);
-if(!select){
-  PRIMARY_MODE = id;
-}else{
-  SECONDARY_MODE = id;
-}
-
-  });
-  return temp;
-}
-
-function MenuChange() {
-  
-if(!select){
-  let name;
-  let br;
-  let label,input;
-  switch(PRIMARY){
-    case("pencil"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-     br = document.createElement("br");
-    name.innerHTML = "Pencil";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
- 
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-
-      
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","PENCIL_MODE_BASIC"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","PENCIL_MODE_BLURRY"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","PENCIL_MODE_NOGAPS"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","PENCIL_MODE_PIXEL"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    label = document.createElement("label");
-    label.setAttribute("for","size");
-    label.innerHTML = "Size:";
-    Menu_Tool.appendChild(label);
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    /*
-    input = document.createElement("input");
-    input.id = "size";
-    input.setAttribute("type","number");
-    input.setAttribute("name","size");
-    input.value = 1;
-    input.addEventListener("change", function(e){
-    if(input.value > 0){
-      if(!select){
-        lineWidth = input.value;
-      }else{
-        lineWidthS = input.value;
-      }
-
-    }
-    });
-
-    Menu_Tool.appendChild(input);
-*/
-
-
-
-
-    break;
-
-    case("line"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Line";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC"));
-    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-   
-    break;
-
-
-    case("fill"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Fill";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
-    
-   
-    break;
-    case("picker"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Picker";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
-    
-   
-    break;
-    case("select"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Picker";
-    Menu_Tool.appendChild(name);
-    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY"));
-    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE"));
-    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT"));
-    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE"));
-    name = document.createElement("p"); 
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
-    
-   
-    break;
-  }
-}
-}
-
-function UIbuttonCLICK(obj){
-  if(select){
-    
-    SECONDARYtoolSELECT.classList.remove("selectS");
-    SECONDARYtoolSELECT.classList.remove("select");
-    SECONDARYtoolSELECT.classList.remove("selectP");
-    if(SECONDARYtoolSELECT == PRIMARYtoolSELECT){
-      
-      PRIMARYtoolSELECT.classList.add("selectP");
-    }
-    if(PRIMARYtoolSELECT == obj){
-      obj.classList.remove("selectP");
-      obj.classList.remove("selectS");
-      obj.classList.add("select");
-    }else{
-      obj.classList.remove("select");
-      obj.classList.remove("selectP");
-      obj.classList.add("selectS");
-    }
-SECONDARYtoolSELECT = obj;
-  } else {
-    PRIMARYtoolSELECT.classList.remove("selectS");
-    PRIMARYtoolSELECT.classList.remove("select");
-    PRIMARYtoolSELECT.classList.remove("selectP");
-    if(SECONDARYtoolSELECT == PRIMARYtoolSELECT){
-      
-      SECONDARYtoolSELECT.classList.add("selectS");
-    }
-    if(SECONDARYtoolSELECT == obj){
-      obj.classList.remove("selectP");
-      obj.classList.remove("selectS");
-      obj.classList.add("select");
-    }else{
-      obj.classList.remove("select");
-      obj.classList.remove("selectS");
-      obj.classList.add("selectP");
-    }
-PRIMARYtoolSELECT = obj;
-  }
-  MenuChange();
- 
-return;
-}
-
-document.getElementById("cancel_colorpicker").addEventListener("click",function(e){
-colorpicker.style.visibility = "hidden";
-});
-    //TOOLS//
-Button_pencil.addEventListener("click",function(e) {
-if(!select){
-PRIMARY = "pencil";
-}else{
-SECONDARY = "pencil";
-}
-
-UIbuttonCLICK(Button_pencil);
-
-});
-Button_line.addEventListener("click",function(e) {
-  if(!select){
-    PRIMARY = "line";
-    }else{
-    SECONDARY = "line";
-    }
-  UIbuttonCLICK(Button_line);
-  });
-  Button_poly.addEventListener("click",function(e) {
-    if(!select){
-      PRIMARY = "poly";
-      }else{
-      SECONDARY = "poly";
-      }
-    UIbuttonCLICK(Button_poly);
-    });
-    Button_fill.addEventListener("click",function(e) {
-      if(!select){
-        PRIMARY = "fill";
-        PRIMARY_MODE = "FILL_MODE_INST";
-        }else{
-        SECONDARY = "fill";
-        }
-      UIbuttonCLICK(Button_fill);
-      });
-      Button_picker.addEventListener("click",function(e) {
-        if(!select){
-          PRIMARY = "picker";
-          PRIMARY_MODE = "PICKER_TRANSPARENT";
-          }else{
-          SECONDARY = "picker";
-          }
-        UIbuttonCLICK(Button_picker);
-        });
-      Button_select.addEventListener("click",function(e) {
-        if(!select){
-          PRIMARY = "select";
-          }else{
-          SECONDARY = "select";
-          }
-        UIbuttonCLICK(Button_select);
-        });
-        Button_eraser.addEventListener("click",function(e) {
-          if(!select){
-            PRIMARY = "eraser";
-            }else{
-            SECONDARY = "eraser";
-            }
-          UIbuttonCLICK(Button_eraser);
-          });
-
-
-
-////////////////////
-//III-NN-N-III-TTT//
-//-I--N-NN--I---T-//
-//III-N--N-III--T-//
-////////////////////
 function Init() {
-/*
-  var c = "rgba(200,48,150,1)";
-console.log(c);
-console.log(RGBAtoHSLA(c));
-console.log(HSLAtoRGBA(RGBAtoHSLA(c)));
-*/
-
-
 SQ_SAVE();
-
-  /* log i
-setInterval (function(){ 
-
-  console.log(lineColor);
- 
-},1000);
-*/
-
-
 //UI//
  MenuChange();
 //CANVAS//
@@ -4552,41 +4567,8 @@ ScrollUpdate();
   htx.fillStyle = "hsla("+i+",100%,50%,1)";
    htx.fillRect(0,i,1,1);
  }
- //UpdateColorPicker(lineColor);
- //UpdateColorCode(lineColor);
  InitializeColorPicker(false,lineColor);
  
-/*
- //COLORPALETTE//
- cpbtx.fillStyle = "#FFFFFFFF";
- cpbtx.fillRect(0,0,256,256);
- //colored gradient
- for(let i = 0; i < 256;i++){
-  cpbtx.fillStyle = "rgba(255,0,0,"+(i/255)+")";
-  cpbtx.fillRect(i,0,1,256);
- }
- for(let i = 0; i < 256;i++){
-  cpbtx.fillStyle = "rgba(0,0,0,"+(i/255)+")";
-  cpbtx.fillRect(0,i,256,1);
- }
- for(let i = 0; i < 360;i++){
-  htx.fillStyle = "hsla("+i+",100%,50%,1)";
-   htx.fillRect(0,i,1,1);
- }
- for(let i = 0; i < 360;i++){
-  trtx.fillStyle = "rgba(255,0,0,"+(i/360)+")";
-   trtx.fillRect(0,360-i,1,1);
- }
-*/
 InitializeColorPaletteOR(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
 }
 Init();
-/*
-lastfilledpos.push({x:100,y:100});
-FillAround();
-console.log(tobefilledpos);
-console.log(lastfilledpos);
-lastfilledpos=tobefilledpos;
-console.log(tobefilledpos);
-console.log(lastfilledpos);
-*/
