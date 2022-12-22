@@ -3,7 +3,7 @@
 var temp = 0; //tempstorage for frog
 var TempImg;
 var ImageFlip = {x:false,y:false};
-var ImageVector = {x:0,y:0};
+var ImageVector = {x:0,y:100};
 
 var busy = false;
 var busyTask = "NONE";
@@ -417,7 +417,7 @@ for(let i =0;i< SelectPoints.length;i++){
    busyTask="SELECTRESIZE";
    busyParams = [];
    busyParams.push(i);
-   ImageVector = {x:0,y:0};
+   
   };
   SelectPoints[i].onmouseup = function(){
     busy=false;
@@ -1380,6 +1380,20 @@ function SQ_REDO(){
   Qindex++;
 
   ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
+}
+//#endregion
+//#region vector
+function GetAngleBetweenVectors(vec1,vec2){
+
+
+  return Math.atan2(vec1.x,vec1.y) - Math.atan2(vec2.x,vec2.y);
+  //return Math.acos((vec1.x*vec2.x+vec1.y*vec2.y)/(Math.sqrt(vec1.x**2 + vec1.y**2)*Math.sqrt(vec2.x**2 + vec2.y**2)))*180/Math.PI;
+}
+function LinearlyDependent(vec1,vec2){
+  if(vec1.x/vec1.y==vec2.x/vec2.y){
+    return true;
+  }
+  return false;
 }
 //#endregion
 //#region array
@@ -2365,13 +2379,16 @@ break;
 case("picker"):
 if(hoveredON == "canvas"){
   var color = ctx.getImageData(intPos.x,intPos.y,1,1).data;
-  var a = String(color[3]/255).split("");
+  var a = String(color[3]).split("");
+  a=Number(a.join(""))/255;
+  var a = String(a).split("");
   a.length = 5;
   a=Number(a.join(""));
 
   var floatColor = [color[0],color[1],color[2],a];
-  //console.log(floatColor);
-  UpdateColor(floatColor);
+  var joinedClr = floatColor.join(",");
+  Color_add(joinedClr);
+  Color_last();
 }
 break;
 case("select"):
@@ -4108,6 +4125,9 @@ function UpdateSelectPoints(lowx,highx,lowy,highy){
   SelectPoints[7].style.top=((lowy.y+highy.y)/2+0.5)/resScale-8+"px";
   SelectPoints[8].style.left=((lowx.x+highx.x)/2+0.5)/resScale-8+"px";
   SelectPoints[8].style.top=(lowy.y)/resScale-32+"px";
+  ImageVector.x = 0;
+  ImageVector.y =((-highy.y+lowy.y)/2)-resScale*27;
+  
 }
 function EnableSelectPoints(){
   for(let i = 0; i < SelectPoints.length;i++){
@@ -4417,7 +4437,7 @@ if(!XY){//X
 
 }
 function SelectResize(params){
-  console.log(params[0]);
+  
   switch(params[0]){// which point
 case(0)://topleft
 
@@ -4474,6 +4494,7 @@ SelectResizeFromTo(SelectPos.x+SelectPos.w,SelectPos.y+SelectPos.h,intPos.x,Sele
 break;
 
 case(8)://rotate
+
 SelectRotate(SelectPos.x+(SelectPos.w/2),SelectPos.y+(SelectPos.h/2),intPos.x,intPos.y);
 break;
 
@@ -4487,14 +4508,29 @@ function SelectRotate(anchorX,anchorY,rotX,rotY){
   //get current vector from center to rotation point
   var tempVector = {x:anchorX-rotX,y:anchorY-rotY};
 
+  if(LinearlyDependent(tempVector,ImageVector)){
+return;
+  }
+
+
   //get angle between current vector and last vector
-  if(ImageVector.x!=0 || ImageVector.y!=0){
 
     var angle = GetAngleBetweenVectors(ImageVector,tempVector);
-    console.log(angle);
+    
+    
+    var cosb = Math.cos(angle);
+    var sinb = Math.sin(angle);
+    tempVector.x = cosb*ImageVector.x-sinb*ImageVector.y;
+    tempVector.y = sinb*ImageVector.x+cosb*ImageVector.y;
+  
+  ImageVector.x = tempVector.x;
+  ImageVector.y = tempVector.y;
+  
+  SelectPoints[8].style.left = (anchorX-tempVector.x)/resScale-8+"px";
+  SelectPoints[8].style.top = (anchorY-tempVector.y)/resScale-8+"px";
 
-  }
-  ImageVector=tempVector;
+
+ 
 
 
 }
