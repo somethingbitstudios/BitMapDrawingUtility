@@ -8,7 +8,7 @@ var ImageVector = {x:0,y:100};
 var busy = false;
 var busyTask = "NONE";
 var busyParams = [];
-
+var lastProc = 0;
 var br = false; //break?
 
 
@@ -135,7 +135,7 @@ if(SelectActive){
   pctx.putImageData(SelectAreaT,SelectPos.x,SelectPos.y);
   uictx.fillStyle = selectFill;
   uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
-  console.log(SelectPos);
+ 
 }
 }
 
@@ -389,7 +389,7 @@ var lineColorS = "rgba(255,255,255,1)";
 
 var EditedColor = "";
 
-
+var OverallAngle = 0;
 //#endregion
 //#region Select
 
@@ -417,12 +417,60 @@ for(let i =0;i< SelectPoints.length;i++){
    busyTask="SELECTRESIZE";
    busyParams = [];
    busyParams.push(i);
-   
+   if(lastProc == 2){ //if last process was rotation, lock it in
+     //lock in rotation
+  SelectArea=SelectAreaT;
+
+   }
   };
   SelectPoints[i].onmouseup = function(){
     busy=false;
+    lastProc = 1;//transform
+ 
   };
 }
+
+SelectPoints[8].onmousedown = function(){
+  
+ 
+  busy=true;
+  busyTask="SELECTRESIZE";
+   busyParams = [];
+   busyParams.push(8);
+
+ if(lastProc==2){return;}//if last process was rotate too, no need to expand
+ 
+ OverallAngle=0;
+// pctx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+//make image that can house picture rotated in any way
+//side
+
+SelectAreaT = CenteredCrop(SelectAreaT);
+
+var side = Math.ceil(Math.sqrt(SelectAreaT.width**2+SelectAreaT.height**2));
+if(side%2==1){
+  side++;
+}
+console.log(SelectAreaT.width+","+SelectAreaT.height+","+side);
+//lock in transform
+SelectArea=ExpandImageFromCenter(SelectAreaT,side,side);
+uictx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+SelectPos.x = Math.floor(SelectPos.x+((SelectPos.w-side)/2));
+SelectPos.y = Math.floor(SelectPos.y+((SelectPos.h-side)/2));
+SelectPos.w = side;
+SelectPos.h = side;
+
+uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+
+
+};
+SelectPoints[8].onmouseup = function(){
+  busy=false;
+  //last process was 2: rotation
+  lastProc = 2; console.log("2 mouse up on");
+  EnableSelectPoints();
+  UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
+};
 var selectFill ="rgba(100,150,255,0.4)";
 var SelectActive = false; //if true, area is  selected
 var SelectDragging = false;
@@ -451,6 +499,9 @@ var filling = false;
 var upSeeded = false;
 var downSeeded = false;
 
+
+
+const Deg = {_0: 0,_45:45*Math.PI/180, _90:90*Math.PI/180,_135:135*Math.PI/180,_180:180*Math.PI/180,_225:225*Math.PI/180,_270:270*Math.PI/180,_315:315*Math.PI/180,_30:30*Math.PI/180,_60:60*Math.PI/180,_120:120*Math.PI/180,_150:150*Math.PI/180,_210:210*Math.PI/180,_240:240*Math.PI/180,_300:300*Math.PI/180,_330:330*Math.PI/180,_360:360*Math.PI/180};
 //#endregion
 //#region colorpalette
 
@@ -1429,6 +1480,68 @@ function ArrayEqual(arr1,arr2){
   
 
 //#endregion
+//#region angle
+function SnapAngleToConstant(angle,tolerance){
+  if(angle == 0){
+    return 0;
+  }
+  var sign = Math.abs(angle)/angle;
+  angle = Math.abs(angle);
+  while(angle > Deg._360){
+    angle -= Deg._360;
+  }
+  
+  if(angle+tolerance > Deg._0 && angle-tolerance < Deg._0){
+    return 0;
+  }
+  else if(angle+tolerance > Deg._30 && angle-tolerance < Deg._30){
+    return Deg._30*sign;
+  }
+  else if(angle+tolerance > Deg._45 && angle-tolerance < Deg._45){
+    return Deg._45*sign;
+  }
+  else if(angle+tolerance > Deg._60 && angle-tolerance < Deg._60){
+    return Deg._60*sign;
+  }
+  else  if(angle+tolerance > Deg._90 && angle-tolerance < Deg._90){
+    return Deg._90*sign;
+  }
+  else  if(angle+tolerance > Deg._120 && angle-tolerance < Deg._120){
+    return Deg._120*sign;
+  }
+  else  if(angle+tolerance > Deg._135 && angle-tolerance < Deg._135){
+    return Deg._135*sign;
+  }
+  else  if(angle+tolerance > Deg._150 && angle-tolerance < Deg._150){
+    return Deg._150*sign;
+  }
+  else  if(angle+tolerance > Deg._180 && angle-tolerance < Deg._180){
+    return Deg._180*sign;
+  }
+  else  if(angle+tolerance > Deg._210 && angle-tolerance < Deg._210){
+    return Deg._210*sign;
+  }
+  else  if(angle+tolerance > Deg._225 && angle-tolerance < Deg._225){
+    return Deg._225*sign;
+  }
+  else  if(angle+tolerance > Deg._240 && angle-tolerance < Deg._240){
+    return Deg._240*sign;
+  }
+  else  if(angle+tolerance > Deg._270 && angle-tolerance < Deg._270){
+    return Deg._270*sign;
+  }
+  else  if(angle+tolerance > Deg._300 && angle-tolerance < Deg._300){
+    return Deg._300*sign;
+  }
+  else  if(angle+tolerance > Deg._315 && angle-tolerance < Deg._315){
+    return Deg._315*sign;
+  }
+  else  if(angle+tolerance > Deg._330 && angle-tolerance < Deg._330){
+    return Deg._330*sign;
+  }
+  return angle*sign;
+}
+//#endregion
 //#region image
 function ImageTransform(img,rX,rY,flipX,flipY){
   if(rX == 0 || rY == 0){return new ImageData(1,1)}
@@ -1493,6 +1606,151 @@ if(ImageFlip.x == false && ImageFlip.y==false){
 
 
 return imagedt;
+}
+function ImageRotate(img,rX,rY,angle){
+  //if angle close to constant, change to constant
+ // angle = SnapAngleToConstant(angle,0.3);        //     if set to snap to angles like 45 and stuff
+
+
+  var image = new ImageData(rX,rY);
+//tempimg <- rotated(selectedarea,angle);
+for(let i = 0; i < rY;i++){
+  for(let j = 0; j < rX;j++){
+    //x,y 
+    //x
+    // translate rotate -translate
+    var halfX = rX/2;
+    var halfY = rY/2;
+  
+    var sine = Math.sin(-angle);
+    var cosine = Math.cos(-angle);
+    var x = Math.round(((j-halfX)*cosine-(i-halfY)*sine)+halfX);
+    var y = Math.round(((j-halfX)*sine+(i-halfY)*cosine)+halfY);
+
+  //sleep(1000);  
+  
+  
+  image.data[i*4*rX+j*4] = img.data[y*4*rX+x*4];
+  image.data[i*4*rX+j*4+1] = img.data[y*4*rX+x*4+1];
+  image.data[i*4*rX+j*4+2] = img.data[y*4*rX+x*4+2];
+  image.data[i*4*rX+j*4+3] = img.data[y*4*rX+x*4+3];
+  
+  }
+  }
+  return image;
+}
+function CenteredCrop(image){
+  var pos = {x:0,y:0,w:image.width,h:image.height};
+  var croppable = {left:0,right:0,top:0,bottom:0};
+  var brk = false;
+
+  //check left
+  for(let j =0;j< image.width;j++){
+    for(let i = 0;i < image.height;i++){
+    
+      if(image.data[i*4*image.width+j*4+3]>0){
+        brk = true;
+        break;
+      }
+    }
+    if(brk){
+      break;
+    }
+    croppable.left++;
+  }
+  brk=false;
+    //check right
+    for(let j = image.width-1;j> -1;j--){
+      for(let i = 0;i < image.height;i++){
+        
+        if(image.data[i*4*image.width+j*4+3]>0){
+          brk = true;
+       
+          break;
+        }
+      }
+      if(brk){
+        break;
+      }
+      croppable.right++;
+    }
+    brk=false;
+  //check top
+  for(let i = 0;i < image.height;i++){
+    for(let j =0;j< image.width;j++){
+   
+    
+      if(image.data[i*4*image.width+j*4+3]>0){
+        brk = true;
+        break;
+      }
+    }
+    if(brk){
+      break;
+    }
+    croppable.top++;
+  }
+  brk=false;
+    //check bottom
+    for(let i = image.height-1;i > -1;i--){
+      for(let j =0;j< image.width;j++){
+     
+      
+        if(image.data[i*4*image.width+j*4+3]>0){
+          brk = true;
+          break;
+        }
+      }
+      if(brk){
+        break;
+      }
+      croppable.bottom++;
+    }
+
+
+//get the smallest croppable dir
+var crop = Math.min(croppable.left,croppable.right,croppable.top,croppable.bottom);
+
+//change pos
+pos.x = crop;
+pos.y = crop;
+pos.w = pos.w-crop*2;
+pos.h = pos.h-crop*2;
+//get the cropped to img
+var te = new ImageData(pos.w,pos.h);
+for(let i = 0;i< pos.h;i++){
+  for(let j = 0;j < pos.w;j++){
+    
+    te.data[i*4*pos.w+j*4]=image.data[(i+pos.y)*4*image.width+(j+pos.x)*4];
+    te.data[i*4*pos.w+j*4+1]=image.data[(i+pos.y)*4*image.width+(j+pos.x)*4+1];
+    te.data[i*4*pos.w+j*4+2]=image.data[(i+pos.y)*4*image.width+(j+pos.x)*4+2];
+    te.data[i*4*pos.w+j*4+3]=image.data[(i+pos.y)*4*image.width+(j+pos.x)*4+3];
+  }
+}
+
+return te;//result
+}
+function ExpandImageFromCenter(image,x,y){
+  if(x%2==1){
+    x++;
+  }
+  if(y%2==1){
+    y++;
+  }
+
+  var temp = new ImageData(x,y);
+  var offX = Math.ceil((x-image.width)/2);
+  var offY = Math.ceil((y-image.height)/2);
+//  console.log(x+" "+y+" "+offX+" "+offY+" "+image.width+" "+image.height);
+  for(let i = 0;i<image.height;i++){
+    for(let j = 0;j<image.width;j++){
+      temp.data[(i+offY)*4*x+(j+offX)*4]=image.data[i*4*image.width+j*4];
+      temp.data[(i+offY)*4*x+(j+offX)*4+1]=image.data[i*4*image.width+j*4+1];
+      temp.data[(i+offY)*4*x+(j+offX)*4+2]=image.data[i*4*image.width+j*4+2];
+      temp.data[(i+offY)*4*x+(j+offX)*4+3]=image.data[i*4*image.width+j*4+3];
+    }
+  }
+  return temp;
 }
 //#endregion
 //#region imagedata to ctx
@@ -2673,7 +2931,17 @@ PolyPreview();
    
         switch(e.button){
         case(0): /*console.log("left");*/ left = false;
+        if(busy){
+          if(busyParams==8){
+ lastProc = 2;
+          EnableSelectPoints();
+          UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
+          }else{
+            lastProc = 1;
+          }
+            }
         busy=false;
+        
         leftClicked = true;
         leftDouble=false;
         setTimeout(function(){
@@ -4247,6 +4515,8 @@ function MoveSelectedPr(relX,relY){
 
 }
 function ConfirmSelect(){
+  lastProc = 0;console.log("0 confirm");
+  
   if(!SelectActive){
     return;
   }
@@ -4262,6 +4532,7 @@ function ConfirmSelect(){
   DisableSelectPoints();
   ImageFlip.x=false;
   ImageFlip.y=false;
+
 }
 function SelectResize_Check(X,Y,POSX,POSY,params,switchxy){
 
@@ -4525,14 +4796,27 @@ return;
   
   ImageVector.x = tempVector.x;
   ImageVector.y = tempVector.y;
-  
+  DisableSelectPoints();
+  uictx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+  SelectPoints[8].style.visibility = "visible";
   SelectPoints[8].style.left = (anchorX-tempVector.x)/resScale-8+"px";
   SelectPoints[8].style.top = (anchorY-tempVector.y)/resScale-8+"px";
+  if(Math.abs(angle)< 2){
+    OverallAngle+=angle;
+  }
+  
+  
+  RotateSelectedArea(OverallAngle);
 
 
- 
-
-
+}
+function RotateSelectedArea(angle){
+  var tempImage = ImageRotate(SelectArea,SelectPos.w,SelectPos.h,angle);
+  
+//UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
+pctx.putImageData(tempImage,SelectPos.x,SelectPos.y);
+uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
+SelectAreaT = tempImage;
 }
 function SelectResizeFromTo(AnchorX,AnchorY,x,y){
   pctx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
@@ -4608,3 +4892,13 @@ ScrollUpdate();
 InitializeColorPaletteOR(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
 }
 Init();
+
+
+
+var re = new ImageData(16,16);
+for(let i = 8; i<re.height-2;i++){
+  for(let j = 6;j<re.width-4;j++){
+    re.data[i*4*re.width+j*4+3]=255;
+  }
+}
+
