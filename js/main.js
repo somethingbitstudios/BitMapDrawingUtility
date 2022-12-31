@@ -1,5 +1,6 @@
 //#region vars
 //#region global
+var tempBool = false;
 var temp = 0; //tempstorage for frog
 var TempImg;
 var ImageFlip = {x:false,y:false};
@@ -18,6 +19,10 @@ var Qindex = -1;
 var StateQueue = []; //max size- 32?
 var QueueSize = 128;
 var SQchanged = true;
+//#endregion
+
+//#region key
+var cmd = false;
 //#endregion
 //#region UI
 
@@ -451,7 +456,7 @@ var side = Math.ceil(Math.sqrt(SelectAreaT.width**2+SelectAreaT.height**2));
 if(side%2==1){
   side++;
 }
-console.log(SelectAreaT.width+","+SelectAreaT.height+","+side);
+
 //lock in transform
 SelectArea=ExpandImageFromCenter(SelectAreaT,side,side);
 uictx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
@@ -460,9 +465,7 @@ SelectPos.y = Math.floor(SelectPos.y+((SelectPos.h-side)/2));
 SelectPos.w = side;
 SelectPos.h = side;
 
-uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
-
-
+RotateSelectedArea(0);
 };
 SelectPoints[8].onmouseup = function(){
   busy=false;
@@ -474,6 +477,7 @@ SelectPoints[8].onmouseup = function(){
 var selectFill ="rgba(100,150,255,0.4)";
 var SelectActive = false; //if true, area is  selected
 var SelectDragging = false;
+var SelectAreaCopy;
 var SelectArea;
 var SelectAreaT;
 var SelectPos = {x:-1,y:-1,w:0,h:0};
@@ -1433,6 +1437,35 @@ function SQ_REDO(){
   ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
 }
 //#endregion
+//#region keyhandling
+document.addEventListener('keydown', function(event) {
+  
+  if(event.key == "Meta") {
+    cmd=true;
+    }
+  else if(event.key == "c" && cmd) {
+      CopySelect();
+      //alert("copy");
+  }
+  else if(event.key == "v" && cmd) {
+      PasteSelect();
+      //alert("paste");
+  }
+  else if(event.key == "x" && cmd) {
+    RemoveSelect();
+    //alert("remove");
+}
+  event.preventDefault();
+});
+document.addEventListener('keyup', function(event) {
+  if(event.key == "Meta") {
+    cmd=false;
+    }
+});
+//#endregion
+//#region circle
+
+//#endregion
 //#region vector
 function GetAngleBetweenVectors(vec1,vec2){
 
@@ -1492,53 +1525,70 @@ function SnapAngleToConstant(angle,tolerance){
   }
   
   if(angle+tolerance > Deg._0 && angle-tolerance < Deg._0){
+    tempBool=true;
     return 0;
   }
   else if(angle+tolerance > Deg._30 && angle-tolerance < Deg._30){
+    tempBool=true;
     return Deg._30*sign;
   }
   else if(angle+tolerance > Deg._45 && angle-tolerance < Deg._45){
+    tempBool=false;
     return Deg._45*sign;
   }
   else if(angle+tolerance > Deg._60 && angle-tolerance < Deg._60){
+    tempBool=true;
     return Deg._60*sign;
   }
   else  if(angle+tolerance > Deg._90 && angle-tolerance < Deg._90){
+    tempBool=true;
     return Deg._90*sign;
   }
   else  if(angle+tolerance > Deg._120 && angle-tolerance < Deg._120){
+    tempBool=true;
     return Deg._120*sign;
   }
   else  if(angle+tolerance > Deg._135 && angle-tolerance < Deg._135){
+    tempBool=false;
     return Deg._135*sign;
   }
   else  if(angle+tolerance > Deg._150 && angle-tolerance < Deg._150){
+    tempBool=true;
     return Deg._150*sign;
   }
   else  if(angle+tolerance > Deg._180 && angle-tolerance < Deg._180){
+    tempBool=true;
     return Deg._180*sign;
   }
   else  if(angle+tolerance > Deg._210 && angle-tolerance < Deg._210){
+    tempBool=true;
     return Deg._210*sign;
   }
   else  if(angle+tolerance > Deg._225 && angle-tolerance < Deg._225){
+    tempBool=false;
     return Deg._225*sign;
   }
   else  if(angle+tolerance > Deg._240 && angle-tolerance < Deg._240){
+    tempBool=true;
     return Deg._240*sign;
   }
   else  if(angle+tolerance > Deg._270 && angle-tolerance < Deg._270){
+    tempBool=true;
     return Deg._270*sign;
   }
   else  if(angle+tolerance > Deg._300 && angle-tolerance < Deg._300){
+    tempBool=true;
     return Deg._300*sign;
   }
   else  if(angle+tolerance > Deg._315 && angle-tolerance < Deg._315){
+    tempBool=false;
     return Deg._315*sign;
   }
   else  if(angle+tolerance > Deg._330 && angle-tolerance < Deg._330){
+    tempBool=true;
     return Deg._330*sign;
   }
+  tempBool=false;
   return angle*sign;
 }
 //#endregion
@@ -1609,27 +1659,33 @@ return imagedt;
 }
 function ImageRotate(img,rX,rY,angle){
   //if angle close to constant, change to constant
- // angle = SnapAngleToConstant(angle,0.3);        //     if set to snap to angles like 45 and stuff
-
-
+ angle = SnapAngleToConstant(angle,0.01);        //     if set to snap to angles like 45 and stuff
+ var sine = Math.sin(-angle);
+ var cosine = Math.cos(-angle);
+ var half = rX/2;
   var image = new ImageData(rX,rY);
+  var iwh = 0;
+  var jwh = 0;
+  var x,y;
 //tempimg <- rotated(selectedarea,angle);
 for(let i = 0; i < rY;i++){
   for(let j = 0; j < rX;j++){
-    //x,y 
-    //x
-    // translate rotate -translate
-    var halfX = rX/2;
-    var halfY = rY/2;
   
-    var sine = Math.sin(-angle);
-    var cosine = Math.cos(-angle);
-    var x = Math.round(((j-halfX)*cosine-(i-halfY)*sine)+halfX);
-    var y = Math.round(((j-halfX)*sine+(i-halfY)*cosine)+halfY);
+    iwh = i-half;
+    jwh = j-half;
 
-  //sleep(1000);  
-  
-  
+    if(Math.sqrt((jwh)**2+(iwh)**2)>half){ //if the point is outside the area where rotated pixels can end up, just continue
+      continue;
+    }
+   if(tempBool){
+       x = Math.round(jwh*cosine-iwh*sine+half); //get the rotated cords
+       y = Math.round(jwh*sine+iwh*cosine+half);
+   }else{
+       x = Math.floor(jwh*cosine-iwh*sine+half); //get the rotated cords
+       y = Math.floor(jwh*sine+iwh*cosine+half);
+   }
+ 
+
   image.data[i*4*rX+j*4] = img.data[y*4*rX+x*4];
   image.data[i*4*rX+j*4+1] = img.data[y*4*rX+x*4+1];
   image.data[i*4*rX+j*4+2] = img.data[y*4*rX+x*4+2];
@@ -4515,7 +4571,7 @@ function MoveSelectedPr(relX,relY){
 
 }
 function ConfirmSelect(){
-  lastProc = 0;console.log("0 confirm");
+  lastProc = 0;
   
   if(!SelectActive){
     return;
@@ -4866,7 +4922,52 @@ SelectAreaT=tempImage;
 
 
 }
+function CopySelect(){
+  if(!SelectActive){
+    return;
+  }
+SelectAreaCopy=SelectAreaT;
+}
+function PasteSelect(){
+   if(SelectAreaCopy==null){
+    return;
+  }
+  if(SelectActive){
+      ConfirmSelect();
+  }
 
+  
+
+  SelectArea=SelectAreaCopy;
+  SelectAreaT=SelectAreaCopy;
+  SelectPos.x=0;
+  SelectPos.y=0;
+  SelectPos.w=SelectAreaCopy.width;
+  SelectPos.h=SelectAreaCopy.height;
+
+  SelectActive = true;
+
+  lrtb.left = 0;  //not the same as pos
+  lrtb.top = 0;
+  lrtb.right = SelectAreaCopy.width;  //0+width
+  lrtb.bottom = SelectAreaCopy.height;//0+height
+
+
+  pctx.putImageData(SelectAreaCopy,0,0);
+  uictx.fillStyle = selectFill;
+  uictx.fillRect(0,0,SelectAreaCopy.width,SelectAreaCopy.height);
+  EnableSelectPoints();
+  UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
+  }
+  function RemoveSelect(){
+    if(!SelectActive){
+      return;
+    }
+    CopySelect();
+ 
+       MoveSelectedPr(resolution.x*2,resolution.y*2);
+       ConfirmSelect();
+  }
 //#endregion
 
 //#endregion
