@@ -1439,8 +1439,8 @@ function SQ_REDO(){
 //#endregion
 //#region keyhandling
 document.addEventListener('keydown', function(event) {
-  
-  if(event.key == "Meta") {
+  console.log(event.key);
+  if(event.key == "Meta"||event.key == "Control") {
     cmd=true;
     }
   else if(event.key == "c" && cmd) {
@@ -1458,7 +1458,7 @@ document.addEventListener('keydown', function(event) {
   event.preventDefault();
 });
 document.addEventListener('keyup', function(event) {
-  if(event.key == "Meta") {
+  if(event.key == "Meta"||event.key == "Control") {
     cmd=false;
     }
 });
@@ -1596,59 +1596,59 @@ function SnapAngleToConstant(angle,tolerance){
 function ImageTransform(img,rX,rY,flipX,flipY){
   if(rX == 0 || rY == 0){return new ImageData(1,1)}
  var imagedt = new ImageData(rX,rY);
-
+  var iX = img.width; //this is apparently faster than just writing img.width everywhere idk if its true but any performance is welcome and the worst case is the code being one variable declaration slower
  var resratioX = img.width/rX;
  var resratioY = img.height/rY;
 
 if(ImageFlip.x == false && ImageFlip.y==false){
-  for(let i = 0;i<imagedt.height;i++){
- for(let j = 0;j<imagedt.width;j++){
+  for(let i = 0;i<rY;i++){
+ for(let j = 0;j<rX;j++){
   let I = Math.floor(i*resratioY);
   
   let J = Math.floor(j*resratioX);
 
-  imagedt.data[i*imagedt.width*4+j*4]=img.data[I*img.width*4+J*4];
-  imagedt.data[i*imagedt.width*4+j*4+1]=img.data[I*img.width*4+J*4+1];
-  imagedt.data[i*imagedt.width*4+j*4+2]=img.data[I*img.width*4+J*4+2];
-  imagedt.data[i*imagedt.width*4+j*4+3]=img.data[I*img.width*4+J*4+3];
+  imagedt.data[i*rX*4+j*4]=img.data[I*iX*4+J*4];
+  imagedt.data[i*rX*4+j*4+1]=img.data[I*iX*4+J*4+1];
+  imagedt.data[i*rX*4+j*4+2]=img.data[I*iX*4+J*4+2];
+  imagedt.data[i*rX*4+j*4+3]=img.data[I*iX*4+J*4+3];
  }
 }
 }else if(ImageFlip.x==true && ImageFlip.y==false){
-  for(let i = 0;i<imagedt.height;i++){
-    for(let j = 0;j<imagedt.width;j++){
+  for(let i = 0;i<rY;i++){
+    for(let j = 0;j<rX;j++){
      let I = Math.floor(i*resratioY);
      
-     let J = Math.floor((imagedt.width-j)*resratioX);
+     let J = Math.floor((rX-j)*resratioX);
    
-     imagedt.data[i*imagedt.width*4+j*4]=img.data[I*img.width*4+J*4];
-     imagedt.data[i*imagedt.width*4+j*4+1]=img.data[I*img.width*4+J*4+1];
-     imagedt.data[i*imagedt.width*4+j*4+2]=img.data[I*img.width*4+J*4+2];
-     imagedt.data[i*imagedt.width*4+j*4+3]=img.data[I*img.width*4+J*4+3];
+     imagedt.data[i*rX*4+j*4]=img.data[I*iX*4+J*4];
+     imagedt.data[i*rX*4+j*4+1]=img.data[I*iX*4+J*4+1];
+     imagedt.data[i*rX*4+j*4+2]=img.data[I*iX*4+J*4+2];
+     imagedt.data[i*rX*4+j*4+3]=img.data[I*iX*4+J*4+3];
     }
    }
 }else if(ImageFlip.x==false && ImageFlip.y==true){
-  for(let i = 0;i<imagedt.height;i++){
-    for(let j = 0;j<imagedt.width;j++){
-     let I = Math.floor((imagedt.height-i)*resratioY);
+  for(let i = 0;i<rY;i++){
+    for(let j = 0;j<rX;j++){
+     let I = Math.floor((rY-i)*resratioY);
      
      let J = Math.floor(j*resratioX);
    
-     imagedt.data[i*imagedt.width*4+j*4]=img.data[I*img.width*4+J*4];
-     imagedt.data[i*imagedt.width*4+j*4+1]=img.data[I*img.width*4+J*4+1];
-     imagedt.data[i*imagedt.width*4+j*4+2]=img.data[I*img.width*4+J*4+2];
-     imagedt.data[i*imagedt.width*4+j*4+3]=img.data[I*img.width*4+J*4+3];
+     imagedt.data[i*rX*4+j*4]=img.data[I*iX*4+J*4];
+     imagedt.data[i*rX*4+j*4+1]=img.data[I*iX*4+J*4+1];
+     imagedt.data[i*rX*4+j*4+2]=img.data[I*iX*4+J*4+2];
+     imagedt.data[i*rX*4+j*4+3]=img.data[I*iX*4+J*4+3];
     }
    }
 }else if(ImageFlip.x==true && ImageFlip.y==true){
-  for(let i = 0;i<imagedt.height;i++){
-    for(let j = 0;j<imagedt.width;j++){
-     let I = Math.floor((imagedt.height-i)*resratioY);
-     let J = Math.floor((imagedt.width-j)*resratioX);
+  for(let i = 0;i<rY;i++){
+    for(let j = 0;j<rX;j++){
+     let I = Math.floor((rY-i)*resratioY);
+     let J = Math.floor((rX-j)*resratioX);
    
-     imagedt.data[i*imagedt.width*4+j*4]=img.data[I*img.width*4+J*4];
-     imagedt.data[i*imagedt.width*4+j*4+1]=img.data[I*img.width*4+J*4+1];
-     imagedt.data[i*imagedt.width*4+j*4+2]=img.data[I*img.width*4+J*4+2];
-     imagedt.data[i*imagedt.width*4+j*4+3]=img.data[I*img.width*4+J*4+3];
+     imagedt.data[i*rX*4+j*4]=img.data[I*iX*4+J*4];
+     imagedt.data[i*rX*4+j*4+1]=img.data[I*iX*4+J*4+1];
+     imagedt.data[i*rX*4+j*4+2]=img.data[I*iX*4+J*4+2];
+     imagedt.data[i*rX*4+j*4+3]=img.data[I*iX*4+J*4+3];
     }
    }
 }
@@ -1826,9 +1826,9 @@ function ExpandImageFromCenter(image,x,y){
     
    
   }
-function putImageDataOptimized(ctx,array,x,y,w,h){
+function putImageDataOptimized(ctx,arrayOrig,x,y,w,h){
 var ctxArray = ctx.getImageData(x,y,w,h).data;
-
+var array = arrayOrig.map((x) => x); //needed to not change orig array below, which would cause issues with paste
 for(let i = 0;i < array.length;i+=4){
 
 var tr0 = ctxArray[i+3]/255;
@@ -4933,13 +4933,13 @@ function PasteSelect(){
     return;
   }
   if(SelectActive){
-      ConfirmSelect();
+   ConfirmSelect();
   }
-
   
-
   SelectArea=SelectAreaCopy;
   SelectAreaT=SelectAreaCopy;
+
+
   SelectPos.x=0;
   SelectPos.y=0;
   SelectPos.w=SelectAreaCopy.width;
