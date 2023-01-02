@@ -226,7 +226,7 @@ Import.addEventListener("change",function(e){
 let select = false; //false=PRIMARY,true=SECONDARY
 let PRIMARYtoolSELECT;
 let SECONDARYtoolSELECT; 
-
+/*
 let Button_primary = document.getElementById("primary");
 let Button_secondary = document.getElementById("secondary");
 Button_primary.addEventListener("click",function(e) {
@@ -239,6 +239,7 @@ Button_primary.addEventListener("click",function(e) {
     Button_primary.classList.remove("selectP");
     Button_secondary.classList.add("selectS");
     });
+*/
 let Button_pencil = document.getElementById("pencil");
 let Button_line = document.getElementById("line");
 let Button_poly = document.getElementById("poly");
@@ -285,6 +286,7 @@ colorpicker.style.visibility = "hidden";
 });
     //TOOLS//
 Button_pencil.addEventListener("click",function(e) {
+  console.log("gg");
 if(!select){
 PRIMARY = "pencil";
 }else{
@@ -1234,6 +1236,8 @@ return Decimal;
 }
 
 function RGBAtoHEX(rgba){
+
+
   let r = rgba.split("rgba(")[1].split(",")[0];
   let g = rgba.split("rgba(")[1].split(",")[1];
   let b = rgba.split("rgba(")[1].split(",")[2];
@@ -2335,6 +2339,7 @@ if(tmp!=null){
   colr.style.top="-6px";
   colr.style.marginBottom="-10px";
   colr.onmousedown = function(e){
+    
     colrDown =true;
   }
   document.getElementById("colorpalette").appendChild(colr);
@@ -2700,9 +2705,29 @@ if(hoveredON == "canvas"){
   a=Number(a.join(""));
 
   var floatColor = [color[0],color[1],color[2],a];
-  var joinedClr = floatColor.join(",");
+  var joinedClr = ALLToRGBA(floatColor.join(","));
+
+
+  
+
+  lineColor = joinedClr;
+
+              Color_set(false,joinedClr);
+       
+          colorpicker.style.visibility = "visible";
+          ColorSelected = false;
+            InitializeColorPicker(false,joinedClr);
+    
+
   Color_add(joinedClr);
+  oncolorleft=colors.length-1;
   Color_last();
+  Update_Colors();
+  for(let i = 0; i < colors.length;i++){
+    colors[i].classList.remove("primaryColor");
+ 
+  }
+  colors[oncolorleft].classList.add("primaryColor");
 }
 break;
 case("select"):
@@ -2900,6 +2925,7 @@ PolyPreview();
           colors[i].classList.remove("selected");
           colors[i].classList.remove("bothColor");
         }
+       
         colors[oncolor].classList.add("primaryColor");
         if(colors[oncolor].classList.contains("secondaryColor")){
           colors[oncolor].classList.add("bothColor");
@@ -2923,6 +2949,7 @@ PolyPreview();
           colors[oncolor].classList.add("bothColor");
         }
         oncolorright=oncolor; 
+      
         lineColorS = setcolor;    Color_set(true,setcolor);
          if(rightDouble|| (colorpicker.style.visibility == "visible")){
           colorpicker.style.visibility = "visible";
@@ -2973,7 +3000,7 @@ PolyPreview();
       }
      }
       
-    
+     //here must be tool select because
     
     });
     document.addEventListener("mouseup", function(e){
@@ -3132,6 +3159,7 @@ default:
   color = color.split(";")[0];
   Color_set(false,color);
   colors[oncolorleft].classList.add("primaryColor");
+  
   oncolorright=lert.r;
   color = colors[oncolorright].getAttribute("style");
   color = color.split(" ")[1];
