@@ -1470,7 +1470,7 @@ function SQ_REDO(){
 //#endregion
 //#region keyhandling
 document.addEventListener('keydown', function(event) {
-  console.log(event.key);
+ 
   if(event.key == "Meta"||event.key == "Control") {
     cmd=true;
     }
@@ -1486,7 +1486,7 @@ document.addEventListener('keydown', function(event) {
     RemoveSelect();
     //alert("remove");
 }
-  event.preventDefault();
+  //event.preventDefault();
 });
 document.addEventListener('keyup', function(event) {
   if(event.key == "Meta"||event.key == "Control") {
