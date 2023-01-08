@@ -286,7 +286,7 @@ colorpicker.style.visibility = "hidden";
 });
     //TOOLS//
 Button_pencil.addEventListener("click",function(e) {
-  console.log("gg");
+  //console.log("gg");
 if(!select){
 PRIMARY = "pencil";
 }else{
@@ -370,12 +370,14 @@ div.style.width = ""+canvasSize.x+"px";
 //#endregion
 //#region palette
 let colorpalettes = [];//name is last item of arrays within
+let canvaspalette = [];//palette last on canvas
 let colorpaletteindex=0;
 let palettelist = document.getElementById("colorpalette_select");
 palettelist.onchange = function(){
 SavePalette(colorpaletteindex);
 Palette_clear();
 LoadPalette(palettelist.value);
+
 }
 //#endregion
 //#region tool
@@ -521,7 +523,7 @@ var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
 const NewPalette = document.getElementById("newPalette");
 NewPalette.onmousedown = function(){
   var pal = [];
-  InitializeColorPaletteOR(pal,"Custom");
+  InitializeColorPaletteOR(pal,"Custom"+palettelist.length);
 }
 const DeletePalette = document.getElementById("delPalette");
 DeletePalette.onmousedown = function(){
@@ -626,6 +628,31 @@ const ExportPaletteButton= document.getElementById("exportPalette");
 
 ExportPaletteButton.addEventListener("click",function(){
  ExportPalette(colorpalettes[colorpaletteindex][colorpalettes[colorpaletteindex].length-1]);
+});
+const UpdatePaletteButton= document.getElementById("updatePalette");
+
+UpdatePaletteButton.addEventListener("click",function(){
+  SavePalette(colorpaletteindex);
+  SQ_SAVE();
+ UpdatePalette(colorpalettes[colorpaletteindex]);
+ SQ_SAVE();
+});
+const SaveCPaletteButton= document.getElementById("saveCanvasPalette");
+
+SaveCPaletteButton.addEventListener("click",function(){
+  SavePalette(colorpaletteindex);
+  canvaspalette=colorpalettes[colorpaletteindex];
+ SQ_SAVE();
+});
+
+const GetPaletteButton= document.getElementById("getPalette");
+
+GetPaletteButton.addEventListener("click",function(){
+
+ InitializeColorPaletteOR( GetCanvasPalette(),"Palette"+palettelist.length);
+  SavePalette(colorpaletteindex);
+  canvaspalette = [];
+  UpdatePalette(colorpalettes[colorpaletteindex]);
 });
     let hexElem = document.getElementById("hex");
     let rgbaElem = document.getElementById("rgba");
@@ -2022,6 +2049,101 @@ function ImportPalette(text,name){
     element.click();
     document.body.removeChild(element);
   }
+  function UpdatePalette(palette){
+    if(canvaspalette.length==0){
+      canvaspalette=palette;
+      return;
+    }
+    var len=0;
+    if(canvaspalette.length==0){
+    
+      return;
+    }
+    if(canvaspalette.length>palette.length){
+      len = canvaspalette.length;
+    }else{
+      len =palette.length-1;
+    }
+    var changesOLD=[];
+    var changesNEW=[];
+
+    for(let i = 0;i<len;i++){
+       
+     if(canvaspalette[i]!=palette[i]){
+      //console.log("shit changed around here!")
+      var oldie = canvaspalette[i].split("(")[1].split(")")[0].split(",");
+      changesOLD.push(oldie[0]);
+      changesOLD.push(oldie[1]);
+      changesOLD.push(oldie[2]);
+      changesOLD.push(Math.floor(oldie[3]*255));
+
+      var newie = palette[i].split("(")[1].split(")")[0].split(",");
+      changesNEW.push(newie[0]);
+      changesNEW.push(newie[1]);
+      changesNEW.push(newie[2]);
+      changesNEW.push(Math.floor(newie[3]*255));
+  //      ChangeCanvasColor(canvaspalette[i],palette[i]);
+     }
+     var len2 = (changesNEW.length-1);
+     //get canvas to os canvas
+     OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
+     var OSlen = OS_canvas.data.length;
+     for(let j = 0;j <OSlen;j+=4){
+       for(let i = 0;i<len2;i+=4){
+ 
+  //check if pixel on os is old[i]
+  if (OS_canvas.data[j]==changesOLD[i]&&OS_canvas.data[j+1]==changesOLD[i+1]&&OS_canvas.data[j+2]==changesOLD[i+2]&&OS_canvas.data[j+3]==changesOLD[i+3]){
+   //if yes, set to new[i]
+   OS_canvas.data[j]=changesNEW[i];
+   OS_canvas.data[j+1]=changesNEW[i+1];
+   OS_canvas.data[j+2]=changesNEW[i+2];
+   OS_canvas.data[j+3]=changesNEW[i+3];
+ 
+  }
+   
+     }
+     }
+     //get os canvas back on real canvas
+     ctx.putImageData(OS_canvas,0,0);
+    
+
+    }
+    canvaspalette=palette;
+  
+    
+
+  }
+  function ArrayHasColorArray(array,item){
+for(let i =0;i<array.length;i++){
+  if(array[i][0]==item[0]&&array[i][1]==item[1]&&array[i][2]==item[2]&&array[i][3]==item[3]){
+    return true;
+  }
+}
+return false;
+  }
+  function GetCanvasPalette(){
+    OS_canvas=ctx.getImageData(0,0,resolution.x,resolution.y);
+    var data = Array.from(OS_canvas.data);
+    var len = OS_canvas.height*OS_canvas.width;
+    var Intpal = [];
+    for(let i =0;i< len;i++){
+      
+      var payload = data.splice(0,4);
+   
+      if(!ArrayHasColorArray(Intpal,payload)){
+        Intpal.push(payload);
+      }
+      if(Intpal.length>127){
+        break;
+      }
+    }
+    var pal =[];
+    //intpal to pal
+    for(let i =0 ;i<Intpal.length;i++){
+      pal.push("rgba("+Intpal[i][0]+","+Intpal[i][1]+","+Intpal[i][2]+","+Number(Intpal[i][3]/255)+")");
+    }
+    return pal;
+  }
   function ImportPaletteOR(text,name){
     var lines = text.split("\n");
     
@@ -2277,7 +2399,7 @@ if(color == oldColor){
       }
       
   }
-
+ 
 }
 function Palette_clear(){
   document.getElementById("colorpalette").innerHTML="";
@@ -2294,6 +2416,7 @@ function Color_add(Color){
 
   Update_Colors();
   
+ 
 }
 function Color_read(i){
 
@@ -2618,6 +2741,9 @@ function MoveCanvas(){
   ScrollUpdate();
   }
 
+function ChangeCanvasColor(oldC,newC){
+    console.log(newC);
+  }
 //#endregion
 //#region mouse
 

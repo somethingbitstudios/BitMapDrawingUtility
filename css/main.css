@@ -380,6 +380,9 @@ left: 4px;
   padding-top: 2px;
   background-color: #2e8e3c;
 }
+#colorpalette_footer{
+  height: 54px;
+}
 .colorPick{
   position: relative;
   left: 19px;
