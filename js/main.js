@@ -269,9 +269,54 @@ function CreateIcon(img,id){
   temp.addEventListener("click", function(e) {
 console.log(id);
 if(!select){
-  PRIMARY_MODE = id;
+  switch(PRIMARY){
+    case("pencil"):
+    MODE.pencil = id;
+    break;
+    case("line"):
+    MODE.line = id;
+    break;
+    case("poly"):
+    MODE.poly = id;
+    break;
+    case("fill"):
+    MODE.fill = id;
+    break;
+    case("picker"):
+    MODE.picker = id;
+    break;
+    case("select"):
+    MODE.select = id;
+    break;
+    case("eraser"):
+    MODE.eraser = id;
+    break;
+  }
+ 
 }else{
-  SECONDARY_MODE = id;
+  switch(SECONDARY){
+    case("pencil"):
+    MODE.pencil = id;
+    break;
+    case("line"):
+    MODE.line = id;
+    break;
+    case("poly"):
+    MODE.poly = id;
+    break;
+    case("fill"):
+    MODE.fill = id;
+    break;
+    case("picker"):
+    MODE.picker = id;
+    break;
+    case("select"):
+    MODE.select = id;
+    break;
+    case("eraser"):
+    MODE.eraser = id;
+    break;
+  }
 }
 
   });
@@ -285,67 +330,120 @@ document.getElementById("cancel_colorpicker").addEventListener("click",function(
 colorpicker.style.visibility = "hidden";
 });
     //TOOLS//
-Button_pencil.addEventListener("click",function(e) {
-  //console.log("gg");
-if(!select){
-PRIMARY = "pencil";
-}else{
-SECONDARY = "pencil";
-}
 
-UIbuttonCLICK(Button_pencil);
+Button_pencil.onmouseover = function(){
+  hoveringON = "ToolButton";UIbtnObj=Button_pencil;
+  }
+Button_pencil.onmouseout = function(){
+    hoveringON = "none";
+    //oncolor = -1;
+    }
 
-});
 Button_line.addEventListener("click",function(e) {
   if(!select){
     PRIMARY = "line";
     }else{
     SECONDARY = "line";
     }
-  UIbuttonCLICK(Button_line);
+
+   
+    
   });
+  Button_line.onmouseover = function(){
+    hoveringON = "ToolButton"; UIbtnObj=Button_line;
+    }
+  Button_line.onmouseout = function(){
+      hoveringON = "none";
+      //oncolor = -1;
+      }
   Button_poly.addEventListener("click",function(e) {
     if(!select){
       PRIMARY = "poly";
       }else{
       SECONDARY = "poly";
       }
-    UIbuttonCLICK(Button_poly);
+     
+     
+      
     });
+    Button_poly.onmouseover = function(){
+      hoveringON = "ToolButton"; UIbtnObj=Button_poly;
+      }
+    Button_poly.onmouseout = function(){
+        hoveringON = "none";
+        //oncolor = -1;
+        }
     Button_fill.addEventListener("click",function(e) {
       if(!select){
         PRIMARY = "fill";
-        PRIMARY_MODE = "FILL_MODE_INST";
+        MODE.fill = "FILL_MODE_INST";
         }else{
         SECONDARY = "fill";
         }
-      UIbuttonCLICK(Button_fill);
+      
+       
+        
+        
       });
+      Button_fill.onmouseover = function(){
+        hoveringON = "ToolButton"; UIbtnObj=Button_fill;
+        }
+      Button_fill.onmouseout = function(){
+          hoveringON = "none";
+          //oncolor = -1;
+          }
       Button_picker.addEventListener("click",function(e) {
         if(!select){
           PRIMARY = "picker";
-          PRIMARY_MODE = "PICKER_TRANSPARENT";
+          MODE.picker = "PICKER_TRANSPARENT";
           }else{
           SECONDARY = "picker";
           }
-        UIbuttonCLICK(Button_picker);
+     
+         
+          
         });
+        Button_picker.onmouseover = function(){
+          hoveringON = "ToolButton"; UIbtnObj=Button_picker;
+          }
+        Button_picker.onmouseout = function(){
+            hoveringON = "none";
+            //oncolor = -1;
+            }
       Button_select.addEventListener("click",function(e) {
         if(!select){
           PRIMARY = "select";
           }else{
           SECONDARY = "select";
           }
-        UIbuttonCLICK(Button_select);
+   
+        
+          
         });
+        Button_select.onmouseover = function(){
+          hoveringON = "ToolButton";  UIbtnObj=Button_select;
+          }
+        Button_select.onmouseout = function(){
+            hoveringON = "none";
+            //oncolor = -1;
+            }
         Button_eraser.addEventListener("click",function(e) {
           if(!select){
             PRIMARY = "eraser";
             }else{
             SECONDARY = "eraser";
             }
-          UIbuttonCLICK(Button_eraser);
+    
+           
+            
           });
+          Button_eraser.onmouseover = function(){
+            hoveringON = "ToolButton"; UIbtnObj=Button_eraser;
+            }
+          Button_eraser.onmouseout = function(){
+              hoveringON = "none";
+              //oncolor = -1;
+              }
 
 
 
@@ -385,14 +483,14 @@ LoadPalette(palettelist.value);
 
   var selected = false; //false = primary,true = secondary
 var PRIMARY = "pencil";
-var PRIMARY_MODE = "PENCIL_MODE_BASIC";
+var MODE = {pencil:"1",line:"1",poly:"1",fill:"FILL_MODE_INST",picker:"1",eraser:"1"};
 var lineWidth = 1;
 var lineCap = 'butt';
 var lineColor = "rgba(0,0,0,1)";
 
 var SECONDARY = "eraser";
-var SECONDARY_MODE = "ERASER_MODE_BASIC";
-var lineWidthS = 0.1;
+
+var lineWidthS = 1;
 var lineCapS = 'butt';
 var lineColorS = "rgba(255,255,255,1)";
 
@@ -522,8 +620,10 @@ var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
     //ELEMENTS//
 const NewPalette = document.getElementById("newPalette");
 NewPalette.onmousedown = function(){
+  var name = prompt("Palette name","Custom"+palettelist.length);
   var pal = [];
-  InitializeColorPaletteOR(pal,"Custom"+palettelist.length);
+ 
+  InitializeColorPaletteOR(pal,name);
 }
 const DeletePalette = document.getElementById("delPalette");
 DeletePalette.onmousedown = function(){
@@ -983,6 +1083,7 @@ Update_Colors();
 
 var colrDown=false;
 
+var UIbtnObj;
 //#endregion
 //#region mouse
     //HOVER//
@@ -2464,6 +2565,9 @@ if(tmp!=null){
   colr.onmousedown = function(e){
     
     colrDown =true;
+    
+
+    
   }
   document.getElementById("colorpalette").appendChild(colr);
   colr = document.createElement("button");
@@ -2512,13 +2616,16 @@ function InitializeColorPaletteOR(palette,name){
 
 
 //#endregion
+//#region overlay
 
+//#endregion
 //#region UI
+
 
 
 function MenuChange() {
   
-if(!select){
+if(left){
   let name;
   let br;
   let label,input;
@@ -2535,21 +2642,169 @@ if(!select){
     Menu_Tool.appendChild(name);
 
       
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","PENCIL_MODE_BASIC"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","PENCIL_MODE_BLURRY"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","PENCIL_MODE_NOGAPS"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","PENCIL_MODE_PIXEL"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4"));
+      /*
     br = document.createElement("br");
-    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(br); 
+   
     label = document.createElement("label");
     label.setAttribute("for","size");
     label.innerHTML = "Size:";
     Menu_Tool.appendChild(label);
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    /*
+  
+    input = document.createElement("input");
+    input.id = "size";
+    input.setAttribute("type","number");
+    input.setAttribute("name","size");
+    input.value = 1;
+    input.addEventListener("change", function(e){
+    if(input.value > 0){
+      if(!select){
+        lineWidth = input.value;
+      }else{
+        lineWidthS = input.value;
+      }
+
+    }
+    });
+
+    Menu_Tool.appendChild(input);
+*/
+
+
+
+
+    break;
+
+    case("line"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Line";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC"));
+    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+   
+    break;
+
+
+    case("fill"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Fill";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    
+   
+    break;
+    case("picker"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Picker";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    
+   
+    break;
+    case("select"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Picker";
+    Menu_Tool.appendChild(name);
+    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY"));
+    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE"));
+    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT"));
+    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE"));
+    name = document.createElement("p"); 
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    
+   
+    break;
+  }
+}
+else if (right){
+  let name;
+  let br;
+  let label,input;
+  switch(SECONDARY){
+    case("pencil"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+     br = document.createElement("br");
+    name.innerHTML = "Pencil";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+ 
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
+
+      
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4"));
+      /*
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br); 
+   
+    label = document.createElement("label");
+    label.setAttribute("for","size");
+    label.innerHTML = "Size:";
+    Menu_Tool.appendChild(label);
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+  
     input = document.createElement("input");
     input.id = "size";
     input.setAttribute("type","number");
@@ -2665,7 +2920,8 @@ if(!select){
 }
 
 function UIbuttonCLICK(obj){
-  if(select){
+
+  if(right){
     
     SECONDARYtoolSELECT.classList.remove("selectS");
     SECONDARYtoolSELECT.classList.remove("select");
@@ -2684,7 +2940,7 @@ function UIbuttonCLICK(obj){
       obj.classList.add("selectS");
     }
 SECONDARYtoolSELECT = obj;
-  } else {
+  } else if(left){
     PRIMARYtoolSELECT.classList.remove("selectS");
     PRIMARYtoolSELECT.classList.remove("select");
     PRIMARYtoolSELECT.classList.remove("selectP");
@@ -2702,6 +2958,63 @@ SECONDARYtoolSELECT = obj;
       obj.classList.add("selectP");
     }
 PRIMARYtoolSELECT = obj;
+  }
+
+  if(obj == Button_pencil)
+  {
+    if(left){
+      PRIMARY = "pencil";
+      }else if(right){
+      SECONDARY = "pencil";
+      }
+  }
+  else  if(obj == Button_line)
+  {
+    if(left){
+      PRIMARY = "line";
+      }else if(right){
+      SECONDARY = "line";
+      }
+  }
+  else  if(obj == Button_poly)
+  {
+    if(left){
+      PRIMARY = "poly";
+      }else if(right){
+      SECONDARY = "poly";
+      }
+  }
+  else  if(obj == Button_fill)
+  {
+    if(left){
+      PRIMARY = "fill";
+      }else if(right){
+      SECONDARY = "fill";
+      }
+  }
+  else  if(obj == Button_picker)
+  {
+    if(left){
+      PRIMARY = "picker";
+      }else if(right){
+      SECONDARY = "picker";
+      }
+  }
+  else  if(obj == Button_select)
+  {
+    if(left){
+      PRIMARY = "select";
+      }else if(right){
+      SECONDARY = "select";
+      }
+  }
+  else  if(obj == Button_eraser)
+  {
+    if(left){
+      PRIMARY = "eraser";
+      }else if(right){
+      SECONDARY = "eraser";
+      }
   }
   MenuChange();
  
@@ -2800,8 +3113,8 @@ function UpdatePos(){
          switch(PRIMARY){
 
           case("pencil"):
-          switch(PRIMARY_MODE){
-      case("PENCIL_MODE_PIXEL"):
+          switch(MODE.pencil){
+      case("4"):
       perfectPos.x = ~~pos.x;
       perfectPos.y = ~~pos.y;
       
@@ -2812,7 +3125,7 @@ function UpdatePos(){
           }
        break;
 case("line"):
-switch(PRIMARY_MODE){
+switch(MODE.line){
   default:
     
      ctx.fillRect(downIntPos.x,downIntPos.y,lineWidth,lineWidth);  
@@ -2872,7 +3185,7 @@ case("fill"):
 
 if(hoveredON == "canvas"){
  
-  switch(PRIMARY_MODE){
+  switch(MODE.fill){
     case("FILL_MODE_SLOW"):
 var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
 ctx.fillRect(~~pos.x,~~pos.y,1,1);
@@ -2978,7 +3291,7 @@ break;
 }
 break;
 case("poly"):
-switch(PRIMARY_MODE){
+switch(MODE.poly){
   default:
     pctx.fillRect(intPos.x,intPos.y,1,1);
 PolyPreview();
@@ -2993,28 +3306,237 @@ PolyPreview();
          Draw();
          break;
         case(1): /*console.log("middle");*/ middle = true; break;
-        case(2): /*console.log("right");*/ right = true;
+      case(2):
+       
+        right = true;
         if(rightClicked){
-          rightDouble=true;
+       rightDouble=true;
+        }else{
+         rightDouble = false;
+        }
+      
+        previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
+        if(hoveredON == "canvas"||hoveredON=="background"){
+
+         if(SelectActive){
+           if(IsMouseInArea()){
+             //if mouse inside selected area, break
+           SelectDragging = true;
+             break;
            }else{
-            rightDouble = false;
+             ConfirmSelect();
+           }
+           
            }
 
-        hoveredON = hoveringON;
-           E = e;
-        previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
-        if(hoveredON == "canvas"){
-           Draw();
-        }
-       
+        switch(SECONDARY){
+
+         case("pencil"):
+         switch(MODE.pencil){
+     case("4"):
+     perfectPos.x = ~~pos.x;
+     perfectPos.y = ~~pos.y;
+        ctx.fillStyle=lineColorS;
+        ctx.fillRect(perfectPos.x,perfectPos.y,lineWidthS,lineWidthS);
+     
+       //PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+     
+     break;
+         }
+      break;
+case("line"):
+switch(MODE.line){
+ default:
+  ctx.fillStyle=lineColorS;
+    ctx.fillRect(downIntPos.x,downIntPos.y,lineWidthS,lineWidthS);  
+   
+
+ break;
+}
+break;
+case("picker"):
+if(hoveredON == "canvas"){
+ var color = ctx.getImageData(intPos.x,intPos.y,1,1).data;
+ var a = String(color[3]).split("");
+ a=Number(a.join(""))/255;
+ var a = String(a).split("");
+ a.length = 5;
+ a=Number(a.join(""));
+
+ var floatColor = [color[0],color[1],color[2],a];
+ var joinedClr = ALLToRGBA(floatColor.join(","));
+
+
+ 
+
+ lineColorS = joinedClr;
+
+             Color_set(true,joinedClr);
+      
+         colorpicker.style.visibility = "visible";
+         ColorSelected = true;
+           InitializeColorPicker(true,joinedClr);
+   
+
+ Color_add(joinedClr);
+ oncolorright=colors.length-1;
+ Color_last();
+ Update_Colors();
+ for(let i = 0; i < colors.length;i++){
+   colors[i].classList.remove("secondaryColor");
+
+ }
+ colors[oncolorright].classList.add("secondaryColor");
+}
+break;
+case("select"):
+if(hoveredON == "canvas" || hoveredON == "background"){
+
+
+
+uictx.clearRect(0,0,resolution.x,resolution.y);
+uictx.fillStyle=selectFill;
+RenderSelectUI();
+
+}
+break;
+
+case("fill"):
+
+if(hoveredON == "canvas"){
+
+ switch(MODE.fill){
+   case("FILL_MODE_SLOW"):
+var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
+ctx.fillRect(~~pos.x,~~pos.y,1,1);
+var temp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
+
+if(String(beftemp)!=String(temp)){
+ filledcolor = beftemp;
+
+ var xy = {x:~~pos.x,y:~~pos.y};
+
+ lastfilledpos.push(xy);
+ if(!filling){
+   filling = true;
+   fillUpdate=setInterval(function(){
+  FourWayFill();
+ },TICK);
+ }
+}
+break;
+case("FILL_MODE_FAST"):
+
+
+var beftemp = ctx.getImageData(~~pos.x,~~pos.y,1,1).data;
+
+var Colorette = lineColorS.split("rgba(")[1].split(")")[0].split(",");
+
+if(Number(Colorette[3]) * 256 < 1){
+ //console.log("trans");
+ break;
+}
+if(beftemp[3] == 255 ){
+//put colorette is not same color as beftemp here!
+if(String(beftemp[0])==Colorette[0]&&String(beftemp[1])==Colorette[1]&&String(beftemp[2])==Colorette[2]){
+break;
+}
+}
+
+var xy = {x:~~pos.x,y:~~pos.y};
+filledcolor = ctx.getImageData(xy.x,xy.y,1,1).data;
+
+while (String(ctx.getImageData(xy.x,xy.y,1,1).data)==String(filledcolor)){
+
+ if(xy.x <= 0){
+   xy.x--;
+   break;
+      
+ }xy.x--;
+ 
+
+}
+xy.x++;
+
+lastfilledpos.push(xy);
+if(!filling){
+ filling = true;
+ fillUpdate=setInterval(function(){
+
+ ScanlineFill();
+},TICK);
+}
+break;
+case("FILL_MODE_INST"):
+
+//should be fast
+if(!filling){ 
+ 
+  OS_fillColor = lineColorS.split("rgba(")[1].split(")")[0].split(",");
+ OS_fillColor = [Number(OS_fillColor[0]),Number(OS_fillColor[1]),Number(OS_fillColor[2]),Math.round(Number(OS_fillColor[3])*255)];
+  //load canvas to var
+ OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
+filledcolor = OS_GetPixel({x:~~pos.x,y:~~pos.y})//ctx.getImageData(~~pos.x,~~pos.y,1,1).data; //needed
+//var Colorette = lineColor.split("rgba(")[1].split(")")[0].split(",");
+if(OS_fillColor[3] < 1){
+ break;
+}
+
+//put colorette is not same color as beftemp here!
+if(filledcolor[0]==OS_fillColor[0]&&filledcolor[1]==OS_fillColor[1]&&filledcolor[2]==OS_fillColor[2]&&filledcolor[3]==OS_fillColor[3]){
+break;
+}
+
+var xy = {x:~~pos.x,y:~~pos.y};
+while (ArrayEqual(OS_GetPixel(xy),filledcolor)){
+ 
+ if(xy.x <= 0){
+   xy.x--;
+   break;
+ }xy.x--;
+
+
+}
+
+xy.x++;
+lastfilledpos.push(xy);
+ filling = true;
+ 
+ //fillUpdate=setInterval(function(){ //this slowed the function down immensely, + it could allow for some glitches so while wins, just lags a bit
+ while(filling){OS_ScanlineFill();}
+ SQ_SAVE();
+ SQchanged=false;
+
+//},0);
+}
+break;
+ }
+}
+break;
+case("poly"):
+switch(MODE.poly){
+ default:
+   pctx.fillRect(intPos.x,intPos.y,1,1);
+PolyPreview();
+ break;
+}
+
+//console.log("poly");
+       }
+     }
+        
+        E = e;
+        Draw();
         break;
       }
     
       if(colrDown){
           colrDown=false;
-  
+         
         Color_add("rgba(0,0,0,1)");
+        EditedColor="rgba(0,0,0,1)";
             if(left){
+              oncolorleft=colors.length-1;
               colorpicker.style.visibility = "visible";
               ColorSelected = false;
               Update_Colors();
@@ -3026,6 +3548,7 @@ PolyPreview();
               InitializeColorPicker(false,"rgba(0,0,0,1)");
             }  
             if(right){
+              oncolorright=colors.length-1;
               colorpicker.style.visibility = "visible";
               ColorSelected = true;
               for(let i = 0; i < colors.length;i++){
@@ -3038,7 +3561,8 @@ PolyPreview();
            
           Color_last();
         }
-      
+
+     
              
        if(hoveringON=="colorpalette" && oncolor != -1){
       
@@ -3127,7 +3651,9 @@ PolyPreview();
      }
       
      //here must be tool select because
-    
+     if(hoveringON=="ToolButton"){
+     UIbuttonCLICK(UIbtnObj);
+     }
     });
     document.addEventListener("mouseup", function(e){
     //previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);
@@ -3175,8 +3701,8 @@ PolyPreview();
           switch(PRIMARY){
         case("pencil"):
         SQchanged=true;
-        switch(PRIMARY_MODE){
-    case("PENCIL_MODE_PIXEL"):
+        switch(MODE.pencil){
+    case("4"):
      previewCanvas.getContext("2d").clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
  
     
@@ -3194,16 +3720,16 @@ PolyPreview();
    
      case("line"):
      SQchanged=true;
-    switch(PRIMARY_MODE){
+    switch(MODE.line){
 default:
-  Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
-  Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+  Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
+  Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
   break;
     }
      break;
      case("poly"):
      SQchanged=true;
-    PolyDraw();
+    PolyDraw(lineColor);
     previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
@@ -3303,11 +3829,94 @@ default:
         
         break;
         case(2): /*console.log("right");*/ right = false;
-        rightDouble=false;
+        /*rightDouble=false;
         rightClicked = true;
         setTimeout(function(){
         rightClicked = false;
+        },DoubleClickSpeed);*/
+        if(busy){
+          if(busyParams==8){
+ lastProc = 2;
+          EnableSelectPoints();
+          UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
+          }else{
+            lastProc = 1;
+          }
+            }
+        busy=false;
+        
+        rightClicked = true;
+        rightDouble=false;
+        setTimeout(function(){
+        rightClicked = false;
         },DoubleClickSpeed);
+       
+         if(SelectDragging){
+          lrtb.left = SelectPos.x;
+          lrtb.right = SelectPos.x+SelectPos.w;
+          lrtb.top = SelectPos.y;
+          lrtb.bottom = SelectPos.y+SelectPos.h;
+          
+          SelectDragging = false;
+          SelectActive=true;
+       
+      
+            return;
+         }
+        if(hoveredON == "canvas"||hoveredON=="background"){ 
+        
+          
+          switch(SECONDARY){
+        case("pencil"):
+        SQchanged=true;
+        switch(MODE.pencil){
+    case("4"):
+     previewCanvas.getContext("2d").clearRect(intPos.x,intPos.y,lineWidthS,lineWidthS);
+ 
+    
+       ctx.fillStyle = lineColorS;
+       if(downIntPos.x !=intPos.x||downIntPos.y!=intPos.y){
+          ctx.fillRect(intPos.x,intPos.y,lineWidthS,lineWidthS);
+       }
+  
+    }
+   
+    break;
+    
+        
+    
+   
+     case("line"):
+     SQchanged=true;
+    switch(MODE.line){
+default:
+  Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
+  Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
+  break;
+    }
+     break;
+     case("poly"):
+     SQchanged=true;
+    PolyDraw(lineColorS);
+    previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
+    
+     break;
+     case("select"):
+      SelectPr();
+      RenderSelectUI();
+      setTimeout(function(){
+         hoveringON="points";
+         EnableSelectPoints();
+      },1);
+     
+     //pctx
+     break;
+      }
+      if(SQchanged){
+        SQ_SAVE();
+        SQchanged=false;
+      }
+    }
        
         break;
       }
@@ -3545,6 +4154,7 @@ function Draw(){
        UpdateTransparent(Color);
        UpdateColorCode(Color);
     }
+    
     break;
     case("huepicker"):
     if(left){
@@ -3625,17 +4235,17 @@ function Draw(){
 
           ctx.lineWidth = lineWidth;
       ctx.beginPath();
-      switch(PRIMARY_MODE){
-case("PENCIL_MODE_BASIC"):
+      switch(MODE.pencil){
+case("1"):
   ctx.fillRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
 break;
-case("PENCIL_MODE_NOGAPS"):
+case("3"):
 
 PerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
  
 break;
 
-case("PENCIL_MODE_BLURRY"):
+case("2"):
 
 ctx.beginPath(); // begin
 
@@ -3651,7 +4261,7 @@ if(lastPos.x == pos.x){
 
   ctx.stroke(); // draw it!
 break;
-case("PENCIL_MODE_PIXEL"):
+case("4"):
 
 //PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
  PixelPerfectPencil(lineWidth);
@@ -3662,10 +4272,10 @@ break;
      
       break;
       case("line"):
-      switch(PRIMARY_MODE){
+      switch(MODE.line){
         default:
-           Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-      Line(true,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+           Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor);
+      Line(true,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
           break;
       }
       
@@ -3676,64 +4286,89 @@ break;
       case("select"):
       RenderSelectUI();
       break;
+      case("eraser"):
+      Line(false,ctx,lastIntPos.x,lastIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
+      break;
     }
-
-
-
-
-    /*
-    // update mouse
-    ctx.beginPath();
-    if(PRIMARY == "eraser"){
-      ctx.clearRect(~~pos.x,~~pos.y,1,1);
-    }
-    else{
-      ctx.fillRect(~~pos.x,~~pos.y,1,1);
-    }
-    
-    ctx.lineWidth = 0.5;
-    ctx.strokeStyle = "#000000";
-    ctx.stroke();
-  
-    pos.x = (E.clientX*resScale)*scale;
-    pos.y = (E.clientY*resScale)*scale;
-    /*
-    ctx.fillRect(~~pos.x+.5,~~pos.y+.5,lineWidth,lineWidth);
-  
-    ctx.fillRect(~~pos.x+.5,~~pos.y+.5,lineWidth,lineWidth);
-    */
-    
    
   }
-  else if (right){
+  else if(right){
+
+    if(SelectDragging){
+      if(lastIntPos.x != intPos.x || lastIntPos.y != intPos.y){
+        MoveSelectedPr(intPos.x-lastIntPos.x,intPos.y-lastIntPos.y);
+      }
+     
+      return;
+    }
+  
+    switch(SECONDARY){
+      case("pencil"):
+
+
+
+
+          ctx.lineWidth = lineWidthS;
+          
+      ctx.beginPath();
+      switch(MODE.pencil){
+case("1"):
+  ctx.fillRect(~~pos.x,~~pos.y,lineWidthS,lineWidthS);
+break;
+case("3"):
+
+PerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidthS);
+ 
+break;
+
+case("2"):
+
+ctx.beginPath(); // begin
+
+  ctx.lineWidth = lineWidthS/2;
+  ctx.lineCap = "round";
+ 
+if(lastPos.x == pos.x){
+  lastPos.x += 0.1;
+}
+  ctx.moveTo(lastPos.x, lastPos.y); // from
+  
+  ctx.lineTo(pos.x, pos.y); // to
+
+  ctx.stroke(); // draw it!
+break;
+case("4"):
+
+//PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+ctx.fillStyle = lineColorS;
+ PixelPerfectPencil(lineWidthS);
+ console.log(lineColorS);
+break;
+
+      }
+
+     
+      break;
+      case("line"):
+      switch(MODE.line){
+        default:
+           Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidthS,lineColorS);
+      Line(true,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
+          break;
+      }
+      
+      break;
+      case("poly"):
+      PolyPreview();
+      break;
+      case("select"):
+      RenderSelectUI();
+      break;
+      case("eraser"):
+      Line(false,ctx,lastIntPos.x,lastIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
+      break;
+    }
    
-    // update mouse
-    ctx.beginPath();
-    if(SECONDARY == "eraser"){
-      ctx.clearRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
-    }
-    else{
-      ctx.fillRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
-    }
-    
-    ctx.lineWidth = 0.5;
-    ctx.strokeStyle = "rgba(0,0,0,1)";
-    ctx.stroke();
-  
-  UpdatePos();
-    /*
-    ctx.beginPath();
-  
-    ctx.lineWidth = lineWidthS;
-    ctx.lineCap = lineCapS;
-    ctx.strokeStyle = lineColorS;
-    ctx.moveTo(pos.x, pos.y); 
-    // update mouse
-    pos.x = (e.clientX*resScale)*scale;
-    pos.y = (e.clientY*resScale)*scale;
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke(); 
-    */
   }
   else {
      // update mouse
@@ -3749,35 +4384,41 @@ break;
 //#region poly
 
 function PolyPreview(){
+  var lineColor1;
+  if(right){
+    lineColor1 = lineColorS;
+  }else{
+    lineColor1 = lineColor;
+  }
   switch(polysides){
     case(2):
    
-    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor1);
+    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor1);
 
     break;
     case(4):
    //rect
     
-    Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth);
+    Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth,lineColor1);
 
-    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth);
+    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth,lineColor1);
 
-    Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+    Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor1);
 
-    Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+    Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor1);
 
 
-    Line(true,pctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth);
+    Line(true,pctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth,lineColor1);
 
-    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth);
+    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth,lineColor1);
 
-    Line(true,pctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+    Line(true,pctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor1);
     if(intPos.x != downIntPos.x || intPos.y != downIntPos.y ){
           pctx.clearRect(intPos.x,intPos.y,1,1);
     }
 
-    Line(true,pctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth);
+    Line(true,pctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth,lineColor1);
 
     break;
   }
@@ -3785,33 +4426,34 @@ function PolyPreview(){
   }
 
 
-  function PolyDraw(){
+  function PolyDraw(lineColor){
+    
     switch(polysides){
       case(2):
      
-      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
-      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor);
+      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
   
       break;
       case(4):
      //rect
       
-      Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth);
+      Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth,lineColor);
   
-      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth);
+      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth,lineColor);
   
-      Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+      Line(false,pctx,lastIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor);
 
-      Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth);
+      Line(false,pctx,downIntPos.x,lastIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor);
       pctx.clearRect(downIntPos.x,downIntPos.y,1,1);
       ctx.fillRect(downIntPos.x,downIntPos.y,1,1);
-      Line(true,ctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth);
+      Line(true,ctx,downIntPos.x,downIntPos.y,downIntPos.x,intPos.y,lineWidth,lineColor);
   
-      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth);
+      Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,downIntPos.y,lineWidth,lineColor);
   
-      Line(true,ctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth);
+      Line(true,ctx,intPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
       ctx.clearRect(intPos.x,intPos.y,1,1);
-      Line(true,ctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth);
+      Line(true,ctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth,lineColor);
   
       break;
     }
@@ -4191,7 +4833,7 @@ perfectPos.y = y;
   
    }
 
-   function PixelPerfectPencil(lineWidth){
+   function PixelPerfectPencil(lineWidthV){
   let dist = 0;
   let offset = 0;
   if(perfectPos.x==previewPos.x&&perfectPos.y==previewPos.y){
@@ -4206,23 +4848,23 @@ offset = 1;
   
   switch(dist){
     case(0):
-    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidth,lineWidth);
+    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
     previewPos.x = perfectPos.x;
     previewPos.y = perfectPos.y;
     break;
     case(1):
 
-    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidth,lineWidth);
-    previewCanvas.getContext("2d").fillRect(intPos.x,intPos.y,lineWidth,lineWidth);
+    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
+    previewCanvas.getContext("2d").fillRect(intPos.x,intPos.y,lineWidthV,lineWidthV);
     previewPos.x = intPos.x;
     previewPos.y = intPos.y;
 
     break;
     default:
       
-    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidth,lineWidth);
+    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
       //Line code//
-      let beforePos = LinePPP(true,ctx,previewPos.x,previewPos.y,intPos.x,intPos.y,lineWidth,offset);
+      let beforePos = LinePPP(true,ctx,previewPos.x,previewPos.y,intPos.x,intPos.y,lineWidthV,offset);
 
 
       //END//
@@ -4231,25 +4873,13 @@ offset = 1;
       previewPos.y = intPos.y;
       perfectPos.x = beforePos.x;//inpos =>1px before intpos
       perfectPos.y = beforePos.y;
-      previewCanvas.getContext("2d").fillRect(intPos.x,intPos.y,lineWidth,lineWidth);
+      previewCanvas.getContext("2d").fillRect(intPos.x,intPos.y,lineWidthV,lineWidthV);
     break;
   }
   
    }
-  function Line(fill,Vctx,X,Y,x,y,lineWidth){
-    var color = "rgb(0,0,0)";
-    if(selected){
-      color = lineColorS;
-   }else{
-     color = lineColor;
-   }
-    var width = 1;
-    if(selected){
-       width = lineWidthS;
-    }else{
-      width = lineWidth;
-    }
-   
+  function Line(fill,Vctx,X,Y,x,y,lineWidth,color){
+    
 
     Vctx.fillStyle=color;
 
@@ -4521,7 +5151,7 @@ Vctx.fillRect(X-(Math.round((i/AdiffY)*diffX)),Y-(i*(diffY/AdiffY)),lineWidth,li
   function LinePPP(fill,Vctx,X,Y,x,y,lineWidth,offset){
     let result = {x:0,y:0}
     var color = "rgb(0,0,0)";
-    if(selected){
+    if(right){
       color = lineColorS;
    }else{
      color = lineColor;
@@ -5137,7 +5767,7 @@ ScrollUpdate();
 
  //TOOL//
  ctx.fillStyle = lineColor;
- 
+
  for(let i = 0; i < 360;i++){
   htx.fillStyle = "hsla("+i+",100%,50%,1)";
    htx.fillRect(0,i,1,1);
@@ -5149,11 +5779,20 @@ InitializeColorPaletteOR(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1
 Init();
 
 
-
+/*
 var re = new ImageData(16,16);
 for(let i = 8; i<re.height-2;i++){
   for(let j = 6;j<re.width-4;j++){
     re.data[i*4*re.width+j*4+3]=255;
   }
 }
+
+*/
+setInterval(function(){
+console.log(PRIMARY+" "+SECONDARY);
+console.log(MODE);
+
+
+},1000);
+
 
