@@ -252,7 +252,7 @@ SECONDARYtoolSELECT = Button_eraser;
 
 let Menu_Tool = document.getElementById("toolmenu");
       //FUNC//
-function CreateIcon(img,id){
+function CreateIcon(img,id,tool){
   let temp = document.createElement("button");
   let imgobj = document.createElement("img");
   imgobj.src = img;
@@ -260,11 +260,71 @@ function CreateIcon(img,id){
   imgobj.height = 48;
   temp.appendChild(imgobj);
   temp.classList.add("icon");
+  
   temp.id = id;
+  temp.onmouseup=function(e){
+    temp.style.borderTop="solid 2px #FFFFFF";
+    temp.style.borderLeft="solid 2px #FFFFFF";
+    temp.style.borderBottom="solid 2px #444444";
+    temp.style.borderRight="solid 2px #444444";
+  }
+  temp.onmouseout=function(e){
+    temp.style.borderTop="solid 2px #FFFFFF";
+    temp.style.borderLeft="solid 2px #FFFFFF";
+    temp.style.borderBottom="solid 2px #444444";
+    temp.style.borderRight="solid 2px #444444";
+  }
+  temp.onmousedown = function(e){
+  
+  temp.style.borderTop="solid 2px #444444";
+  temp.style.borderLeft="solid 2px #444444";
+  temp.style.borderBottom="solid 2px #FFFFFF";
+  temp.style.borderRight="solid 2px #FFFFFF";
+  temp.style.backgroundColor="rgb(127,127,127)";
+  setTimeout(function(){
+  temp.style.backgroundColor="rgb(140,140,140)";
+  },50);
+  setTimeout(function(){
+    temp.style.backgroundColor="rgb(150,150,150)";
+    },100);
+  setTimeout(function(){
+      temp.style.backgroundColor="rgb(160,160,160)";
+      },150);
+  setTimeout(function(){
+   
+    temp.style.backgroundColor="rgb(180,180,180)";
+    },200);
+      switch(tool){
+        case("pencil"):
+     
+        MODE.pencil = id;
+        break;
+        case("line"):
+        MODE.line = id;
+        break;
+        case("poly"):
+        MODE.poly = id;
+        break;
+        case("fill"):
+        MODE.fill = id;
+        break;
+        case("picker"):
+        MODE.picker = id;
+        break;
+        case("select"):
+        MODE.select = id;
+        break;
+        case("eraser"):
+        MODE.eraser = id;
+        break;
+      }
+     
+      
+  }
 
 
 
-
+/*
   //BUTTONCLICK
   temp.addEventListener("click", function(e) {
 console.log(id);
@@ -319,7 +379,7 @@ if(!select){
   }
 }
 
-  });
+  });*/
   return temp;
 }
 
@@ -1212,6 +1272,178 @@ function arrayRemove(arr, value) {
   return arr.filter(function(ele){ 
       return ele != value; 
   });
+}
+
+function setCookie(cname,cvalue) {
+  const d = new Date();
+  d.setTime(d.getTime() + (1*24*60*60*1000));
+  let expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+
+
+//#endregion
+//#region cookieabuse
+
+
+function SaveToCookies(){
+  let myVariables = {
+    PRIMARY:PRIMARY,
+    SECONDARY:SECONDARY,
+    MODE_pencil:MODE.pencil,
+    MODE_line:MODE.pencil,
+    MODE_poly:MODE.pencil,
+    MODE_fill:MODE.pencil,
+    MODE_picker:MODE.pencil,
+    MODE_select:MODE.select,
+    MODE_eraser:MODE.eraser,
+    lineWidth:lineWidth,
+    lineWidthS:lineWidthS,
+    lineColor:lineColor,
+    lineColorS:lineColorS,
+    TICK:TICK
+   };
+   let jsonString = JSON.stringify(myVariables);
+   document.cookie = "myVariables=" + jsonString + "; expires=Fri, 31 Dec 9999 23:59:59 GMT";
+
+}
+function LoadFromCookies(){
+  try{
+    let cookieString = document.cookie;
+  let myVariables = JSON.parse(cookieString.split("=")[1]);
+  console.log(myVariables);
+  PRIMARY=myVariables.PRIMARY;
+  
+  SECONDARY=myVariables.SECONDARY;
+  Button_pencil.classList.remove("selectP");
+  Button_line.classList.remove("selectP");
+  Button_poly.classList.remove("selectP");
+  Button_fill.classList.remove("selectP");
+  Button_picker.classList.remove("selectP");
+  Button_select.classList.remove("selectP");
+  Button_eraser.classList.remove("selectP");
+  Button_pencil.classList.remove("selectP");
+  Button_line.classList.remove("selectS");
+  Button_poly.classList.remove("selectS");
+  Button_fill.classList.remove("selectS");
+  Button_picker.classList.remove("selectS");
+  Button_select.classList.remove("selectS");
+  Button_eraser.classList.remove("selectS");
+  Button_pencil.classList.remove("select");
+  Button_line.classList.remove("select");
+  Button_poly.classList.remove("select");
+  Button_fill.classList.remove("select");
+  Button_picker.classList.remove("select");
+  Button_select.classList.remove("select");
+  Button_eraser.classList.remove("selectP");
+  if(PRIMARY!=SECONDARY){
+    switch(PRIMARY){
+    case("pencil"):
+    Button_pencil.classList.add("selectP");
+    PRIMARYtoolSELECT=Button_pencil;
+    break;
+    case("line"):
+    Button_line.classList.add("selectP");
+    PRIMARYtoolSELECT=Button_line;
+    break;
+    case("poly"):
+    Button_poly.classList.add("selectP");
+    PRIMARYtoolSELECT=Button_poly;
+    break;
+    case("fill"):
+    Button_fill.classList.add("selectP");
+    PRIMARYtoolSELECT=Button_fill;
+    break;
+    case("picker"):
+    Button_picker.classList.add("selectP");
+    PRIMARYtoolSELECT=Button_picker;
+    break;
+    case("select"):
+    Button_select.classList.add("selectP");
+    PRIMARYtoolSELECT=Button_select;
+    break;
+    case("eraser"):
+    Button_eraser.classList.add("selectP");
+    PRIMARYtoolSELECT=Button_eraser;
+    break;
+  }
+  switch(SECONDARY){
+    case("pencil"):
+    Button_pencil.classList.add("selectS");
+    SECONDARYtoolSELECT=Button_pencil;
+    break;
+    case("line"):
+    Button_line.classList.add("selectS");
+    SECONDARYtoolSELECT=Button_line;
+    break;
+    case("poly"):
+    Button_poly.classList.add("selectS");
+    SECONDARYtoolSELECT=Button_poly;
+    break;
+    case("fill"):
+    Button_fill.classList.add("selectS");
+    SECONDARYtoolSELECT=Button_fill;
+    break;
+    case("picker"):
+    Button_picker.classList.add("selectS");
+    SECONDARYtoolSELECT=Button_picker;
+    break;
+    case("select"):
+    Button_select.classList.add("selectS");
+    SECONDARYtoolSELECT=Button_secondary;
+    break;
+    case("eraser"):
+    Button_eraser.classList.add("selectS");
+    SECONDARYtoolSELECT=Button_eraser;
+    break;
+  }
+  }else{
+    switch(PRIMARY){
+      case("pencil"):
+      Button_pencil.classList.add("select");
+      break;
+      case("line"):
+      Button_line.classList.add("select");
+      break;
+      case("poly"):
+      Button_poly.classList.add("select");
+      break;
+      case("fill"):
+      Button_fill.classList.add("select");
+      break;
+      case("picker"):
+      Button_picker.classList.add("select");
+      break;
+      case("select"):
+      Button_select.classList.add("select");
+      break;
+      case("eraser"):
+      Button_eraser.classList.add("select");
+      break;
+    }
+  }
+  
+  }catch{
+
+  }
+  
 }
 //#endregion
 //#region conversion
@@ -2642,12 +2874,12 @@ if(left){
     Menu_Tool.appendChild(name);
 
       
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1","pencil"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2","pencil"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3","pencil"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4","pencil"));
       /*
     br = document.createElement("br");
     Menu_Tool.appendChild(br); 
@@ -2693,15 +2925,15 @@ if(left){
     name.innerHTML = "Style:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp","line"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry","line"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
     name.innerHTML = "Mode:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC"));
-    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS"));
+    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC","line"));
+    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS","line"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
    
@@ -2718,12 +2950,12 @@ if(left){
     name.innerHTML = "Style:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","fill"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","fill"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","fill"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","fill"));
     
    
     break;
@@ -2737,12 +2969,12 @@ if(left){
     name.innerHTML = "Style:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","picker"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","picker"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","picker"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","picker"));
     
    
     break;
@@ -2752,20 +2984,20 @@ if(left){
       br = document.createElement("br");
     name.innerHTML = "Picker";
     Menu_Tool.appendChild(name);
-    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY"));
-    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE"));
-    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT"));
-    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE"));
+    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE","select"));
     name = document.createElement("p"); 
     name.innerHTML = "Mode:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","select"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","select"));
     
    
     break;
@@ -2788,12 +3020,12 @@ else if (right){
     Menu_Tool.appendChild(name);
 
       
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1","pencil"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2","pencil"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3","pencil"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4","pencil"));
       /*
     br = document.createElement("br");
     Menu_Tool.appendChild(br); 
@@ -2839,15 +3071,15 @@ else if (right){
     name.innerHTML = "Style:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp","line"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry","line"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
     name.innerHTML = "Mode:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC"));
-    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS"));
+    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC","line"));
+    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS","line"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
    
@@ -2864,12 +3096,12 @@ else if (right){
     name.innerHTML = "Style:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","fill"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","fill"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","fill"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","fill"));
     
    
     break;
@@ -2883,12 +3115,12 @@ else if (right){
     name.innerHTML = "Style:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","picker"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","picker"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","picker"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","picker"));
     
    
     break;
@@ -2898,20 +3130,20 @@ else if (right){
       br = document.createElement("br");
     name.innerHTML = "Picker";
     Menu_Tool.appendChild(name);
-    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY"));
-    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE"));
-    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT"));
-    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE"));
+    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE","select"));
     name = document.createElement("p"); 
     name.innerHTML = "Mode:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","select"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN"));
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","select"));
     
    
     break;
@@ -5757,6 +5989,7 @@ function PasteSelect(){
 //#endregion
 
 function Init() {
+  LoadFromCookies();
 SQ_SAVE();
 //UI//
  MenuChange();
@@ -5767,7 +6000,7 @@ ScrollUpdate();
 
  //TOOL//
  ctx.fillStyle = lineColor;
-
+ 
  for(let i = 0; i < 360;i++){
   htx.fillStyle = "hsla("+i+",100%,50%,1)";
    htx.fillRect(0,i,1,1);
@@ -5788,11 +6021,16 @@ for(let i = 8; i<re.height-2;i++){
 }
 
 */
+
+
+
+
+
+//autosave of config
 setInterval(function(){
-console.log(PRIMARY+" "+SECONDARY);
-console.log(MODE);
-
-
-},1000);
-
+  //console.log("autosaving...");
+  SaveToCookies();
+  //console.log("autosave complete");
+  },15000);
+  
 
