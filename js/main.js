@@ -154,7 +154,9 @@ let OpenButton = document.getElementById("fileClick");
 let Open = document.getElementById("open");
 let ImportButton = document.getElementById("impClick");
 let Import = document.getElementById("import");
-Save.addEventListener("click",download);
+Save.addEventListener("click",download_merged);//CHANGE TO DWNLD CUSTOM FILE FORMAT .BMDU
+document.getElementById("save_merged").addEventListener("click",download_merged);
+document.getElementById("save_layers").addEventListener("click",download_layers);
 OpenButton.addEventListener("click",function(e){
 Open.click();
 });
@@ -520,11 +522,20 @@ var uiCanvas = document.getElementById("uicanvas"); var uictx = uiCanvas.getCont
 
 var previewCanvas = document.getElementById("previewcanvas");var pctx = previewCanvas.getContext("2d");
 
-var canvas = document.getElementById("canvas");var ctx = canvas.getContext("2d");
+var canvas = document.getElementById("layer0");var ctx = canvas.getContext("2d");
+var canvasBackground = document.getElementById("canvasBackground");
 let background = document.getElementById("background");
 var div = document.getElementById("canvasdiv");
 div.style.height = ""+canvasSize.y+"px";
 div.style.width = ""+canvasSize.x+"px";
+//#endregion
+//#region layer
+//layer has: name z-index visible canvasId
+var layerselected = "UI_layer0";
+var layers = [["Background 1", -1, true, "layer1" ],["Layer 1", 0, true, "layer0" ]];
+var layerdiv = document.getElementById("layerdiv");
+var layersui = document.getElementById("layersui");
+var templr = false;
 //#endregion
 //#region palette
 let colorpalettes = [];//name is last item of arrays within
@@ -645,7 +656,7 @@ var SelectAreaT;
 var SelectPos = {x:-1,y:-1,w:0,h:0};
 var LastDir = -1;
 //#endregion
-//#region 
+//#region poly 
 var polysides = 4;
 //#endregion
 //#region fill
@@ -681,6 +692,7 @@ var ColorSelected = false; //false=>PRIMARY,true=>SECONDARY
 const NewPalette = document.getElementById("newPalette");
 NewPalette.onmousedown = function(){
   var name = prompt("Palette name","Custom"+palettelist.length);
+  if(name==null || name==""){return;}
   var pal = [];
  
   InitializeColorPaletteOR(pal,name);
@@ -1300,6 +1312,11 @@ function getCookie(cname) {
 
 
 //#endregion
+//#region parentchild
+function RemoveAllChildren(){
+
+}
+//#endregion
 //#region cookieabuse
 
 
@@ -1827,6 +1844,45 @@ document.addEventListener('keyup', function(event) {
     }
 });
 //#endregion
+//#region file system and top menu
+function download_layer(id){
+  var link = document.createElement('a');
+  link.download = 'image'+id+'.png';
+ 
+  link.href = document.getElementById(id).toDataURL();
+  link.click();
+  link.remove();
+}
+function download_merged(){
+  //make temporary canvas to merge layers
+var canvas = document.createElement("canvas");
+canvas.width=resolution.x;
+canvas.height=resolution.y;
+var Tctx = canvas.getContext("2d");
+for(let i = 0;i< layers.length;i++){
+  putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
+}
+//download canvas
+var link = document.createElement('a');
+  link.download = 'image.png';
+ 
+  link.href = canvas.toDataURL();
+  link.click();
+  link.remove();
+
+}
+function download_layers(){
+
+    for(let i =0;i<layers.length;i++){
+      setTimeout(() => {
+          download_layer(layers[i][3]);
+      }, 10*i);
+    
+    }
+    }
+  
+
+//#endregion
 //#region circle
 
 //#endregion
@@ -2197,14 +2253,15 @@ for(let i = 0;i < array.length;i+=4){
 
 var tr0 = ctxArray[i+3]/255;
 var tr1 = array[i+3]/255;
-array[i] = ((array[i]*tr1)+(ctxArray[i]*((1-tr1)*tr0)));
-array[i+1] = ((array[i+1]*tr1)+(ctxArray[i+1]*((1-tr1)*tr0)));
-array[i+2] = ((array[i+2]*tr1)+(ctxArray[i+2]*((1-tr1)*tr0)));
 if(array[i+3]+ctxArray[i+3] > 255){
   array[i+3] = 255;
-}else{
+}else{aehaehaehaehhaeheaehaehhaeheahaeono to nefunguje dobre ta barva vychazi tmavsi agh
   array[i+3] = array[i+3]+ctxArray[i+3]; 
 }
+array[i] = ((array[i]*tr1)+(ctxArray[i]*((1-tr1)*tr0)))/(array[i+3]/255);//nefungujege
+array[i+1] = ((array[i+1]*tr1)+(ctxArray[i+1]*((1-tr1)*tr0)))/(array[i+3]/255);
+array[i+2] = ((array[i+2]*tr1)+(ctxArray[i+2]*((1-tr1)*tr0)))/(array[i+3]/255);
+
 
 }
 ctx.putImageData(new ImageData(array,w),x,y);
@@ -3270,7 +3327,7 @@ function ChangeRes(){
   else{
     resScale =  resolution.y / canvasSize.y; 
   }
-canvas.style.backgroundSize = 200/resolution.x  + "%";
+canvasBackground.style.backgroundSize = 200/resolution.x  + "%";
 }
 function ScrollUpdate(){
 var rect = canvas.getBoundingClientRect();
@@ -3289,6 +3346,206 @@ function MoveCanvas(){
 function ChangeCanvasColor(oldC,newC){
     console.log(newC);
   }
+//#endregion
+//#region layers
+
+function AddLayerCanvas(){
+  var canvas = document.createElement("canvas");
+  canvas.id="layer"+layers.length;
+  canvas.width=resolution.x;
+  canvas.height=resolution.y;
+  
+  document.getElementById("layerdiv").appendChild(canvas);
+}
+
+//UI
+function LoadLayersUI(){
+  layersui.innerHTML="";//remove all layers
+
+ for(let i = 0;i < layers.length;i++){
+  AddLayerUI(layers[i],i);
+ }
+
+ try{
+      document.getElementById(layerselected+"_name").style.color="#FFFF00";
+  }catch{
+    try{
+        document.getElementById("UI_"+layers[0][3]+"_name").style.color="#FFFF00";
+    }catch{
+      var lr = ["New layer",0,true,"layer0"];
+      AddLayerUI(lr);AddLayerCanvas();
+      ctx = document.getElementById("layer0").getContext("2d");
+      layers.push(lr);
+      layerselected="UI_"+lr[3];
+      document.getElementById(layerselected+"_name").style.color="#FFFF00";
+    }
+  
+  }
+ //add layer button
+ var div = document.createElement("div");
+  div.className = "layer";
+  div.id = "UI_add";
+  
+
+  div.innerHTML=" <pre id='"+div.id+"_name' style='cursor: text;max-width: 80px;min-width:32px;overflow:hidden;'>Add layer</pre><div style=\"position: absolute;display: flex;flex-direction:row; align-items:center; left: 80px;\" ><img id='UI_LAYER_ADD' src=\"./icons/bnw_add.png\" width=\"24\" height=\"24\"/></div>";
+  layersui.appendChild(div);
+  
+    document.getElementById("UI_LAYER_ADD").onclick=function(e){
+      
+      var ll = 0;
+      if(layers.length>0){
+        ll=layers.length;
+      }
+      var name = prompt("Layer name","Layer "+ll);
+      if(name==null || name==""){return;}
+      AddLayerCanvas();
+     
+      if(ll==0){
+        var layer = [name,1,true,"layer"+ll];
+        ctx = document.getElementById("layer"+ll).getContext("2d");
+      }else{
+         var layer = [name,layers[ll-1][2]+1,true,"layer"+ll];
+      }
+     
+      layers.push(layer);
+     layerselected="UI_"+layer[3];
+      LoadLayersUI();
+      
+  }
+
+}
+function AddLayerUI(layer,index){
+  var div = document.createElement("div");
+  div.className = "layer";
+  div.id = "UI_"+layer[3];
+  var img = "./icons/bnw_eye_open.png";
+  if(!layer[2]){
+    img = "./icons/bnw_eye_closed.png";
+  }
+  div.innerHTML=" <pre id='"+div.id+"_name' style='cursor: text;max-width: 80px;min-width:32px;overflow:hidden;'>"+layer[0]+"</pre><div style=\"position: absolute;display: flex;flex-direction:row; align-items:center; left: 80px;\" ><div style='display:flex;flex-direction:column;padding-right:5px;'><img id='"+div.id+"_up' src='./icons/bnw_arrow_up.png' width=\"16\" height=\"16\"/><img id='"+div.id+"_down' src=\"./icons/bnw_arrow_down.png\"  width=\"16\" height=\"16\"/></div><img id='"+div.id+"_visible' style=\"padding-right:2px;\" src="+img+" width=\"24\" height=\"24\"/><img id='"+div.id+"_delete' src=\"./icons/bnw_bin.png\" width=\"24\" height=\"24\"/></div>";
+  layersui.appendChild(div);
+    document.getElementById(div.id+"_name").onclick=function(e){
+    
+      if(templr){
+         var name = prompt("Layer name",layer[0]);
+      if(name==null || name==""){return;}
+      document.getElementById(div.id+"_name").innerHTML=name;
+      layer[0]=name;
+      }else{
+        ctx = document.getElementById(layer[3]).getContext("2d");
+       
+        document.getElementById(layerselected+"_name").style.color="#00AA00";
+         document.getElementById(div.id+"_name").style.color="#FFFF00";
+    
+        layerselected=div.id;
+
+      }
+     templr=true;
+     setTimeout(() => {
+      templr=false;
+     }, DoubleClickSpeed*2);
+
+  }
+  document.getElementById(div.id+"_delete").onclick=function(e){
+   
+    for(let i =0;i<layers.length;i++){
+      if("UI_"+layers[i][3]==div.id){ 
+        document.getElementById(layers[i][3]).remove();
+        layers.splice(i,1);
+ 
+        break;
+      }
+    }
+  
+    LoadLayersUI();
+}
+document.getElementById(div.id+"_visible").onclick=function(e){
+   layer[2]=!layer[2];
+   if(layer[2]){
+    document.getElementById(layer[3]).style.visibility="visible";
+   }else{
+    document.getElementById(layer[3]).style.visibility="hidden";
+   }
+
+  LoadLayersUI();
+}
+document.getElementById(div.id+"_up").onclick=function(e){
+ 
+  if(index!=0){
+   
+    var temp = [layers[index][0],layers[index][1],layers[index][2],layers[index][3]];
+    var temp2 = layers[index][1];
+
+    layers[index]=layers[index-1];
+    layers[index-1]=temp;
+    
+    layers[index-1][1]=layers[index][1];
+    layers[index][1]=temp2;
+    document.getElementById(layers[index][3]).style.zIndex=layers[index][1];
+    document.getElementById(layers[index-1][3]).style.zIndex=layers[index-1][1];
+    LoadLayersUI();
+  }
+
+
+}
+document.getElementById(div.id+"_down").onclick=function(e){
+ 
+  if(index<layers.length-1){
+   
+    var temp = [layers[index][0],layers[index][1],layers[index][2],layers[index][3]];
+    var temp2 = layers[index][1];
+
+    layers[index]=layers[index+1];
+    layers[index+1]=temp;
+    
+    layers[index+1][1]=layers[index][1];
+    layers[index][1]=temp2;
+    document.getElementById(layers[index][3]).style.zIndex=layers[index][1];
+    document.getElementById(layers[index+1][3]).style.zIndex=layers[index+1][1];
+    LoadLayersUI();
+  }
+
+
+}
+  /*document.getElementById(div.id+"_in").oninput=function(e){
+    if(document.getElementById(div.id+"_in").value.length==0){
+      //document.getElementById(div.id+"_name").innerHTML = "    ";
+    }else if(document.getElementById(div.id+"_in").value.length<9){
+      //document.getElementById(div.id+"_name").innerHTML = document.getElementById(div.id+"_in").value.substring(0,7);
+    }
+    else{
+      //document.getElementById(div.id+"_in").value = document.getElementById(div.id+"_in").value.substring(0,8);
+    }
+    
+ 
+  }
+
+  document.getElementById(div.id+"_in").onkeyup=function(e){
+   
+    
+    var index = e.target.selectionStart; 
+   
+
+    
+   
+    var temp = document.getElementById(div.id+"_in").value;
+    var before = temp.substring(0,index);
+    var after = temp.substring(index);
+    document.getElementById(div.id+"_name").innerHTML =  before+"<span  style='margin-right:4px;color: black;background-color:#FFFFFF;'> &nbsp;</span>"+ after;
+    
+ 
+  }
+  document.getElementById(div.id+"_in").onfocusout=function(e){
+   
+    document.getElementById(div.id+"_name").style.color="#44FF22";
+    document.getElementById(div.id+"_name").style.backgroundColor="#00000000";
+
+ 
+  }
+  */
+  //div.style = "display: flex;flex-direction: row; align-items: center;";
+
+}
 //#endregion
 //#region mouse
 
@@ -5993,6 +6250,7 @@ function Init() {
 SQ_SAVE();
 //UI//
  MenuChange();
+ LoadLayersUI();
 //CANVAS//
 UpdateCanvas();
 ChangeRes();

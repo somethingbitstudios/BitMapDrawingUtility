@@ -28,6 +28,7 @@
             <br>
             <div id="toolmenu">
               <h2>Pencil</h2>
+
               <p>Mode:</p>
               <button class="icon" id="1">
                 <img src="./icons/toolmodes/pencil_mode-13.png" width="48" height="48"></button>
@@ -129,7 +130,22 @@
 
           </div>
         
-      
+          <br/>
+
+          <div class="layerMenu">
+            <p>Layers:</p>
+            <div id="layersui" style="max-height:200px;overflow-y:scroll">
+              <div class="layer" id="test0" >
+                <p id="frame0_0_name" style="cursor:text;max-width: 64px;overflow:hidden;">layetext</p>
+                <div style="display:flex;flex-direction:column;">
+                  <img src="./icons/arrowup.png" width="32" height="16"/>
+                  <img  src="./icons/arrowdwn.png"  width="32" height="16"/>
+                </div>
+                <img src="./icons/eraser.png" width="32" height="32"/>
+                <img style="position: absolute;display: block;left: 128px;" src="./icons/bin.png" width="32" height="32"/>
+              </div>
+            </div>
+          </div>
           
             
         </div>
@@ -172,7 +188,13 @@
       <div id="UIopt" style="visibility:hidden;">
         <p>Options</p>
     
+
+        <p>Download:</p>
+        <button id="save_merged">Merged</button>
+        <button id="save_layers">Separate layers</button>
+
       <button id="UIoptSave">Save</button>
+
       </div>
    
    <div id="canvasdiv" >
@@ -185,8 +207,13 @@
     <img id="SelectDownLeft" class="selectPoints"src="./icons/dragPoint.png" width=16 height="16" style="visibility: hidden;">
     <img id="SelectLeft" class="selectPoints"src="./icons/dragPoint.png" width=16 height="16"style="visibility: hidden;">   
     <img id="SelectRotate" class="selectPoints"src="./icons/dragPoint.png" width=16 height="16"style="visibility: hidden;">
- <canvas id="canvas" >
-  </canvas>
+  
+    <div id="layerdiv">
+      <canvas id="canvasBackground" width="1" height="1"></canvas>
+      <canvas id="layer1" width="240" height="150"></canvas>
+      <canvas id="layer0" ></canvas>
+    </div>
+ 
  <canvas id="previewcanvas">  </canvas>
  <canvas id="uicanvas" >  </canvas>
    </div>
