@@ -3677,7 +3677,9 @@ function UpdatePos(){
             }
 
          switch(PRIMARY){
-
+case("eraser"):
+     ctx.clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
+      break;
           case("pencil"):
           switch(MODE.pencil){
       case("4"):
@@ -3896,7 +3898,9 @@ PolyPreview();
            }
 
         switch(SECONDARY){
-
+case("eraser"):
+      ctx.clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
+      break;
          case("pencil"):
          switch(MODE.pencil){
      case("4"):
