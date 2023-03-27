@@ -157,6 +157,7 @@ let Import = document.getElementById("import");
 Save.addEventListener("click",download_merged);//CHANGE TO DWNLD CUSTOM FILE FORMAT .BMDU
 document.getElementById("save_merged").addEventListener("click",download_merged);
 document.getElementById("save_layers").addEventListener("click",download_layers);
+document.getElementById("export_bitmap").addEventListener("click",export_bitmap);
 OpenButton.addEventListener("click",function(e){
 Open.click();
 });
@@ -1881,6 +1882,53 @@ function download_layers(){
     }
     }
   
+function export_bitmap(){
+
+  var canvARRAY = document.getElementById(layers[layers.length-1][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data;
+  
+  var pallete = GetCanvasPalette();
+  var colorArray = [];
+  var exportB = "X: "+resolution.x +";Y: "+ resolution.y+";DATA: ";
+  var x = resolution.x;
+  var p = 8;
+ //ONLY SUPPORTS 1 BIT DEEP RN
+  for(let i =0;i<canvARRAY.length;i+=4){
+	  
+	  if(canvARRAY[i+3]>0){
+		    exportB+="1";
+	  }else{
+		   exportB+="0";
+	  }
+	  
+	  x--;
+	  p--;
+	  if(i>canvARRAY.length-5){
+		  break;
+	  }
+	  if(p==0){
+	   exportB+=",0b";
+	  p=8;
+	  }
+	  else if(x==0){
+	  x=resolution.x;
+	  exportB+=",0b";
+	  p=8;
+	  }
+	  
+  }
+  
+	  
+	   const link = document.createElement("a");
+			
+         const file = new Blob([exportB], { type: 'text/plain' });
+         link.href = URL.createObjectURL(file);
+         link.download = "bitmap.txt";
+         link.click();
+         URL.revokeObjectURL(link.href);
+	 
+  }
+
+
 
 //#endregion
 //#region circle
