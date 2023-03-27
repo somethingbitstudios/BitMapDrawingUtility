@@ -2249,22 +2249,51 @@ function ExpandImageFromCenter(image,x,y){
 function putImageDataOptimized(ctx,arrayOrig,x,y,w,h){
 var ctxArray = ctx.getImageData(x,y,w,h).data;
 var array = arrayOrig.map((x) => x); //needed to not change orig array below, which would cause issues with paste
-for(let i = 0;i < array.length;i+=4){
 
+for(let i = 0;i < array.length;i+=4){
+/* old method
 var tr0 = ctxArray[i+3]/255;
 var tr1 = array[i+3]/255;
 if(array[i+3]+ctxArray[i+3] > 255){
   array[i+3] = 255;
-}else{aehaehaehaehhaeheaehaehhaeheahaeono to nefunguje dobre ta barva vychazi tmavsi agh
+}else{
   array[i+3] = array[i+3]+ctxArray[i+3]; 
 }
 array[i] = ((array[i]*tr1)+(ctxArray[i]*((1-tr1)*tr0)))/(array[i+3]/255);//nefungujege
 array[i+1] = ((array[i+1]*tr1)+(ctxArray[i+1]*((1-tr1)*tr0)))/(array[i+3]/255);
 array[i+2] = ((array[i+2]*tr1)+(ctxArray[i+2]*((1-tr1)*tr0)))/(array[i+3]/255);
 
+*/
+
+var a0 = ctxArray[i+3]/255;
+var a1 = array[i+3]/255;
+
+if(a1==0){
+array[i]=ctxArray[i];
+array[i+1]=ctxArray[i+1];
+array[i+2]=ctxArray[i+2];
+array[i+3]=ctxArray[i+3];
+continue;
+} else if(a0==0)
+{
+	continue;
+}
+if((1-((1-a1)*(1-a0)))*255<255){
+/*r*/array[i] = (a1*array[i]+((1-a1)*a0)*ctxArray[i])/((a1+a0)/1.31);
+/*g*/array[i+1] = (a1*array[i+1]+((1-a1)*a0)*ctxArray[i+1])/((a1+a0)/1.31);
+/*b*/array[i+2] = (a1*array[i+2]+((1-a1)*a0)*ctxArray[i+2])/((a1+a0)/1.31);
+}else{
+/*r*/array[i] = (a1*array[i]+((1-a1)*a0)*ctxArray[i]);
+/*g*/array[i+1] = (a1*array[i+1]+((1-a1)*a0)*ctxArray[i+1]);
+/*b*/array[i+2] = (a1*array[i+2]+((1-a1)*a0)*ctxArray[i+2]);
+}
+
+/*a*/array[i+3]= (1-((1-a1)*(1-a0)))*255;
+
 
 }
 ctx.putImageData(new ImageData(array,w),x,y);
+
 
 }
 
@@ -6265,7 +6294,7 @@ ScrollUpdate();
  }
  InitializeColorPicker(false,lineColor);
  
-InitializeColorPaletteOR(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
+InitializeColorPaletteOR(["rgba(255,0,0,0.5)","rgba(0,0,255,0.5)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
 }
 Init();
 
