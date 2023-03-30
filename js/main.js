@@ -1148,6 +1148,7 @@ for (let i = 0; i < colors.length;i++){
   }
   
 }
+
 }
 Update_Colors();
 
@@ -1886,9 +1887,29 @@ function export_bitmap(){
 
   var canvARRAY = document.getElementById(layers[layers.length-1][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data;
   
-  var pallete = GetCanvasPalette();
-  var colorArray = [];
-  var exportB = "X: "+resolution.x +";Y: "+ resolution.y+";DATA: ";
+  var pallete = colorpalettes[colorpaletteindex];
+
+  var bitsperpixel = Math.ceil(Math.log2(pallete.length-1));
+  alert(bitsperpixel);
+  
+  var intArray = [];
+  var exportB = "X: "+resolution.x +";Y: "+ resolution.y+";BITS PER TILE: "+bitsperpixel+";DATA: ";
+   for(let i =0;i<canvARRAY.length;i+=4){
+   for(let j = 0;j<pallete.length;j++){
+   if(ALLToRGBA([canvARRAY[i],canvARRAY[i+1],canvARRAY[i+2],canvARRAY[i+3]/255])==pallete[j]){
+	   intArray.push(j);
+	   continue;
+   }
+      intArray.push(0);
+   }
+   }
+   //make intArray into Bitarray  (%2 bitsperpixel times)
+   //divide bitarray into Bytearray and fill out the rest of the byte if needed
+   //write bytearray to exportb like before
+   
+   
+   
+  /*
   var x = resolution.x;
   var p = 8;
  //ONLY SUPPORTS 1 BIT DEEP RN
@@ -1917,7 +1938,7 @@ function export_bitmap(){
 	  
   }
   
-	  
+	  */
 	   const link = document.createElement("a");
 			
          const file = new Blob([exportB], { type: 'text/plain' });
@@ -2315,6 +2336,7 @@ array[i+2] = ((array[i+2]*tr1)+(ctxArray[i+2]*((1-tr1)*tr0)))/(array[i+3]/255);
 
 var a0 = ctxArray[i+3]/255;
 var a1 = array[i+3]/255;
+var a2 = a1 + (1-a1)*a0;
 
 if(a1==0){
 array[i]=ctxArray[i];
@@ -2327,16 +2349,22 @@ continue;
 	continue;
 }
 if((1-((1-a1)*(1-a0)))*255<255){
-/*r*/array[i] = (a1*array[i]+((1-a1)*a0)*ctxArray[i])/((a1+a0)/1.31);
-/*g*/array[i+1] = (a1*array[i+1]+((1-a1)*a0)*ctxArray[i+1])/((a1+a0)/1.31);
-/*b*/array[i+2] = (a1*array[i+2]+((1-a1)*a0)*ctxArray[i+2])/((a1+a0)/1.31);
+	
+/*rarray[i] = (a1*array[i]+((1-a1)*a0)*ctxArray[i])/((a1+a0)/1.31);
+/*garray[i+1] = (a1*array[i+1]+((1-a1)*a0)*ctxArray[i+1])/((a1+a0)/1.31);
+/*barray[i+2] = (a1*array[i+2]+((1-a1)*a0)*ctxArray[i+2])/((a1+a0)/1.31);
+*/
+
+/*r*/array[i] = array[i]*(a1/a2)+ctxArray[i]*(((1-a1)*a0)/a2);
+/*g*/array[i+1] = array[i+1]*(a1/a2)+ctxArray[i+1]*(((1-a1)*a0)/a2);
+/*b*/array[i+2] = array[i+2]*(a1/a2)+ctxArray[i+2]*(((1-a1)*a0)/a2);
 }else{
 /*r*/array[i] = (a1*array[i]+((1-a1)*a0)*ctxArray[i]);
 /*g*/array[i+1] = (a1*array[i+1]+((1-a1)*a0)*ctxArray[i+1]);
 /*b*/array[i+2] = (a1*array[i+2]+((1-a1)*a0)*ctxArray[i+2]);
 }
 
-/*a*/array[i+3]= (1-((1-a1)*(1-a0)))*255;
+/*a*/array[i+3]= a2*255;
 
 
 }
@@ -4130,6 +4158,8 @@ PolyPreview();
             }
            
           Color_last();
+		  SavePalette(colorpaletteindex);
+		  
         }
 
      
@@ -4332,7 +4362,7 @@ default:
             movedColorObj.style.top = e.clientY-2+"px";
             movedColorObj.style.visibility = "hidden";
             movedColor.classList.remove("selected");
-  
+			SavePalette(colorpaletteindex);
          if(hoveringON == "colorpalette"){
            var arr = ColorsToArray();
             if(oncolor < 0){
