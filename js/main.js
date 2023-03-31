@@ -1890,23 +1890,60 @@ function export_bitmap(){
   var pallete = colorpalettes[colorpaletteindex];
 
   var bitsperpixel = Math.ceil(Math.log2(pallete.length-1));
-  alert(bitsperpixel);
-  
+  //alert(bitsperpixel);
+  //console.log("bits: "+bitsperpixel );
   var intArray = [];
-  var exportB = "X: "+resolution.x +";Y: "+ resolution.y+";BITS PER TILE: "+bitsperpixel+";DATA: ";
+  var def = true;
+  var exportB = "X: "+resolution.x +";Y: "+ resolution.y+";BITS PER TILE: "+bitsperpixel+";PALETTE: ";
+for(let j = 0;j<pallete.length;j++){
+exportB+= pallete[j]+", ";
+}
+  exportB=exportB.substr(0,exportB.length-2);//get rid 
+  exportB+="\nDATA: \n";
    for(let i =0;i<canvARRAY.length;i+=4){
+	   
    for(let j = 0;j<pallete.length;j++){
-   if(ALLToRGBA([canvARRAY[i],canvARRAY[i+1],canvARRAY[i+2],canvARRAY[i+3]/255])==pallete[j]){
+   if(ALLToRGBA(canvARRAY[i]+","+canvARRAY[i+1]+","+canvARRAY[i+2]+","+canvARRAY[i+3]/255)==pallete[j]){
 	   intArray.push(j);
-	   continue;
+	   def=false;
+	   break;
    }
-      intArray.push(0);
+
    }
+   if(def){
+	    intArray.push(0);
    }
-   //make intArray into Bitarray  (%2 bitsperpixel times)
-   //divide bitarray into Bytearray and fill out the rest of the byte if needed
-   //write bytearray to exportb like before
+   def=true;
+ 
    
+   }
+   //console.log(intArray);
+   //make intArray into Bitarray  (%2 bitsperpixel times)
+   var bitstr = "";
+   for(let i = 0;i< intArray.length;i++){ 
+   var temp = "";
+   for(let j = 0;j<bitsperpixel;j++){
+	  
+	   temp += intArray[i]%2;
+	  intArray[i]=Math.floor(intArray[i]/2);
+   }
+   bitstr += temp.split("").reverse().join("");
+   }
+   //console.log(bitstr);
+   //divide bitarray into Bytearray and fill out the rest of the byte if needed
+   var bytearray = [];
+   while(bitstr.length>7){
+	   bytearray.push(bitstr.substr(0,8));
+	   bitstr = bitstr.substr(8);
+   }
+   bytearray.push((bitstr+"00000000").substr(0,8));
+	//console.log(bytearray);
+  
+   //write bytearray to exportb like before
+   for(let i = 0;i< bytearray.length;i++){
+	   exportB += "0b"+bytearray[i]+",";
+   }
+   exportB=exportB.substr(0,exportB.length-1);//get rid of comma
    
    
   /*
