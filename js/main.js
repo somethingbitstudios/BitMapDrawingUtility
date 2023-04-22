@@ -2200,8 +2200,9 @@ for(let i = 0; i < rY;i++){
     iwh = i-half;
     jwh = j-half;
 
-    if(Math.sqrt((jwh)**2+(iwh)**2)>half){ //if the point is outside the area where rotated pixels can end up, just continue
-      continue;
+    //if(Math.sqrt((jwh)**2+(iwh)**2)>half){ //if the point is outside the area where rotated pixels can end up, just continue
+		if((jwh**2+iwh**2)>half**2){
+	 continue;
     }
    if(tempBool){
        x = Math.round(jwh*cosine-iwh*sine+half); //get the rotated cords
