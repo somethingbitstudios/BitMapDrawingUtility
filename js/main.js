@@ -3048,6 +3048,13 @@ function InitializeColorPaletteOR(palette,name){
 
 
 //#endregion
+//#region animation
+let animButton = document.getElementById("animateBtn");
+animButton.onclick = function(e){
+	alert("g");
+}
+//#endregion
+
 //#region overlay
 
 //#endregion
