@@ -42,6 +42,18 @@ if(LeftHidden){
 }
 LeftHidden = !LeftHidden;
 });
+let BottomHidden = false;
+let UIBottom = document.getElementById("UIbottom");
+let UIBottomToggle = document.getElementById("bottom");
+UIBottomToggle.addEventListener("click",function(x){
+if(BottomHidden){
+  UIBottom.style.visibility = "visible";
+}else{
+  UIBottom.style.visibility = "hidden";
+}
+BottomHidden = !BottomHidden;
+});
+
 let RightHidden = false;
 let UIRight = document.getElementById("UIright");
 let UIRightToggle = document.getElementById("right");
@@ -182,6 +194,11 @@ div.style.width = ""+canvasSize.x+"px";
 UpdateCanvas();
 
  ctx.drawImage(image,0,0);
+  AddFrame();
+  SaveFrame(curr_frame);
+  
+
+
   }
   image.src = URL.createObjectURL(this.files[0]);
   
@@ -217,6 +234,7 @@ Import.addEventListener("change",function(e){
   uictx.fillStyle = selectFill;
   uictx.fillRect(0,0,image.width,image.height);
   EnableSelectPoints();
+  SaveFrame(curr_frame);
   }
   image.src = URL.createObjectURL(this.files[0]);
   
@@ -537,6 +555,15 @@ var layers = [["Background 1", -1, true, "layer1" ],["Layer 1", 0, true, "layer0
 var layerdiv = document.getElementById("layerdiv");
 var layersui = document.getElementById("layersui");
 var templr = false;
+//#endregion
+//#region frame
+var fps = 20;
+var curr_frame = 0;
+
+var AnimFrames_ptr = [];//index of frame in imgdata 
+var layers_ptr = [0,1];//at the start: [0,1,2,3] by the end: [2,0,3]
+var AnimFrames = [];//[layers,,,]-imagedata only update when switching / toggling play/stop
+var AnimFramesPreview = [];   //[layers,,,]-imagedata only update when switching / toggling play/stop
 //#endregion
 //#region palette
 let colorpalettes = [];//name is last item of arrays within
@@ -1784,6 +1811,23 @@ function ColorsToArray(){
   return arr;
 }
 //#endregion
+//#region linear algebra and stuff
+function TransformImageData(imagedata,neww,newh){
+  var it = new ImageData(neww,newh);
+  const ratioX = imagedata.width/neww;
+  const ratioY = imagedata.height/newh;
+ for(let i = 0; i < newh;i++){
+  for(let j = 0;j < neww;j++){
+    it.data[j*4+i*neww*4]=imagedata.data[(Math.floor(j*ratioX)*4)+(Math.floor(i*ratioY)*imagedata.width*4)];
+    it.data[j*4+i*neww*4+1]=imagedata.data[(Math.floor(j*ratioX)*4)+(Math.floor(i*ratioY)*imagedata.width*4)+1];
+    it.data[j*4+i*neww*4+2]=imagedata.data[(Math.floor(j*ratioX)*4)+(Math.floor(i*ratioY)*imagedata.width*4)+2];
+    it.data[j*4+i*neww*4+3]=imagedata.data[(Math.floor(j*ratioX)*4)+(Math.floor(i*ratioY)*imagedata.width*4)+3];
+
+  }
+ }
+ return it;
+}
+//#endregion
 //#region main
 function SQ_SAVE(){
 
@@ -1798,6 +1842,9 @@ if(Qindex != -1){
   }
   Qindex = -1;  
  // console.log(StateQueue.length);
+
+ //frame save
+ SaveFrame(curr_frame);
 }
 function SQ_UNDO(){
   DisableSelectPoints();
@@ -2353,6 +2400,7 @@ function ExpandImageFromCenter(image,x,y){
     
    
   }
+
 function putImageDataOptimized(ctx,arrayOrig,x,y,w,h){
 var ctxArray = ctx.getImageData(x,y,w,h).data;
 var array = arrayOrig.map((x) => x); //needed to not change orig array below, which would cause issues with paste
@@ -3048,11 +3096,145 @@ function InitializeColorPaletteOR(palette,name){
 
 
 //#endregion
-//#region animation
-let animButton = document.getElementById("animateBtn");
-animButton.onclick = function(e){
-	alert("g");
+//#region AnimFrames
+function AddFrame(){
+  var arr = [];
+  for(let i = 0;i<layers.length;i++){
+    arr.push(new ImageData(resolution.x,resolution.y));
+  }
+  AnimFrames.push(arr);
+  curr_frame=AnimFrames_ptr.length;
+  AnimFrames_ptr.push(AnimFrames.length-1);
+  AnimFramesPreview.push("NODATA");
+  
+  UpdateFrame_UI();
 }
+function DeleteFrame(index){
+  console.log(AnimFrames.length);
+  console.log(AnimFrames_ptr[index]);
+  AnimFrames.splice(AnimFrames_ptr[index],1);
+  AnimFramesPreview.splice(AnimFrames_ptr[index],1);
+  AnimFrames_ptr.splice(index,1);
+  console.log(AnimFrames.length);
+  UpdateFrame_UI();
+  if(curr_frame>0){
+    curr_frame--;
+  }
+  LoadFrame(curr_frame);
+  
+}
+
+function LoadFrame(index){
+  var arr = AnimFrames[AnimFrames_ptr[index]];
+  
+  for(let i = 0;i< layers.length;i++){
+    //console.log(document.getElementById(layers[layers_ptr[i]][3]));
+    //console.log(arr[layers_ptr[i]].data);
+   //putImageData(document.getElementById(layers[layers_ptr[i]][3]).getContext("2d"),arr[layers_ptr[i]].data,0,0,resolution.x,resolution.y);
+   document.getElementById(layers[layers_ptr[i]][3]).getContext("2d").putImageData(arr[layers_ptr[i]],0,0);
+  }
+
+}
+function SaveFrame(index){//when swapping occurs, index stays constant
+  console.log("SAVEFRAME");
+  var arr = [];
+for(let i = 0;i< layers.length;i++){
+  arr.push();//fill up with empty first
+}
+console.log("filled em up");
+if(layers_ptr.length<layers.length){//fills up layers_ptr if empty
+  //find lowest unreferenced layer
+  for(let p = 0;p<layers.length;p++){
+    if(!layers_ptr.contains(p)){
+      layers_ptr.push(layers_ptr.length);
+    }
+  }
+  
+
+}
+console.log("layer ptrs solved");
+if(AnimFrames_ptr.length<AnimFrames.length){//fills up layers_ptr if empty
+  //find lowest unreferenced frame
+  for(let p = 0;p<AnimFrames.length;p++){
+    if(!AnimFrames_ptr.contains(p)){
+      AnimFrames_ptr.push(AnimFrames_ptr.length);
+    }
+  }
+  
+}
+console.log("frame ptrs solved");
+//ACTUAL SAVING
+for(let i = 0;i< layers.length;i++){
+  arr[i]=(
+    document.getElementById(layers[layers_ptr[i]][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y)
+    );//fill up with empty first
+}
+console.log("saved to array");
+while(AnimFrames.length<=index){
+  AnimFrames.push("NODATA");
+}
+AnimFrames[AnimFrames_ptr[index]]=arr;
+console.log(AnimFrames);
+
+
+//UpdatePreview(index);
+while(AnimFramesPreview.length<=index){
+  AnimFramesPreview.push("NODATA");
+}
+var origmerged;
+//make temporary canvas to merge layers
+var canvas = document.createElement("canvas");
+canvas.width=resolution.x;
+canvas.height=resolution.y;
+var Tctx = canvas.getContext("2d");
+for(let i = 0;i< layers.length;i++){
+  putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
+}
+origmerged = Tctx.getImageData(0,0,resolution.x,resolution.y);
+
+AnimFramesPreview[AnimFrames_ptr[index]] = TransformImageData(origmerged,128,96);
+console.log(AnimFrames_ptr);
+document.getElementById("preview_"+AnimFrames_ptr[index]).getContext("2d").putImageData(AnimFramesPreview[AnimFrames_ptr[index]],0,0);
+ 
+}
+function GetPreviewImage(index){
+  //LoadFrame(index);
+  var origmerged;
+  //make temporary canvas to merge layers
+  var canvas = document.createElement("canvas");
+  canvas.width=resolution.x;
+  canvas.height=resolution.y;
+  var Tctx = canvas.getContext("2d");
+  for(let i = 0;i< layers.length;i++){
+
+    putImageDataOptimized(Tctx,AnimFrames[AnimFrames_ptr[index]][i].data,0,0,resolution.x,resolution.y);
+  }
+  origmerged = Tctx.getImageData(0,0,resolution.x,resolution.y);
+  
+  return TransformImageData(origmerged,128,96);
+}
+function UpdateFrame_UI(){
+var inhtml = "";
+for(let i = 0;i< AnimFrames.length;i++){
+  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='alert('right')'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a></div><canvas onclick='LoadFrame("+AnimFrames_ptr[i]+")' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<a style='background-color: white;' onclick='alert('right')'> <small style='color:black'>20</small></a>&nbsp;<a style='background-color: white;' onclick='alert('DEL')'> <small style='color:black'>DOW</small></a></div></div>";
+}
+inhtml+=" <div class='frame' style='display:flex;align-items:center;justify-content:center;'> <img width='96' height='96' src='./icons/addLG.png'/><div><a style='background-color: white;' onclick='alert('left')'> </div>";
+  document.getElementById("frames").innerHTML = inhtml;
+  
+  for(let i = 0;i< AnimFrames.length;i++){
+   
+    if (AnimFramesPreview[i]==undefined){
+      AnimFramesPreview.push("NODATA");
+    }
+    if(AnimFramesPreview[i]=="NODATA")
+    {
+      AnimFramesPreview[i] = GetPreviewImage(i);
+    }
+    document.getElementById("preview_"+AnimFrames_ptr[i]).getContext("2d").putImageData(AnimFramesPreview[i],0,0);
+  }
+  
+}
+
 //#endregion
 
 //#region overlay
@@ -6402,16 +6584,21 @@ function PasteSelect(){
 //#endregion
 
 function Init() {
+  AddFrame();
   LoadFromCookies();
 SQ_SAVE();
 //UI//
  MenuChange();
  LoadLayersUI();
+ 
 //CANVAS//
 UpdateCanvas();
 ChangeRes();
 ScrollUpdate();
 
+  //FRAME//
+  
+  
  //TOOL//
  ctx.fillStyle = lineColor;
  

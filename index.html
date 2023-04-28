@@ -12,6 +12,17 @@
  <body> 
 
    <div id="background"></div>
+        <div id="UIbottom">
+          <div id="frames">
+            
+
+            
+              
+
+              
+          </div>
+        
+        </div>
         <div id="UIleft">
       
           
@@ -135,7 +146,7 @@
 
           <div class="layerMenu">
             <p>Layers:</p>
-            <div id="layersui" style="max-height:200px;overflow-y:scroll">
+            <div id="layersui" style="max-height:450px;overflow-y:scroll">
               <div class="layer" id="test0" >
                 <p id="frame0_0_name" style="cursor:text;max-width: 64px;overflow:hidden;">layetext</p>
                 <div style="display:flex;flex-direction:column;">
@@ -148,7 +159,14 @@
             </div>
           </div>
           
-            <button id="animateBtn">Anim</button>
+          <div>
+            <label>FPS</label>
+            <input id="anim_fps" type="number" value="20"/>
+            <button onclick="SaveFrame(0)">Save</button>
+            <button onclick="LoadFrame(0)">Load</button>
+            
+            </div>
+            
         </div>
         <div id="UItop">
 
@@ -172,7 +190,7 @@
 
                 <button id="left">Left</button>
 
-             <button id="down">Down</button>
+             <button id="bottom">Down</button>
 
              <button id="right">Right</button>
         </div>

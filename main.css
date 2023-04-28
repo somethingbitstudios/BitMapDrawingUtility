@@ -155,6 +155,7 @@ z-index: 4;
   padding-top: var(--menu-top-height);
   height: 100%;
   width: 118px;
+  
 }
 #UIleftBottom{
 color: var(--background-color);
@@ -306,6 +307,7 @@ z-index: 1;
   
   
 }
+
 #canvasdiv{
 z-index: 0;
 border: 0px;
@@ -522,7 +524,11 @@ left: 4px;
   border: rgb(207, 207, 207) solid 2px;
  
 }
-
+#frames{
+  width: 100%-180px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
 .imgcursor {
   z-index: 16;
  
