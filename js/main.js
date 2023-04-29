@@ -556,8 +556,13 @@ var layerdiv = document.getElementById("layerdiv");
 var layersui = document.getElementById("layersui");
 var templr = false;
 //#endregion
+//#region anim
+
+var anim_fps=20;
+var anim_interrupt=null;
+//#endregion
 //#region frame
-var fps = 20;
+
 var curr_frame = 0;
 
 var AnimFrames_ptr = [];//index of frame in imgdata 
@@ -3097,6 +3102,26 @@ function InitializeColorPaletteOR(palette,name){
 
 //#endregion
 //#region AnimFrames
+function AnimPlay(){
+  if(anim_interrupt==null){
+    anim_interrupt=setInterval(()=>{
+LoadFrame(AnimFrames_ptr[curr_frame]);
+curr_frame++;
+if(curr_frame>AnimFrames.length-1){
+  curr_frame=0;
+}
+//curr_frame=anim_curr_frame
+},1000/anim_fps);
+  }
+
+}
+function AnimPause(){
+clearInterval(anim_interrupt);
+anim_interrupt=null;
+}
+
+
+
 function AddFrame(){
   var arr = [];
   for(let i = 0;i<layers.length;i++){
@@ -3111,10 +3136,16 @@ function AddFrame(){
 }
 function DeleteFrame(index){
   console.log(AnimFrames.length);
-  console.log(AnimFrames_ptr[index]);
-  AnimFrames.splice(AnimFrames_ptr[index],1);
-  AnimFramesPreview.splice(AnimFrames_ptr[index],1);
-  AnimFrames_ptr.splice(index,1);
+  console.log(index);
+  AnimFrames.splice(index,1);
+  AnimFramesPreview.splice(index,1);
+  AnimFrames_ptr.splice(AnimFrames_ptr.indexOf(index),1);
+
+  for(let i =0;i<AnimFrames_ptr.length;i++){
+    if(AnimFrames_ptr[i]>index){
+      AnimFrames_ptr[i]--;
+    }
+  }
   console.log(AnimFrames.length);
   UpdateFrame_UI();
   if(curr_frame>0){
@@ -3123,9 +3154,23 @@ function DeleteFrame(index){
   LoadFrame(curr_frame);
   
 }
+function MoveFrame(oldidx,newidx){
+  console.log("mov")
+if(oldidx==newidx||newidx<0||newidx>AnimFrames.length-1){
+  return;
+}
+console.log("CONF")
+//delete old ptr
+console.log(AnimFrames_ptr+" "+oldidx+" "+newidx);
+var temp = Number(AnimFrames_ptr[oldidx]);
+AnimFrames_ptr.splice(oldidx,1);
+AnimFrames_ptr.splice(newidx,0,temp);
 
+console.log(AnimFrames_ptr);
+UpdateFrame_UI();
+}
 function LoadFrame(index){
-  var arr = AnimFrames[AnimFrames_ptr[index]];
+  var arr = AnimFrames[index];
   
   for(let i = 0;i< layers.length;i++){
     //console.log(document.getElementById(layers[layers_ptr[i]][3]));
@@ -3136,6 +3181,9 @@ function LoadFrame(index){
 
 }
 function SaveFrame(index){//when swapping occurs, index stays constant
+  if(anim_interrupt!=null){
+    return;
+  }
   console.log("SAVEFRAME");
   var arr = [];
 for(let i = 0;i< layers.length;i++){
@@ -3173,7 +3221,7 @@ console.log("saved to array");
 while(AnimFrames.length<=index){
   AnimFrames.push("NODATA");
 }
-AnimFrames[AnimFrames_ptr[index]]=arr;
+AnimFrames[index]=arr;
 console.log(AnimFrames);
 
 
@@ -3192,9 +3240,9 @@ for(let i = 0;i< layers.length;i++){
 }
 origmerged = Tctx.getImageData(0,0,resolution.x,resolution.y);
 
-AnimFramesPreview[AnimFrames_ptr[index]] = TransformImageData(origmerged,128,96);
+AnimFramesPreview[index] = TransformImageData(origmerged,128,96);
 console.log(AnimFrames_ptr);
-document.getElementById("preview_"+AnimFrames_ptr[index]).getContext("2d").putImageData(AnimFramesPreview[AnimFrames_ptr[index]],0,0);
+document.getElementById("preview_"+index).getContext("2d").putImageData(AnimFramesPreview[index],0,0);
  
 }
 function GetPreviewImage(index){
@@ -3216,21 +3264,21 @@ function GetPreviewImage(index){
 function UpdateFrame_UI(){
 var inhtml = "";
 for(let i = 0;i< AnimFrames.length;i++){
-  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='alert('right')'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a></div><canvas onclick='LoadFrame("+AnimFrames_ptr[i]+")' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<a style='background-color: white;' onclick='alert('right')'> <small style='color:black'>20</small></a>&nbsp;<a style='background-color: white;' onclick='alert('DEL')'> <small style='color:black'>DOW</small></a></div></div>";
+  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a></div><canvas onclick='SaveFrame(curr_frame);curr_frame="+AnimFrames_ptr[i]+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<a style='background-color: white;' onclick='alert('right')'> <small style='color:black'>20</small></a>&nbsp;<a style='background-color: white;' onclick='alert('DEL')'> <small style='color:black'>DOW</small></a></div></div>";
 }
-inhtml+=" <div class='frame' style='display:flex;align-items:center;justify-content:center;'> <img width='96' height='96' src='./icons/addLG.png'/><div><a style='background-color: white;' onclick='alert('left')'> </div>";
+inhtml+=" <div class='frame' style='display:flex;align-items:center;justify-content:center;'> <img width='96' height='96' src='./icons/addLG.png' onclick='AddFrame();LoadFrame(curr_frame)'/><div><a style='background-color: white;' onclick='alert('left')'> </div>";
   document.getElementById("frames").innerHTML = inhtml;
   
   for(let i = 0;i< AnimFrames.length;i++){
    
-    if (AnimFramesPreview[i]==undefined){
+    if (AnimFramesPreview[AnimFrames_ptr[i]]==undefined){
       AnimFramesPreview.push("NODATA");
     }
-    if(AnimFramesPreview[i]=="NODATA")
+    if(AnimFramesPreview[AnimFrames_ptr[i]]=="NODATA")
     {
-      AnimFramesPreview[i] = GetPreviewImage(i);
+      AnimFramesPreview[AnimFrames_ptr[i]] = GetPreviewImage(AnimFrames_ptr[i]);
     }
-    document.getElementById("preview_"+AnimFrames_ptr[i]).getContext("2d").putImageData(AnimFramesPreview[i],0,0);
+    document.getElementById("preview_"+AnimFrames_ptr[i]).getContext("2d").putImageData(AnimFramesPreview[AnimFrames_ptr[i]],0,0);
   }
   
 }

@@ -160,11 +160,20 @@
           </div>
           
           <div>
-            <label>FPS</label>
-            <input id="anim_fps" type="number" value="20"/>
             <button onclick="SaveFrame(0)">Save</button>
             <button onclick="LoadFrame(0)">Load</button>
+            <br/>
+            <label>FPS</label>
+            <input onblur="anim_fps=this.value" type="number" value="20"/>
             
+            <br/>
+            <button onclick="AnimPlay()">Play</button>
+            <button onclick="AnimPause()">Pause</button>
+            <button onclick="AnimPause();anim_curr_frame=0;">Stop</button>
+            <br/>
+            <label>Onion</label><input type="checkbox"/>
+            <label>Opacity %</label>
+            <input onblur="anim_fps=this.value" type="number" value="20"/>
             </div>
             
         </div>
