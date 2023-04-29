@@ -8,3 +8,6 @@ frame by frame animation
 Currently a work in progress.
 
 v5.x will be the full version I think, v4.x will be adding advanced features,better ui and fixing the worst bugs, v3.x is features that are needed
+
+Current version: 4.4
+Main feature: Animation
