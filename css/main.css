@@ -369,6 +369,11 @@ padding: 0px;
  height: 100%;
  z-index: -998;
 }
+#onioncanvas{
+ width: 100%;
+ height: 100%;
+ z-index: -997;
+}
 #previewcanvas{
 
   z-index: 998;

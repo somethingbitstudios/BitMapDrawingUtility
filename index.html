@@ -160,20 +160,20 @@
           </div>
           
           <div>
-            <button onclick="SaveFrame(0)">Save</button>
-            <button onclick="LoadFrame(0)">Load</button>
+            <button onclick="SaveFrame(curr_frame)">Save</button>
+            <button onclick="LoadFrame(curr_frame)">Load</button>
             <br/>
             <label>FPS</label>
-            <input onblur="anim_fps=this.value" type="number" value="20"/>
+            <input onblur="anim_fps=this.value; AnimPause();AnimPlay();" type="number" value="20"/>
             
             <br/>
             <button onclick="AnimPlay()">Play</button>
             <button onclick="AnimPause()">Pause</button>
-            <button onclick="AnimPause();anim_curr_frame=0;">Stop</button>
+            <button onclick="AnimPause();curr_frame=0;">Stop</button>
             <br/>
-            <label>Onion</label><input type="checkbox"/>
+            <label>Onion</label><input type="checkbox" onclick="onion=!onion;LoadFrame(curr_frame)"/>
             <label>Opacity %</label>
-            <input onblur="anim_fps=this.value" type="number" value="20"/>
+            <input onblur="onion_opac=(this.value/100);LoadFrame(curr_frame)" type="number" value="50"/>
             </div>
             
         </div>
@@ -244,6 +244,7 @@
 	
  <canvas id="previewcanvas">  </canvas>
  <canvas id="uicanvas" >  </canvas>
+ <canvas id="onioncanvas"></canvas>
    </div>
             
  
@@ -260,6 +261,8 @@
        <img id="SelectDownLeft" src="./icons/dragPoint.png" width=16 height="16">
        <img id="SelectLeft" src="./icons/dragPoint.png" width=16 height="16">
  </body>
+ <script  src="./js/FileSaver.min.js" ></script>
+ <script  src="./js/jszip.min.js" ></script>
  <script  src="./js/main.js" ></script>
 
 </html>

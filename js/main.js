@@ -1,5 +1,8 @@
 //#region vars
 //#region global
+var ProjectName="MyProject";
+var Description="I made this...";
+var CreatedAt = new Date();
 var tempBool = false;
 var temp = 0; //tempstorage for frog
 var TempImg;
@@ -166,7 +169,7 @@ let OpenButton = document.getElementById("fileClick");
 let Open = document.getElementById("open");
 let ImportButton = document.getElementById("impClick");
 let Import = document.getElementById("import");
-Save.addEventListener("click",download_merged);//CHANGE TO DWNLD CUSTOM FILE FORMAT .BMDU
+Save.addEventListener("click",download_all);
 document.getElementById("save_merged").addEventListener("click",download_merged);
 document.getElementById("save_layers").addEventListener("click",download_layers);
 document.getElementById("export_bitmap").addEventListener("click",export_bitmap);
@@ -540,7 +543,7 @@ var resScale = 0.25; //for mouse
 var uiCanvas = document.getElementById("uicanvas"); var uictx = uiCanvas.getContext("2d");
 
 var previewCanvas = document.getElementById("previewcanvas");var pctx = previewCanvas.getContext("2d");
-
+var onionCanvas = document.getElementById("onioncanvas");
 var canvas = document.getElementById("layer0");var ctx = canvas.getContext("2d");
 var canvasBackground = document.getElementById("canvasBackground");
 let background = document.getElementById("background");
@@ -564,11 +567,13 @@ var anim_interrupt=null;
 //#region frame
 
 var curr_frame = 0;
-
+var onion = false;
+var onion_opac = 0.5;
 var AnimFrames_ptr = [];//index of frame in imgdata 
 var layers_ptr = [0,1];//at the start: [0,1,2,3] by the end: [2,0,3]
 var AnimFrames = [];//[layers,,,]-imagedata only update when switching / toggling play/stop
 var AnimFramesPreview = [];   //[layers,,,]-imagedata only update when switching / toggling play/stop
+var AnimFramesFullRes = [];
 //#endregion
 //#region palette
 let colorpalettes = [];//name is last item of arrays within
@@ -1899,6 +1904,68 @@ document.addEventListener('keyup', function(event) {
 });
 //#endregion
 //#region file system and top menu
+
+function download_all(){
+  
+  var zip = new JSZip();
+  
+  zip.folder("data");
+  
+  zip.folder("export");
+  
+
+  //meta.txt file
+  var meta = 
+  
+  ProjectName+
+  "\nBy "+
+  "NOAUTH"+
+  "\n\n"+
+  Description+
+  
+  "\n\nLast edited at "+
+  new Date()+
+  "\nCreated at "+
+  CreatedAt+
+  "\n\n===EXPLANATION OF DATA STRUCTURE===\nExport folder-frames with merged layers ready for outside use\nData folder-data used to restore the app's state after opening, but made to be editable by the user\n\n\nMade with BMDU at https://somethingbitstudios.github.io/BitMapDrawingUtility/";
+zip.file("README.md", meta);
+zip.folder("data").file("vars.txt", "RES "+resolution.x+";"+resolution.y
+
++"\nTICK "+TICK
+
++"\nLeftHidden "+LeftHidden
++"\nRightHidden "+RightHidden
++"\nBottomHidden "+BottomHidden
+
++"\nPRIMARY "+PRIMARY
++"\nlineWidth "+lineWidth
++"\nlineColor "+lineColor
++"\nSECONDARY "+SECONDARY
++"\nlineWidthS "+lineWidthS
++"\nlineColorS "+lineColorS
+
+//colorpalettes
++"\nColorPaletteIndex " +colorpaletteindex
+//rest is in data/cp.txt 
+//layers
++"\nLayerSelected "+layerselected
+//rest is in data/lr.txt
+//frame
++"\nAnimFPS "+anim_fps
++"\nCurrFrame "+curr_frame
++"\nOnion "+onion
++"\nOnionOpac "+onion_opac
+);
+zip.folder("data").file("cp.txt","NODATAYET");
+zip.folder("data").file("lr.txt","NODATAYET");
+
+zip.generateAsync({type:"blob"})
+.then(function(content) {
+    // see FileSaver.js
+    saveAs(content, "example.zip");
+});
+
+}
 function download_layer(id){
   var link = document.createElement('a');
   link.download = 'image'+id+'.png';
@@ -1916,6 +1983,8 @@ var Tctx = canvas.getContext("2d");
 for(let i = 0;i< layers.length;i++){
   putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
 }
+
+
 //download canvas
 var link = document.createElement('a');
   link.download = 'image.png';
@@ -3105,7 +3174,7 @@ function InitializeColorPaletteOR(palette,name){
 function AnimPlay(){
   if(anim_interrupt==null){
     anim_interrupt=setInterval(()=>{
-LoadFrame(AnimFrames_ptr[curr_frame]);
+LoadFrame(curr_frame);
 curr_frame++;
 if(curr_frame>AnimFrames.length-1){
   curr_frame=0;
@@ -3131,6 +3200,7 @@ function AddFrame(){
   curr_frame=AnimFrames_ptr.length;
   AnimFrames_ptr.push(AnimFrames.length-1);
   AnimFramesPreview.push("NODATA");
+  AnimFramesFullRes.push(new ImageData(resolution.x,resolution.y));
   
   UpdateFrame_UI();
 }
@@ -3167,9 +3237,28 @@ AnimFrames_ptr.splice(oldidx,1);
 AnimFrames_ptr.splice(newidx,0,temp);
 
 console.log(AnimFrames_ptr);
+if(curr_frame==oldidx){
+  curr_frame=newidx;
+}
+else if(curr_frame==newidx){
+  if(oldidx<newidx){
+curr_frame--;
+  }else{
+    curr_frame++;
+  }
+  
+}
+else if(curr_frame>oldidx&&curr_frame<newidx){
+  curr_frame--;
+}else if (curr_frame<oldidx&&curr_frame>newidx){
+  curr_frame++;
+}
+
+LoadFrame(curr_frame);
 UpdateFrame_UI();
 }
-function LoadFrame(index){
+function LoadFrame(index_abs){
+  var index = AnimFrames_ptr[index_abs];
   var arr = AnimFrames[index];
   
   for(let i = 0;i< layers.length;i++){
@@ -3178,7 +3267,17 @@ function LoadFrame(index){
    //putImageData(document.getElementById(layers[layers_ptr[i]][3]).getContext("2d"),arr[layers_ptr[i]].data,0,0,resolution.x,resolution.y);
    document.getElementById(layers[layers_ptr[i]][3]).getContext("2d").putImageData(arr[layers_ptr[i]],0,0);
   }
-
+  if(onion){
+    var idx=index_abs-1;
+    
+    if(idx<0){  document.getElementById("onioncanvas").style.opacity = 0;}else{
+      document.getElementById("onioncanvas").getContext("2d").putImageData(AnimFramesFullRes[AnimFrames_ptr[idx]],0,0);
+   document.getElementById("onioncanvas").style.opacity = onion_opac;
+    }
+   
+  }else{
+    document.getElementById("onioncanvas").style.opacity = 0;
+  }
 }
 function SaveFrame(index){//when swapping occurs, index stays constant
   if(anim_interrupt!=null){
@@ -3229,6 +3328,9 @@ console.log(AnimFrames);
 while(AnimFramesPreview.length<=index){
   AnimFramesPreview.push("NODATA");
 }
+while(AnimFramesFullRes.length<=index){
+  AnimFramesFullRes.push("NODATA");
+}
 var origmerged;
 //make temporary canvas to merge layers
 var canvas = document.createElement("canvas");
@@ -3239,7 +3341,7 @@ for(let i = 0;i< layers.length;i++){
   putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
 }
 origmerged = Tctx.getImageData(0,0,resolution.x,resolution.y);
-
+AnimFramesFullRes[index] = origmerged;
 AnimFramesPreview[index] = TransformImageData(origmerged,128,96);
 console.log(AnimFrames_ptr);
 document.getElementById("preview_"+index).getContext("2d").putImageData(AnimFramesPreview[index],0,0);
@@ -3264,7 +3366,7 @@ function GetPreviewImage(index){
 function UpdateFrame_UI(){
 var inhtml = "";
 for(let i = 0;i< AnimFrames.length;i++){
-  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a></div><canvas onclick='SaveFrame(curr_frame);curr_frame="+AnimFrames_ptr[i]+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<a style='background-color: white;' onclick='alert('right')'> <small style='color:black'>20</small></a>&nbsp;<a style='background-color: white;' onclick='alert('DEL')'> <small style='color:black'>DOW</small></a></div></div>";
+  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a></div><canvas onclick='curr_frame="+i+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<a style='background-color: white;' onclick='alert('right')'> <small style='color:black'>20</small></a>&nbsp;<a style='background-color: white;' onclick='alert('DEL')'> <small style='color:black'>DOW</small></a></div></div>";
 }
 inhtml+=" <div class='frame' style='display:flex;align-items:center;justify-content:center;'> <img width='96' height='96' src='./icons/addLG.png' onclick='AddFrame();LoadFrame(curr_frame)'/><div><a style='background-color: white;' onclick='alert('left')'> </div>";
   document.getElementById("frames").innerHTML = inhtml;
@@ -3695,6 +3797,8 @@ return;
 function UpdateCanvas(){
   canvas.height = resolution.y;
   canvas.width = resolution.x;
+  onionCanvas.height = resolution.y;
+  onionCanvas.width = resolution.x;
   previewCanvas.height = resolution.y;
   previewCanvas.width = resolution.x;
   uiCanvas.height = resolution.y;
