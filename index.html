@@ -164,7 +164,7 @@
             <button onclick="LoadFrame(curr_frame)">Load</button>
             <br/>
             <label>FPS</label>
-            <input onblur="anim_fps=this.value; AnimPause();AnimPlay();" type="number" value="20"/>
+            <input onblur="anim_fps=this.value; if(anim_interrupt!=null){AnimPause();AnimPlay();}" type="number" value="20"/>
             
             <br/>
             <button onclick="AnimPlay()">Play</button>

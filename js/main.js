@@ -572,6 +572,7 @@ var onion_opac = 0.5;
 var AnimFrames_ptr = [];//index of frame in imgdata 
 var layers_ptr = [0,1];//at the start: [0,1,2,3] by the end: [2,0,3]
 var AnimFrames = [];//[layers,,,]-imagedata only update when switching / toggling play/stop
+var AnimFrames_duration = [];
 var AnimFramesPreview = [];   //[layers,,,]-imagedata only update when switching / toggling play/stop
 var AnimFramesFullRes = [];
 //#endregion
@@ -3171,8 +3172,20 @@ function InitializeColorPaletteOR(palette,name){
 
 //#endregion
 //#region AnimFrames
+function AnimTimeout(){
+  clearTimeout(anim_interrupt);
+  anim_interrupt=setTimeout(AnimTimeout,AnimFrames_duration[AnimFrames_ptr[curr_frame]]*(1000/anim_fps));
+  
+
+  LoadFrame(curr_frame);
+curr_frame++;
+if(curr_frame>AnimFrames.length-1){
+  curr_frame=0;
+}
+
+}
 function AnimPlay(){
-  if(anim_interrupt==null){
+  /*if(anim_interrupt==null){
     anim_interrupt=setInterval(()=>{
 LoadFrame(curr_frame);
 curr_frame++;
@@ -3182,10 +3195,18 @@ if(curr_frame>AnimFrames.length-1){
 //curr_frame=anim_curr_frame
 },1000/anim_fps);
   }
+*/
+if(anim_interrupt==null){
+  anim_interrupt=setTimeout(AnimTimeout,AnimFrames_duration[AnimFrames_ptr[curr_frame]]*(1000/anim_fps))
+}
 
 }
 function AnimPause(){
+/*
 clearInterval(anim_interrupt);
+anim_interrupt=null;
+*/
+clearTimeout(anim_interrupt);
 anim_interrupt=null;
 }
 
@@ -3199,6 +3220,7 @@ function AddFrame(){
   AnimFrames.push(arr);
   curr_frame=AnimFrames_ptr.length;
   AnimFrames_ptr.push(AnimFrames.length-1);
+  AnimFrames_duration.push(1);
   AnimFramesPreview.push("NODATA");
   AnimFramesFullRes.push(new ImageData(resolution.x,resolution.y));
   
@@ -3209,6 +3231,8 @@ function DeleteFrame(index){
   console.log(index);
   AnimFrames.splice(index,1);
   AnimFramesPreview.splice(index,1);
+  AnimFramesFullRes.splice(index,1);
+  AnimFrames_duration.splice(index,1);
   AnimFrames_ptr.splice(AnimFrames_ptr.indexOf(index),1);
 
   for(let i =0;i<AnimFrames_ptr.length;i++){
@@ -3366,7 +3390,7 @@ function GetPreviewImage(index){
 function UpdateFrame_UI(){
 var inhtml = "";
 for(let i = 0;i< AnimFrames.length;i++){
-  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a></div><canvas onclick='curr_frame="+i+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<a style='background-color: white;' onclick='alert('right')'> <small style='color:black'>20</small></a>&nbsp;<a style='background-color: white;' onclick='alert('DEL')'> <small style='color:black'>DOW</small></a></div></div>";
+  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a></div><canvas onclick='curr_frame="+i+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<input onblur='AnimFrames_duration[AnimFrames_ptr["+i+"]]=this.value;' value='1' type='number' width='50' height='50'/>&nbsp;<a style='background-color: white;' onclick='var temp = curr_frame;LoadFrame("+AnimFrames_ptr[i]+");download_merged();LoadFrame(AnimFrames_ptr[curr_frame]);'> <small style='color:black'>DOW</small></a></div></div>";
 }
 inhtml+=" <div class='frame' style='display:flex;align-items:center;justify-content:center;'> <img width='96' height='96' src='./icons/addLG.png' onclick='AddFrame();LoadFrame(curr_frame)'/><div><a style='background-color: white;' onclick='alert('left')'> </div>";
   document.getElementById("frames").innerHTML = inhtml;
