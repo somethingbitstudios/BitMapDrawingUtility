@@ -1957,13 +1957,68 @@ zip.folder("data").file("vars.txt", "RES "+resolution.x+";"+resolution.y
 +"\nOnion "+onion
 +"\nOnionOpac "+onion_opac
 );
-zip.folder("data").file("cp.txt","NODATAYET");
-zip.folder("data").file("lr.txt","NODATAYET");
+var cp = "";
+for(let i =0;i<colorpalettes.length;i++){
+  var len = colorpalettes[i].length-1;
+  cp+=colorpalettes[i][len]+"\n";
+  for(let j=0;j<len;j++){
+    cp+=colorpalettes[i][j]+"\n";
+  }
+  cp+="\n";
+}
+zip.folder("data").file("cp.txt",cp);
+
+var lr="";
+for(let i = 0;i<layers.length;i++){
+  lr+=layers[i][0]+"\n";
+  lr+=layers[i][1]+"\n";
+  lr+=layers[i][2]+"\n";
+  lr+=layers[i][3]+"\n\n";
+  
+}
+zip.folder("data").file("lr.txt",lr);
+
+//individual layers
+//foreach layer in a frame -> put to canvas, to data url then
+
+var cvs = document.createElement("canvas");
+for(let i = 0;i<AnimFrames.length;i++){
+  for(let j = 0;j<AnimFrames[i].length;j++){
+    var name = i+"_"+layers[j][0]+".png";
+    //console.log(AnimFrames[i][j]);
+   var imgdt=AnimFrames[i][j];
+    cvs.width=imgdt.width;
+    cvs.height=imgdt.height;
+    cvs.getContext("2d").putImageData(imgdt,0,0);
+
+    var res = new Promise((resolve) => {
+      cvs.toBlob(resolve); 
+    });
+    zip.folder("data").file(name,res);
+  }
+}
+
+
+
+//export
+for(let i =0;i<AnimFramesFullRes.length;i++){
+  var imgdt=AnimFramesFullRes[i];
+  console.log(AnimFramesFullRes[i]);
+  cvs.width=imgdt.width;
+  cvs.height=imgdt.height;
+  cvs.getContext("2d").putImageData(imgdt,0,0);
+
+  var res = new Promise((resolve) => {
+    cvs.toBlob(resolve); 
+  });
+  zip.folder("export").file("frame_"+i+".png",res);
+}
+
 
 zip.generateAsync({type:"blob"})
 .then(function(content) {
     // see FileSaver.js
-    saveAs(content, "example.zip");
+    saveAs(content, ProjectName+".zip");
 });
 
 }
@@ -3882,6 +3937,9 @@ function LoadLayersUI(){
     }catch{
       var lr = ["New layer",0,true,"layer0"];
       AddLayerUI(lr);AddLayerCanvas();
+      for(let i = 0;i<AnimFrames.length;i++){
+        AnimFrames[i].push(new ImageData(resolution.x,resolution.y));
+      }
       ctx = document.getElementById("layer0").getContext("2d");
       layers.push(lr);
       layerselected="UI_"+lr[3];
@@ -3916,6 +3974,11 @@ function LoadLayersUI(){
       }
      
       layers.push(layer);
+      layers_ptr.push(layers.length-1);
+      for(let i =0;i<AnimFrames.length;i++){
+      AnimFrames[i].push(new ImageData(resolution.x, resolution.y));
+      
+      }
      layerselected="UI_"+layer[3];
       LoadLayersUI();
       
@@ -3960,7 +4023,11 @@ function AddLayerUI(layer,index){
       if("UI_"+layers[i][3]==div.id){ 
         document.getElementById(layers[i][3]).remove();
         layers.splice(i,1);
- 
+        
+        for(let i = 0;i<AnimFrames.length;i++){
+          AnimFrames[i].splice(layers_ptr[i],1);
+        }
+        layers_ptr.splice(i,1);
         break;
       }
     }
