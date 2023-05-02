@@ -554,7 +554,7 @@ div.style.width = ""+canvasSize.x+"px";
 //#region layer
 //layer has: name z-index visible canvasId
 var layerselected = "UI_layer0";
-var layers = [["Background 1", -1, true, "layer1" ],["Layer 1", 0, true, "layer0" ]];
+var layers = [["Background 1", -1, true, "layer0" ],["Layer 1", 0, true, "layer1" ]];
 var layerdiv = document.getElementById("layerdiv");
 var layersui = document.getElementById("layersui");
 var templr = false;
@@ -3344,7 +3344,7 @@ function LoadFrame(index_abs){
     //console.log(document.getElementById(layers[layers_ptr[i]][3]));
     //console.log(arr[layers_ptr[i]].data);
    //putImageData(document.getElementById(layers[layers_ptr[i]][3]).getContext("2d"),arr[layers_ptr[i]].data,0,0,resolution.x,resolution.y);
-   document.getElementById(layers[layers_ptr[i]][3]).getContext("2d").putImageData(arr[layers_ptr[i]],0,0);
+   document.getElementById(layers[i][3]).getContext("2d").putImageData(arr[i],0,0);
   }
   if(onion){
     var idx=index_abs-1;
@@ -3358,6 +3358,10 @@ function LoadFrame(index_abs){
     document.getElementById("onioncanvas").style.opacity = 0;
   }
 }
+
+
+
+
 function SaveFrame(index){//when swapping occurs, index stays constant
   if(anim_interrupt!=null){
     return;
@@ -3368,7 +3372,7 @@ for(let i = 0;i< layers.length;i++){
   arr.push();//fill up with empty first
 }
 console.log("filled em up");
-if(layers_ptr.length<layers.length){//fills up layers_ptr if empty
+/*if(layers_ptr.length<layers.length){//fills up layers_ptr if empty
   //find lowest unreferenced layer
   for(let p = 0;p<layers.length;p++){
     if(!layers_ptr.contains(p)){
@@ -3378,6 +3382,7 @@ if(layers_ptr.length<layers.length){//fills up layers_ptr if empty
   
 
 }
+*/
 console.log("layer ptrs solved");
 if(AnimFrames_ptr.length<AnimFrames.length){//fills up layers_ptr if empty
   //find lowest unreferenced frame
@@ -3392,7 +3397,7 @@ console.log("frame ptrs solved");
 //ACTUAL SAVING
 for(let i = 0;i< layers.length;i++){
   arr[i]=(
-    document.getElementById(layers[layers_ptr[i]][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y)
+    document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y)
     );//fill up with empty first
 }
 console.log("saved to array");
@@ -3426,6 +3431,7 @@ console.log(AnimFrames_ptr);
 document.getElementById("preview_"+index).getContext("2d").putImageData(AnimFramesPreview[index],0,0);
  
 }
+
 function GetPreviewImage(index){
   //LoadFrame(index);
   var origmerged;
@@ -3914,7 +3920,21 @@ function ChangeCanvasColor(oldC,newC){
 
 function AddLayerCanvas(){
   var canvas = document.createElement("canvas");
-  canvas.id="layer"+layers.length;
+  var num=0;
+  var cont=true;
+  while(cont){
+  var t=num;
+  for(let i =0;i< layers.length;i++){
+    if("layer"+num==layers[i][3]){
+    num++; 
+    break;   
+    }
+  }
+  if(num==t){
+  cont=false;
+  }
+}
+  canvas.id="layer"+num;
   canvas.width=resolution.x;
   canvas.height=resolution.y;
   
@@ -3926,7 +3946,9 @@ function LoadLayersUI(){
   layersui.innerHTML="";//remove all layers
 
  for(let i = 0;i < layers.length;i++){
-  AddLayerUI(layers[i],i);
+  AddLayerUI(layers[layers_ptr[i]],i);
+
+  
  }
 
  try{
@@ -3958,23 +3980,36 @@ function LoadLayersUI(){
   
     document.getElementById("UI_LAYER_ADD").onclick=function(e){
       
-      var ll = 0;
-      if(layers.length>0){
-        ll=layers.length;
-      }
-      var name = prompt("Layer name","Layer "+ll);
+      var num=0;
+  var cont=true;
+  while(cont){
+  var t=num;
+  for(let i =0;i< layers.length;i++){
+    if("layer"+num==layers[i][3]){
+    num++; 
+    break;   
+    }
+  }
+  if(num==t){
+  cont=false;
+  }
+  }
+      var name = prompt("Layer name","Layer "+num);
       if(name==null || name==""){return;}
       AddLayerCanvas();
-     
-      if(ll==0){
-        var layer = [name,1,true,"layer"+ll];
-        ctx = document.getElementById("layer"+ll).getContext("2d");
+      
+      if(num==0){
+        var layer = [name,1,true,"layer"+num];
+        ctx = document.getElementById("layer"+num).getContext("2d");
       }else{
-         var layer = [name,layers[ll-1][2]+1,true,"layer"+ll];
+         var layer = [name,layers[num-1][2]+1,true,"layer"+num];
+         ctx = document.getElementById(layer[3]).getContext("2d");
+         
       }
      
       layers.push(layer);
-      layers_ptr.push(layers.length-1);
+      layers_ptr.push(layers_ptr.length);
+      //layers_ptr.push(layers.length-1);
       for(let i =0;i<AnimFrames.length;i++){
       AnimFrames[i].push(new ImageData(resolution.x, resolution.y));
       
@@ -3988,6 +4023,7 @@ function LoadLayersUI(){
 function AddLayerUI(layer,index){
   var div = document.createElement("div");
   div.className = "layer";
+  
   div.id = "UI_"+layer[3];
   var img = "./icons/bnw_eye_open.png";
   if(!layer[2]){
@@ -4004,7 +4040,7 @@ function AddLayerUI(layer,index){
       layer[0]=name;
       }else{
         ctx = document.getElementById(layer[3]).getContext("2d");
-       
+        console.log(layerselected);
         document.getElementById(layerselected+"_name").style.color="#00AA00";
          document.getElementById(div.id+"_name").style.color="#FFFF00";
     
@@ -4023,11 +4059,49 @@ function AddLayerUI(layer,index){
       if("UI_"+layers[i][3]==div.id){ 
         document.getElementById(layers[i][3]).remove();
         layers.splice(i,1);
-        
-        for(let i = 0;i<AnimFrames.length;i++){
-          AnimFrames[i].splice(layers_ptr[i],1);
+        layers_ptr.splice(layers_ptr.indexOf(i),1);
+        for(let z=0;z<layers_ptr.length;z++){
+          if(layers_ptr[z]>i){
+            layers_ptr[z]--;
+          }
         }
-        layers_ptr.splice(i,1);
+      
+        
+        for(let j = 0;j<AnimFrames.length;j++){
+          AnimFrames[j].splice(i,1);
+        }
+        
+        if(layers.length==0){
+          var ll = 0;
+      if(layers.length>0){
+        ll=layers.length;
+      }
+      var name = prompt("Layer name","Layer "+ll);
+      if(name==null || name==""){return;}
+      AddLayerCanvas();
+      
+      if(ll==0){
+        var layer = [name,1,true,"layer"+ll];
+        ctx = document.getElementById("layer"+ll).getContext("2d");
+      }else{
+         var layer = [name,layers[ll-1][2]+1,true,"layer"+ll];
+         ctx = document.getElementById(layer[3]).getContext("2d");
+         
+      }
+     
+      layers.push(layer);
+      layers_ptr.push(layers_ptr.length);
+      //layers_ptr.push(layers.length-1);
+      for(let i =0;i<AnimFrames.length;i++){
+      AnimFrames[i].push(new ImageData(resolution.x, resolution.y));
+      
+      }
+     layerselected="UI_"+layer[3];
+      
+      
+          
+        }
+        layerselected="UI_"+layers[0][3];
         break;
       }
     }
@@ -4047,7 +4121,7 @@ document.getElementById(div.id+"_visible").onclick=function(e){
 document.getElementById(div.id+"_up").onclick=function(e){
  
   if(index!=0){
-   
+   /*
     var temp = [layers[index][0],layers[index][1],layers[index][2],layers[index][3]];
     var temp2 = layers[index][1];
 
@@ -4056,8 +4130,14 @@ document.getElementById(div.id+"_up").onclick=function(e){
     
     layers[index-1][1]=layers[index][1];
     layers[index][1]=temp2;
+    */
     document.getElementById(layers[index][3]).style.zIndex=layers[index][1];
     document.getElementById(layers[index-1][3]).style.zIndex=layers[index-1][1];
+   
+    var tmpptr=layers_ptr[index-1];
+    layers_ptr[index-1]=layers_ptr[index];
+    layers_ptr[index]=tmpptr;
+ 
     LoadLayersUI();
   }
 
@@ -4066,7 +4146,7 @@ document.getElementById(div.id+"_up").onclick=function(e){
 document.getElementById(div.id+"_down").onclick=function(e){
  
   if(index<layers.length-1){
-   
+   /*
     var temp = [layers[index][0],layers[index][1],layers[index][2],layers[index][3]];
     var temp2 = layers[index][1];
 
@@ -4075,8 +4155,12 @@ document.getElementById(div.id+"_down").onclick=function(e){
     
     layers[index+1][1]=layers[index][1];
     layers[index][1]=temp2;
+    */
     document.getElementById(layers[index][3]).style.zIndex=layers[index][1];
     document.getElementById(layers[index+1][3]).style.zIndex=layers[index+1][1];
+    var tmpptr=layers_ptr[index+1];
+    layers_ptr[index+1]=layers_ptr[index];
+    layers_ptr[index]=tmpptr;
     LoadLayersUI();
   }
 
