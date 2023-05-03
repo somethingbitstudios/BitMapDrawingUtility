@@ -593,7 +593,7 @@ LoadPalette(palettelist.value);
 
   var selected = false; //false = primary,true = secondary
 var PRIMARY = "pencil";
-var MODE = {pencil:"1",line:"1",poly:"1",fill:"FILL_MODE_INST",picker:"1",eraser:"1"};
+var MODE = {pencil:"3",line:"1",poly:"1",fill:"FILL_MODE_INST",picker:"1",eraser:"1"};
 var lineWidth = 1;
 var lineCap = 'butt';
 var lineColor = "rgba(0,0,0,1)";
@@ -4026,6 +4026,7 @@ function LoadLayersUI(){
       
   }
 
+
 }
 function AddLayerUI(layer,index){
   var div = document.createElement("div");
@@ -4138,9 +4139,10 @@ document.getElementById(div.id+"_up").onclick=function(e){
     layers[index-1][1]=layers[index][1];
     layers[index][1]=temp2;
     */
-    document.getElementById(layers[index][3]).style.zIndex=layers[index][1];
-    document.getElementById(layers[index-1][3]).style.zIndex=layers[index-1][1];
-   
+    console.log(layers);
+    document.getElementById(layers[index][3]).style.zIndex=layers[layers_ptr[index-1]][1];
+    document.getElementById(layers[index-1][3]).style.zIndex=layers[layers_ptr[index]][1];
+ 
     var tmpptr=layers_ptr[index-1];
     layers_ptr[index-1]=layers_ptr[index];
     layers_ptr[index]=tmpptr;
@@ -4163,8 +4165,9 @@ document.getElementById(div.id+"_down").onclick=function(e){
     layers[index+1][1]=layers[index][1];
     layers[index][1]=temp2;
     */
-    document.getElementById(layers[index][3]).style.zIndex=layers[index][1];
-    document.getElementById(layers[index+1][3]).style.zIndex=layers[index+1][1];
+    document.getElementById(layers[index][3]).style.zIndex=layers[layers_ptr[index+1]][1];
+    document.getElementById(layers[index+1][3]).style.zIndex=layers[layers_ptr[index]][1];
+
     var tmpptr=layers_ptr[index+1];
     layers_ptr[index+1]=layers_ptr[index];
     layers_ptr[index]=tmpptr;
@@ -6922,9 +6925,15 @@ function Init() {
   LoadFromCookies();
 SQ_SAVE();
 //UI//
+left=true;
  MenuChange();
+left=false;
  LoadLayersUI();
- 
+ for(let i = 0;i<layers.length;i++){
+  document.getElementById(layers[i][3]).style.zIndex=layers[i][1];
+    
+ }
+  
 //CANVAS//
 UpdateCanvas();
 ChangeRes();
