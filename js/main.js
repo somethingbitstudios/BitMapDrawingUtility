@@ -3282,6 +3282,15 @@ function AddFrame(){
 
   UpdateFrame_UI();
 }
+function DupeFrame(index){
+ 
+AnimFrames.push(AnimFrames[index]);
+AnimFramesPreview.push(AnimFramesPreview[index]);
+AnimFramesFullRes.push(AnimFramesFullRes[index]);
+AnimFrames_duration.push(AnimFrames_duration[index]);
+AnimFrames_ptr.splice(AnimFrames_ptr.indexOf(index)+1,0,AnimFrames.length-1);
+UpdateFrame_UI();
+}
 function DeleteFrame(index){
   console.log(AnimFrames.length);
   console.log(index);
@@ -3458,7 +3467,7 @@ function FrameScrollToEnd(){
 function UpdateFrame_UI(){
 var inhtml = "";
 for(let i = 0;i< AnimFrames.length;i++){
-  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a></div><canvas onclick='curr_frame="+i+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<input onblur='AnimFrames_duration[AnimFrames_ptr["+i+"]]=this.value;' value='1' type='number' width='50' height='50'/>&nbsp;<a style='background-color: white;' onclick='var temp = curr_frame;LoadFrame("+AnimFrames_ptr[i]+");download_merged();LoadFrame(AnimFrames_ptr[curr_frame]);'> <small style='color:black'>DOW</small></a></div></div>";
+  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a>&nbsp;<a style='background-color: white;' onclick='DupeFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DUPE</small></a> </div><canvas onclick='curr_frame="+i+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<input onblur='AnimFrames_duration[AnimFrames_ptr["+i+"]]=this.value;' value='1' type='number' width='50' height='50'/>&nbsp;<a style='background-color: white;' onclick='var temp = curr_frame;LoadFrame("+AnimFrames_ptr[i]+");download_merged();LoadFrame(AnimFrames_ptr[curr_frame]);'> <small style='color:black'>DOW</small></a></div></div>";
 }
 inhtml+=" <div class='frame' id='endframe' style='display:flex;align-items:center;justify-content:center;'> <img width='96' height='96' src='./icons/addLG.png' onclick='AddFrame();LoadFrame(curr_frame);FrameScrollToEnd()'/><div><a style='background-color: white;' onclick='alert('left')'> </div>";
   document.getElementById("frames").innerHTML = inhtml;
