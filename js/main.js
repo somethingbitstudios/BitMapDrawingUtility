@@ -180,7 +180,11 @@ ImportButton.addEventListener("click",function(e){
   Import.click();
   });
 Open.addEventListener("change",function(e){
-  var image = new Image();
+  //console.log(this.files[0].type);
+  if(this.files[0].type=="application/x-zip-compressed"){
+    OpenZip(this.files[0]);
+  }else{
+    var image = new Image();
   image.onload = function(){
 canvasSize.x = image.width;
 canvasSize.y = image.height;
@@ -206,6 +210,9 @@ UpdateCanvas();
   image.src = URL.createObjectURL(this.files[0]);
   
  
+  }
+  
+  
 });
 Import.addEventListener("change",function(e){
   ConfirmSelect();
@@ -1905,9 +1912,225 @@ document.addEventListener('keyup', function(event) {
 });
 //#endregion
 //#region file system and top menu
+function swap(arr,xp, yp)
+{
+    var temp = arr[xp];
+    arr[xp] = arr[yp];
+    arr[yp] = temp;
+}
+ 
+function selectionSort(arr,  n)
+{
+    var i, j, min_idx;
+ 
+    // One by one move boundary of unsorted subarray
+    for (i = 0; i < n-1; i++)
+    {
+        // Find the minimum element in unsorted array
+        min_idx = i;
+        for (j = i + 1; j < n; j++)
+        if (arr[j] < arr[min_idx])
+            min_idx = j;
+ 
+        // Swap the found minimum element with the first element
+        swap(arr,min_idx, i);
+    }
+}
+function OpenZip_Process(zip) {
+  Color_set(false,lineColor);
+  Color_set(true,lineColorS);
+}
+function OpenZip(zip){
+  var JSZIP = new JSZip();
+  JSZip.loadAsync(zip).then(function(zip) {
+    var metadonecntr=0;
+    zip.forEach(function (relativePath, zipEntry) {  
+      
+      if (zipEntry.name=="data/vars.txt"){
+        zipEntry.async("string").then(function(content) {
+          console.log(zipEntry.name);
+          console.log(content);
+          var lines = content.split("\n");
+          resolution.x = Number(lines[0].split(";")[0].split(" ")[1]);
+          resolution.y = Number(lines[0].split(";")[1]);
+          UpdateCanvas();
+          ChangeRes();
+          ScrollUpdate();
+          TICK=lines[1].split(" ")[1];
+          document.getElementById("tick").value=TICK;
+          LeftHidden= lines[2].split(" ")[1]=="false"?false:true;
+          if(!LeftHidden){
+            UILeft.style.visibility = "visible";
+          }else{
+            UILeft.style.visibility = "hidden";
+          }
+          RightHidden= lines[3].split(" ")[1]=="false"?false:true;
+          if(!RightHidden){
+            UIRight.style.visibility = "visible";
+          }else{
+            UIRight.style.visibility = "hidden";
+          }
+          BottomHidden= lines[4].split(" ")[1]=="false"?false:true;
+          if(!BottomHidden){
+            UIBottom.style.visibility = "visible";
+          }else{
+            UIBottom.style.visibility = "hidden";
+          }
+          PRIMARY=lines[5].split(" ")[1];
+          lineWidth=Number(lines[6].split(" ")[1]);
+          lineColor=lines[7].split(" ")[1];
+          left=true;
+          UIbuttonCLICK(document.getElementById(PRIMARY));
+          
+          left=false;
+          SECONDARY=lines[8].split(" ")[1];
+          lineWidthS=Number(lines[9].split(" ")[1]);
+          lineColorS=lines[10].split(" ")[1];
+          right=true;
+          UIbuttonCLICK(document.getElementById(SECONDARY ));
+          right=false;
+          MenuChange();
+          colorpaletteindex=Number(lines[11].split(" ")[1])
+          
 
+          layerselected=lines[12].split(" ")[1];
+          anim_fps = Number(lines[13].split(" ")[1]);
+          curr_frame=Number(lines[14].split(" ")[1]);
+          onion = lines[15]=="false"?false:true;
+          onion_opac=Number(lines[16].split(" ")[1]);
+          metadonecntr++;
+          if(metadonecntr>2){
+            OpenZip_Process(zip);
+          }
+      });
+      }else if (zipEntry.name=="data/cp.txt"){
+        zipEntry.async("string").then(function(content) {
+          console.log(zipEntry.name);
+          console.log(content);
+          var lines = content.split("\n");
+          var ins = false;
+          var idx=0;
+          colorpalettes=[];
+          var name = "";
+          var cp=[];
+          for(let i = 0;i< lines.length;i++){
+            if(!ins){
+              name=lines[i];
+              ins=true;
+            }else if(lines[i]!=""){
+              cp.push(lines[i]);
+            }else{
+              console.log(cp);
+              InitializeColorPaletteOR(cp,name);
+              SavePalette(idx);
+              idx++;
+              
+              cp=[];
+              ins=false;
+            }
+          }
+          
+          UpdatePaletteList();
+          Palette_clear();
+          LoadPalette(0);
+          console.log(colorpalettes);
+          metadonecntr++;
+          if(metadonecntr>2){
+            OpenZip_Process(zip);
+          }
+      });
+      }else if (zipEntry.name=="data/lr.txt"){
+        zipEntry.async("string").then(function(content) {
+          console.log(zipEntry.name);
+          console.log(content);
+          var ins = false;
+          layers=[];
+          layers_ptr=[];
+          var lines = content.split("\n");
+          var layr=[];
+          var j=0;
+          for(let i = 0;i<lines.length;i++){
+            switch(i%5){
+              case 4:
+              layers.push(layr);
+              layers_ptr.push(layers_ptr.length);
+              layr=[];
+              break;
+              case 2:
+                layr.push(lines[i]=="true");
+              break;
+              case 1:
+                layr.push(Number(lines[i]));
+              break;
+              default:
+              layr.push(lines[i]);
+            }
+            
+          }
+          console.log(layers_ptr);
+          //sort based on zindex (chungusSort)
+          var i, j, min_idx;
+ 
+          // One by one move boundary of unsorted subarray
+          for (i = 0; i < layers.length-1; i++)
+          {
+              // Find the minimum element in unsorted array
+              min_idx = i;
+              for (j = i + 1; j < layers.length; j++)
+              if (layers[layers_ptr[j]][1] < layers[layers_ptr[min_idx]][1])
+                  min_idx = j;
+       
+              // Swap the found minimum element with the first element
+              var temp= layers_ptr[min_idx];
+              layers_ptr[min_idx]=layers_ptr[i];
+              layers_ptr[i]=temp;
+          }
+          console.log(layers_ptr);
+          var cvs = document.createElement("canvas");
+          cvs.id="canvasBackground";
+          cvs.width=1;
+          cvs.height=1;
+          document.getElementById("layerdiv").innerHTML="";
+          document.getElementById("layerdiv").appendChild(cvs);
+          for(let i = 0;i<layers.length;i++){
+            cvs = document.createElement("canvas");
+            cvs.width=resolution.x;
+            cvs.height=resolution.y;
+            cvs.id=layers[i][3];
+            cvs.style.zIndex=layers[i][1];
+            cvs.style.visibility=layers[i][2]?"visible":"hidden";
+            document.getElementById("layerdiv").appendChild(cvs);
+          }
+          canvasBackground=document.getElementById("canvasBackground");
+          ChangeRes();
+          LoadLayersUI();
+          //make the eye closed or not
+          for(let i = 0;i<layers.length;i++){
+           if(layers[i][2]){
+            document.getElementById("UI_"+layers[i][3]+"_visible").src="./icons/bnw_eye_open.png";
+           }else{
+            document.getElementById("UI_"+layers[i][3]+"_visible").src="./icons/bnw_eye_closed.png";
+           }
+
+          }
+          console.log(layers);
+          ctx = document.getElementById(layers[layers.length-1][3]).getContext("2d");
+
+          metadonecntr++;
+          if(metadonecntr>2){
+            OpenZip_Process(zip);
+          }
+      });
+      }
+    });
+
+
+}, function (e) {
+   console.error("couldnt load this");
+}); 
+}
 function download_all(){
-  
+  SavePalette(colorpaletteindex);
   var zip = new JSZip();
   
   zip.folder("data");
@@ -3953,7 +4176,7 @@ function AddLayerCanvas(){
   canvas.id="layer"+num;
   canvas.width=resolution.x;
   canvas.height=resolution.y;
-  
+  canvas.style.zIndex=layers[layers.length-1][1]+1;
   document.getElementById("layerdiv").appendChild(canvas);
 }
 
@@ -4018,7 +4241,7 @@ function LoadLayersUI(){
         var layer = [name,1,true,"layer"+num];
         ctx = document.getElementById("layer"+num).getContext("2d");
       }else{
-         var layer = [name,layers[num-1][2]+1,true,"layer"+num];
+         var layer = [name,layers[layers.length-1][1]+1,true,"layer"+num];
          ctx = document.getElementById(layer[3]).getContext("2d");
          
       }
@@ -4155,7 +4378,10 @@ document.getElementById(div.id+"_up").onclick=function(e){
     var tmpptr=layers_ptr[index-1];
     layers_ptr[index-1]=layers_ptr[index];
     layers_ptr[index]=tmpptr;
- 
+    var tmpz=layers[layers_ptr[index-1]][1];
+    layers[layers_ptr[index-1]][1]=layers[layers_ptr[index]][1];
+    layers[layers_ptr[index]][1]=tmpz;
+    
     LoadLayersUI();
   }
 
@@ -4180,6 +4406,9 @@ document.getElementById(div.id+"_down").onclick=function(e){
     var tmpptr=layers_ptr[index+1];
     layers_ptr[index+1]=layers_ptr[index];
     layers_ptr[index]=tmpptr;
+    var tmpz=layers[layers_ptr[index+1]][1];
+    layers[layers_ptr[index+1]][1]=layers[layers_ptr[index]][1];
+    layers[layers_ptr[index]][1]=tmpz;
     LoadLayersUI();
   }
 
