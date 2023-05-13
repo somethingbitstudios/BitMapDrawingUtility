@@ -1939,6 +1939,100 @@ function selectionSort(arr,  n)
 function OpenZip_Process(zip) {
   Color_set(false,lineColor);
   Color_set(true,lineColorS);
+  AnimFrames=[];
+  AnimFramesFullRes=[];
+  AnimFramesPreview=[];
+  AnimFrames_ptr=[];
+
+  AnimFrames_duration=[];
+  //finally load the frames
+  var num=0;
+  zip.forEach(function (relativePath, zipEntry) {
+    //check if its png
+    var namez=zipEntry.name+"";
+    console.log(namez)
+    if(namez.includes(".png")&&namez.includes("data/")){
+        num++;
+      /*
+      AnimFrames_ptr.push("NODATA");
+      AnimFrames.push("NODATA");
+      console.log(namez)
+      
+      var frame = zipEntry.name.split("_")[0];
+      var layer = zipEntry.name.split("_")[1];
+      var ptr_idx = zipEntry.name.split("_")[2];
+      var duration = Number(zipEntry.name.split("_")[3]);
+      */
+    }
+    });
+    
+    
+    for(let i = 0;i<(num/layers.length);i++){
+      AnimFrames_ptr.push("NODATA");
+      AnimFrames.push("NODATA");
+      var temp=[];
+      for(let j = 0;j<layers.length;j++){
+        temp.push("NODATA");
+      }
+      AnimFrames[i]=temp;
+    }
+    zip.forEach(function (relativePath, zipEntry) {
+      //check if its png
+      var namez=zipEntry.name+"";
+      if(namez.includes(".png")&&namez.includes("data/")){
+        var frame = zipEntry.name.split("_")[0].split("/")[1];
+        var layer = zipEntry.name.split("_")[1];
+        var ptr_idx = zipEntry.name.split("_")[2];
+        var duration = Number(zipEntry.name.split("_")[3]);
+        AnimFrames_ptr[ptr_idx]=frame;
+        AnimFrames_duration.push(duration);
+        
+        zipEntry.async("arraybuffer").then(function(content) {
+          console.log(content);
+           // Create an Image object
+        var img = new Image();
+
+        // Set the source of the Image object to a data URL created from the ArrayBuffer
+        var blob = new Blob([content], {type: "image/png"});
+        var url = URL.createObjectURL(blob);
+        img.src = url;
+
+        // Create a canvas element
+        var canvas = document.createElement('canvas');
+        canvas.width=resolution.x;
+        canvas.height=resolution.y;
+        
+        var ctx = canvas.getContext('2d');
+          img.onload = ()=>{
+// Draw the Image onto the canvas
+        ctx.drawImage(img, 0, 0);
+
+        // Get the ImageData from the canvas
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+        console.log(AnimFrames);
+        console.log(imageData);
+        console.log(frame+" "+layer);
+        console.log(AnimFrames[frame][layer]);
+        AnimFrames[frame][layer]=imageData;
+          };
+        
+        });
+
+        
+        
+      }
+      
+      setTimeout(function(){
+        console.log(AnimFrames);
+         LoadFrame(0);
+      for(let i = 0;i<AnimFrames.length;i++){
+        GetPreviewImage(i);
+      }
+      },250);
+     
+
+      });
 }
 function OpenZip(zip){
   var JSZIP = new JSZip();
@@ -2207,7 +2301,7 @@ zip.folder("data").file("lr.txt",lr);
 var cvs = document.createElement("canvas");
 for(let i = 0;i<AnimFrames.length;i++){
   for(let j = 0;j<AnimFrames[i].length;j++){
-    var name = i+"_"+layers[j][0]+".png";
+    var name = i+"_"+j+"_"+AnimFrames_ptr.indexOf(i)+"_"+AnimFrames_duration+".png";
     //console.log(AnimFrames[i][j]);
    var imgdt=AnimFrames[i][j];
     cvs.width=imgdt.width;
@@ -3674,7 +3768,7 @@ function GetPreviewImage(index){
   canvas.height=resolution.y;
   var Tctx = canvas.getContext("2d");
   for(let i = 0;i< layers.length;i++){
-
+    console.log(AnimFrames[AnimFrames_ptr[index]][i]);
     putImageDataOptimized(Tctx,AnimFrames[AnimFrames_ptr[index]][i].data,0,0,resolution.x,resolution.y);
   }
   origmerged = Tctx.getImageData(0,0,resolution.x,resolution.y);
