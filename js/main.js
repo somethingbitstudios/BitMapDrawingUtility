@@ -1966,27 +1966,32 @@ function OpenZip_Process(zip) {
       */
     }
     });
-    
+    var zipEntries=[];
+    zip.forEach(function (relativePath, zipEntry) {
+      zipEntries.push(zipEntry);
+    });
     
     for(let i = 0;i<(num/layers.length);i++){
       AnimFrames_ptr.push(i);
-      AnimFrames.push("NODATA");
-      var temp=[];
+      AnimFrames.push([]);
       for(let j = 0;j<layers.length;j++){
-        temp.push("NODATA");
+        AnimFrames[i].push("NODATA");
       }
-      AnimFrames[i]=temp;
-    }
-    zip.forEach(function (relativePath, zipEntry) {
-      //check if its png
+      var durwrite=false;
+     zipEntries.forEach(zipEntry => {
       var namez=zipEntry.name+"";
-      if(namez.includes(".png")&&namez.includes("data/")){
+      if((namez).includes("data/"+i)){
         var frame = zipEntry.name.split("_")[0].split("/")[1];
         var layer = zipEntry.name.split("_")[1];
-        var ptr_idx = zipEntry.name.split("_")[2];
-        var duration = Number(zipEntry.name.split("_")[3]);
+      //  var ptr_idx = zipEntry.name.split("_")[2];
+      
+        var duration = zipEntry.name.split("_")[3].split(".")[0].replace("-", ".");
         //AnimFrames_ptr[ptr_idx]=frame;
-        AnimFrames_duration.push(duration);
+        if(!durwrite){
+          AnimFrames_duration.push(duration);
+          durwrite=true;
+        }
+        
         
         zipEntry.async("arraybuffer").then(function(content) {
           console.log(content);
@@ -2020,26 +2025,25 @@ function OpenZip_Process(zip) {
         
         });
 
+        setTimeout(function(){
+          console.log(AnimFrames_ptr);
+          for(let i = 0;i<AnimFrames.length;i++){
+            AnimFramesPreview.push(GetPreviewImage(i));
+          }
+          UpdateFrame_UI();
+          for(let i = 0;i<AnimFrames.length;i++){
+            LoadFrame(i);
+            SaveFrame(i);
+          }
+          UpdateFrame_UI();
+          console.log(AnimFrames_duration);
+    
+          },250);
+         
         
-        
       }
-      
-      setTimeout(function(){
-      console.log(AnimFrames_ptr);
-      for(let i = 0;i<AnimFrames.length;i++){
-        AnimFramesPreview.push(GetPreviewImage(i));
-      }
-      UpdateFrame_UI();
-      for(let i = 0;i<AnimFrames.length;i++){
-        LoadFrame(i);
-        SaveFrame(i);
-      }
-      UpdateFrame_UI();
-
-      },250);
-     
-
-      });
+     });
+    }
 }
 function OpenZip(zip){
   var JSZIP = new JSZip();
@@ -2098,7 +2102,8 @@ function OpenZip(zip){
           layerselected=lines[12].split(" ")[1];
           anim_fps = Number(lines[13].split(" ")[1]);
           curr_frame=Number(lines[14].split(" ")[1]);
-          onion = lines[15]=="false"?false:true;
+          
+          onion = lines[15].split(" ")[1]=="false"?false:true;
           onion_opac=Number(lines[16].split(" ")[1]);
           
           metadonecntr++;
@@ -2315,7 +2320,7 @@ zip.folder("data").file("lr.txt",lr);
 var cvs = document.createElement("canvas");
 for(let i = 0;i<AnimFrames.length;i++){
   for(let j = 0;j<AnimFrames[i].length;j++){
-    var name = i+"_"+j+"_"+AnimFrames_ptr.indexOf(i)+"_"+AnimFrames_duration[i]+".png";
+    var name = AnimFrames_ptr.indexOf(i)+"_"+j+"_"+AnimFrames_ptr.indexOf(i)+"_"+(AnimFrames_duration[i]+"").replace(".", "-")+".png";
     console.log(AnimFrames_ptr.indexOf(i));
     console.log(name);
     //console.log(AnimFrames[i][j]);
@@ -3561,15 +3566,29 @@ function InitializeColorPaletteOR(palette,name){
 //#endregion
 //#region AnimFrames
 function AnimTimeout(){
-  clearTimeout(anim_interrupt);
-  anim_interrupt=setTimeout(AnimTimeout,AnimFrames_duration[AnimFrames_ptr[curr_frame]]*(1000/anim_fps));
-  
-
-  LoadFrame(curr_frame);
-curr_frame++;
+  if(anim_interrupt!=null){
+     clearTimeout(anim_interrupt);
+  anim_interrupt=null;
+  }
+ 
+  if(AnimFrames_duration[AnimFrames_ptr[curr_frame]]>0){
+    anim_interrupt=setTimeout(AnimTimeout,AnimFrames_duration[AnimFrames_ptr[curr_frame]]*(1000/anim_fps));
+    LoadFrame(curr_frame);
+    curr_frame++;
 if(curr_frame>AnimFrames.length-1){
   curr_frame=0;
 }
+  }else{
+    curr_frame++;
+if(curr_frame>AnimFrames.length-1){
+  curr_frame=0;
+}
+    AnimTimeout();
+  }
+  
+
+
+
 
 }
 function AnimPlay(){
@@ -3800,7 +3819,7 @@ function FrameScrollToEnd(){
 function UpdateFrame_UI(){
 var inhtml = "";
 for(let i = 0;i< AnimFrames.length;i++){
-  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a>&nbsp;<a style='background-color: white;' onclick='DupeFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DUPE</small></a> </div><canvas onclick='curr_frame="+i+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<input onblur='AnimFrames_duration[AnimFrames_ptr["+i+"]]=this.value;' value='1' type='number' width='50' height='50'/>&nbsp;<a style='background-color: white;' onclick='var temp = curr_frame;LoadFrame("+AnimFrames_ptr[i]+");download_merged();LoadFrame(AnimFrames_ptr[curr_frame]);'> <small style='color:black'>DOW</small></a></div></div>";
+  inhtml+=" <div class='frame' ><div><small>Frame "+AnimFrames_ptr[i]+"</small><a style='background-color: white;' onclick='MoveFrame("+i+","+(i-1)+")'> <small style='color:black'><<</small><a>&nbsp<a style='background-color: white;' onclick='MoveFrame("+i+","+(i+1)+")'> <small style='color:black'>>></small></a>&nbsp;<a style='background-color: white;' onclick='DeleteFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DEL</small></a>&nbsp;<a style='background-color: white;' onclick='DupeFrame("+AnimFrames_ptr[i]+")'> <small style='color:black'>DUPE</small></a> </div><canvas onclick='curr_frame="+i+";LoadFrame(curr_frame);' style='background-image: url(./images/transparent2.png);background-repeat: repeat;position: initial;border: initial;margin: initial;padding: initial;width: auto;height: auto;z-index: initial;' width='128' height='96' id=preview_"+AnimFrames_ptr[i]+"></canvas><div><a style='background-color: white;' onclick='alert('left')'> <small style='color:black'>FPSOVRD </small></a>&nbsp;<input onblur='AnimFrames_duration[AnimFrames_ptr["+i+"]]=this.value;' value="+AnimFrames_duration[AnimFrames_ptr[i]]+" type='number' width='50' height='50'/>&nbsp;<a style='background-color: white;' onclick='var temp = curr_frame;LoadFrame("+AnimFrames_ptr[i]+");download_merged();LoadFrame(AnimFrames_ptr[curr_frame]);'> <small style='color:black'>DOW</small></a></div></div>";
 }
 inhtml+=" <div class='frame' id='endframe' style='display:flex;align-items:center;justify-content:center;'> <img width='96' height='96' src='./icons/addLG.png' onclick='AddFrame();LoadFrame(curr_frame);FrameScrollToEnd()'/><div><a style='background-color: white;' onclick='alert('left')'> </div>";
   document.getElementById("frames").innerHTML = inhtml;
