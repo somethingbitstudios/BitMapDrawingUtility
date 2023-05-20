@@ -1937,6 +1937,7 @@ function selectionSort(arr,  n)
     }
 }
 function OpenZip_Process(zip) {
+  
   Color_set(false,lineColor);
   Color_set(true,lineColorS);
   AnimFrames=[];
@@ -1968,7 +1969,7 @@ function OpenZip_Process(zip) {
     
     
     for(let i = 0;i<(num/layers.length);i++){
-      AnimFrames_ptr.push("NODATA");
+      AnimFrames_ptr.push(i);
       AnimFrames.push("NODATA");
       var temp=[];
       for(let j = 0;j<layers.length;j++){
@@ -1984,7 +1985,7 @@ function OpenZip_Process(zip) {
         var layer = zipEntry.name.split("_")[1];
         var ptr_idx = zipEntry.name.split("_")[2];
         var duration = Number(zipEntry.name.split("_")[3]);
-        AnimFrames_ptr[ptr_idx]=frame;
+        //AnimFrames_ptr[ptr_idx]=frame;
         AnimFrames_duration.push(duration);
         
         zipEntry.async("arraybuffer").then(function(content) {
@@ -2024,11 +2025,17 @@ function OpenZip_Process(zip) {
       }
       
       setTimeout(function(){
-        console.log(AnimFrames);
-         LoadFrame(0);
+      console.log(AnimFrames_ptr);
       for(let i = 0;i<AnimFrames.length;i++){
-        GetPreviewImage(i);
+        AnimFramesPreview.push(GetPreviewImage(i));
       }
+      UpdateFrame_UI();
+      for(let i = 0;i<AnimFrames.length;i++){
+        LoadFrame(i);
+        SaveFrame(i);
+      }
+      UpdateFrame_UI();
+
       },250);
      
 
@@ -2042,14 +2049,15 @@ function OpenZip(zip){
       
       if (zipEntry.name=="data/vars.txt"){
         zipEntry.async("string").then(function(content) {
+            
           console.log(zipEntry.name);
           console.log(content);
           var lines = content.split("\n");
           resolution.x = Number(lines[0].split(";")[0].split(" ")[1]);
           resolution.y = Number(lines[0].split(";")[1]);
-          UpdateCanvas();
-          ChangeRes();
-          ScrollUpdate();
+          //UpdateCanvas();
+          //ChangeRes();
+          //ScrollUpdate();
           TICK=lines[1].split(" ")[1];
           document.getElementById("tick").value=TICK;
           LeftHidden= lines[2].split(" ")[1]=="false"?false:true;
@@ -2092,6 +2100,7 @@ function OpenZip(zip){
           curr_frame=Number(lines[14].split(" ")[1]);
           onion = lines[15]=="false"?false:true;
           onion_opac=Number(lines[16].split(" ")[1]);
+          
           metadonecntr++;
           if(metadonecntr>2){
             OpenZip_Process(zip);
@@ -2135,6 +2144,7 @@ function OpenZip(zip){
       });
       }else if (zipEntry.name=="data/lr.txt"){
         zipEntry.async("string").then(function(content) {
+       
           console.log(zipEntry.name);
           console.log(content);
           var ins = false;
@@ -2142,7 +2152,7 @@ function OpenZip(zip){
           layers_ptr=[];
           var lines = content.split("\n");
           var layr=[];
-          var j=0;
+          var j=0;  
           for(let i = 0;i<lines.length;i++){
             switch(i%5){
               case 4:
@@ -2178,7 +2188,8 @@ function OpenZip(zip){
               var temp= layers_ptr[min_idx];
               layers_ptr[min_idx]=layers_ptr[i];
               layers_ptr[i]=temp;
-          }
+          } 
+          
           console.log(layers_ptr);
           var cvs = document.createElement("canvas");
           cvs.id="canvasBackground";
@@ -2187,15 +2198,18 @@ function OpenZip(zip){
           document.getElementById("layerdiv").innerHTML="";
           document.getElementById("layerdiv").appendChild(cvs);
           for(let i = 0;i<layers.length;i++){
-            cvs = document.createElement("canvas");
-            cvs.width=resolution.x;
-            cvs.height=resolution.y;
-            cvs.id=layers[i][3];
-            cvs.style.zIndex=layers[i][1];
-            cvs.style.visibility=layers[i][2]?"visible":"hidden";
-            document.getElementById("layerdiv").appendChild(cvs);
+            var cvs_;
+            cvs_ = document.createElement("canvas");
+            cvs_.width=resolution.x;
+            cvs_.height=resolution.y;
+            cvs_.id=layers[i][3];
+            cvs_.style.zIndex=layers[i][1];
+            cvs_.style.visibility=layers[i][2]?"visible":"hidden";
+            document.getElementById("layerdiv").appendChild(cvs_);
           }
+          
           canvasBackground=document.getElementById("canvasBackground");
+          canvas=document.getElementById("layer0");
           ChangeRes();
           LoadLayersUI();
           //make the eye closed or not
@@ -2209,7 +2223,7 @@ function OpenZip(zip){
           }
           console.log(layers);
           ctx = document.getElementById(layers[layers.length-1][3]).getContext("2d");
-
+            
           metadonecntr++;
           if(metadonecntr>2){
             OpenZip_Process(zip);
@@ -2301,7 +2315,9 @@ zip.folder("data").file("lr.txt",lr);
 var cvs = document.createElement("canvas");
 for(let i = 0;i<AnimFrames.length;i++){
   for(let j = 0;j<AnimFrames[i].length;j++){
-    var name = i+"_"+j+"_"+AnimFrames_ptr.indexOf(i)+"_"+AnimFrames_duration+".png";
+    var name = i+"_"+j+"_"+AnimFrames_ptr.indexOf(i)+"_"+AnimFrames_duration[i]+".png";
+    console.log(AnimFrames_ptr.indexOf(i));
+    console.log(name);
     //console.log(AnimFrames[i][j]);
    var imgdt=AnimFrames[i][j];
     cvs.width=imgdt.width;
@@ -4232,6 +4248,7 @@ function ChangeRes(){
 canvasBackground.style.backgroundSize = 200/resolution.x  + "%";
 }
 function ScrollUpdate(){
+ 
 var rect = canvas.getBoundingClientRect();
  canvasOffset.x = rect.left;
  canvasOffset.y = rect.top;
@@ -4239,8 +4256,11 @@ var rect = canvas.getBoundingClientRect();
 
 function MoveCanvas(){
 
+ 
+
   div.style.left = canvasOffset.x + ((AbsPos.x-AbsLastPos.x))+"px";
   div.style.top = canvasOffset.y +((AbsPos.y-AbsLastPos.y))+"px";
+  
   
   ScrollUpdate();
   }
@@ -4560,6 +4580,7 @@ function UpdatePos(){
   lastIntPos.y = intPos.y;
     pos.x = ((E.clientX-canvasOffset.x)*resScale);
   pos.y = ((E.clientY-canvasOffset.y)*resScale);
+  
   intPos.x = ~~pos.x;
   intPos.y = ~~pos.y;
  AbsPos.x = E.clientX;
@@ -7309,4 +7330,10 @@ setInterval(function(){
   //console.log("autosave complete");
   },15000);
   
-
+/*
+setInterval(function(){
+  console.log(canvas);
+  console.log(div)
+  console.log(background)
+},1000);
+*/
