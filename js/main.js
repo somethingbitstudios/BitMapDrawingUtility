@@ -3845,301 +3845,167 @@ inhtml+=" <div class='frame' id='endframe' style='display:flex;align-items:cente
 //#endregion
 //#region UI
 
+function MenuChHelper(variable){
+	let name;
+  let br;
+  let label,input;
+	switch(variable){
+    case("pencil"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+     br = document.createElement("br");
+    name.innerHTML = "Pencil";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+ 
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
 
+      
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1","pencil"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2","pencil"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3","pencil"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4","pencil"));
+      /*
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br); 
+   
+    label = document.createElement("label");
+    label.setAttribute("for","size");
+    label.innerHTML = "Size:";
+    Menu_Tool.appendChild(label);
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+  
+    input = document.createElement("input");
+    input.id = "size";
+    input.setAttribute("type","number");
+    input.setAttribute("name","size");
+    input.value = 1;
+    input.addEventListener("change", function(e){
+    if(input.value > 0){
+      if(!select){
+        lineWidth = input.value;
+      }else{
+        lineWidthS = input.value;
+      }
+
+    }
+    });
+
+    Menu_Tool.appendChild(input);
+*/
+
+
+
+
+    break;
+
+    case("line"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Line";
+    Menu_Tool.appendChild(name);
+	/*
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp","line"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry","line"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC","line"));
+    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS","line"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+   */
+    break;
+
+
+    case("fill"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Fill";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/spread.png","FILL_MODE_SLOW","fill"));
+    Menu_Tool.appendChild(CreateIcon("./icons/scanline.png","FILL_MODE_FAST","fill"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/inst.png","FILL_MODE_INST","fill"));
+    //Menu_Tool.appendChild(CreateIcon("./icons/none.png","FILL_MODE_PATTERN","fill"));
+    
+   
+    break;
+    case("picker"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Picker";
+    Menu_Tool.appendChild(name);
+	/*
+    name = document.createElement("p"); 
+    name.innerHTML = "Style:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","picker"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","picker"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","picker"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","picker"));
+    
+   */
+    break;
+    case("select"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Picker";
+    Menu_Tool.appendChild(name);
+	/*
+    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE","select"));
+    name = document.createElement("p"); 
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","select"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","select"));
+    
+   */
+    break;
+  }
+	
+}
 
 function MenuChange() {
   
 if(left){
-  let name;
-  let br;
-  let label,input;
-  switch(PRIMARY){
-    case("pencil"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-     br = document.createElement("br");
-    name.innerHTML = "Pencil";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
- 
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-
-      
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1","pencil"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2","pencil"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3","pencil"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4","pencil"));
-      /*
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br); 
-   
-    label = document.createElement("label");
-    label.setAttribute("for","size");
-    label.innerHTML = "Size:";
-    Menu_Tool.appendChild(label);
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
   
-    input = document.createElement("input");
-    input.id = "size";
-    input.setAttribute("type","number");
-    input.setAttribute("name","size");
-    input.value = 1;
-    input.addEventListener("change", function(e){
-    if(input.value > 0){
-      if(!select){
-        lineWidth = input.value;
-      }else{
-        lineWidthS = input.value;
-      }
-
-    }
-    });
-
-    Menu_Tool.appendChild(input);
-*/
-
-
-
-
-    break;
-
-    case("line"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Line";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp","line"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry","line"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC","line"));
-    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS","line"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-   
-    break;
-
-
-    case("fill"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Fill";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","fill"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","fill"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","fill"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","fill"));
-    
-   
-    break;
-    case("picker"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Picker";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","picker"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","picker"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","picker"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","picker"));
-    
-   
-    break;
-    case("select"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Picker";
-    Menu_Tool.appendChild(name);
-    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE","select"));
-    name = document.createElement("p"); 
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","select"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","select"));
-    
-   
-    break;
-  }
+  MenuChHelper(PRIMARY);
+  
 }
 else if (right){
-  let name;
-  let br;
-  let label,input;
-  switch(SECONDARY){
-    case("pencil"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-     br = document.createElement("br");
-    name.innerHTML = "Pencil";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
- 
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-
-      
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1","pencil"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2","pencil"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3","pencil"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4","pencil"));
-      /*
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br); 
-   
-    label = document.createElement("label");
-    label.setAttribute("for","size");
-    label.innerHTML = "Size:";
-    Menu_Tool.appendChild(label);
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
   
-    input = document.createElement("input");
-    input.id = "size";
-    input.setAttribute("type","number");
-    input.setAttribute("name","size");
-    input.value = 1;
-    input.addEventListener("change", function(e){
-    if(input.value > 0){
-      if(!select){
-        lineWidth = input.value;
-      }else{
-        lineWidthS = input.value;
-      }
-
-    }
-    });
-
-    Menu_Tool.appendChild(input);
-*/
-
-
-
-
-    break;
-
-    case("line"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Line";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","crisp","line"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","blurry","line"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/poly.png","BASIC","line"));
-    Menu_Tool.appendChild(CreateIcon("./icons/circle.png","NOGAPS","line"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-   
-    break;
-
-
-    case("fill"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Fill";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","fill"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","fill"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","fill"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","fill"));
-    
-   
-    break;
-    case("picker"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Picker";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    name.innerHTML = "Style:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","picker"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","picker"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","picker"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","picker"));
-    
-   
-    break;
-    case("select"): 
-    Menu_Tool.textContent = "";
-    name = document.createElement("h2"); 
-      br = document.createElement("br");
-    name.innerHTML = "Picker";
-    Menu_Tool.appendChild(name);
-    Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/scissors.png","CUT","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/delete.png","DELETE","select"));
-    name = document.createElement("p"); 
-    name.innerHTML = "Mode:";
-    Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","select"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","select"));
-    
-   
-    break;
-  }
+  MenuChHelper(SECONDARY)
 }
 }
 
@@ -5525,14 +5391,15 @@ default:
     
       if(e.wheelDelta > 0 ){
     
-    
-        if(canvasSize.x >= resolution.x/4 && canvasSize.x < resolution.x*2){
+		
+        if(canvasSize.x < resolution.x*2){
+			
           var before = {x:0,y:0}
           var after = {x:0,y:0}
           before.x = ((E.clientX-canvasOffset.x)*resScale);
           before.y = ((E.clientY-canvasOffset.y)*resScale);
-    canvasSize.x += resolution.x/4;
-    canvasSize.y += resolution.y/4;
+    canvasSize.x += canvasSize.x/3;
+    canvasSize.y += canvasSize.y/3
     div.style.height = canvasSize.y+"px";
     div.style.width = canvasSize.x+"px";
     ChangeRes();
@@ -5544,7 +5411,8 @@ default:
     div.style.left = canvasOffset.x+"px";
     div.style.top = canvasOffset.y+"px";
          }
-        else if(canvasSize.x < resolution.x * 24){
+        else if(canvasSize.x < resolution.x * 256){
+			
           var before = {x:0,y:0}
           var after = {x:0,y:0}
           before.x = ((E.clientX-canvasOffset.x)*resScale);
@@ -5576,7 +5444,7 @@ default:
       }else{
     
         if(canvasSize.x > resolution.x*2){
-         
+        
           var before = {x:0,y:0}
           var after = {x:0,y:0}
           before.x = ((E.clientX-canvasOffset.x)*resScale);
@@ -5593,14 +5461,14 @@ default:
     canvasOffset.y += (after.y-(before.y/resScale));
     div.style.left = canvasOffset.x+"px";
     div.style.top = canvasOffset.y+"px";
-        } else if(canvasSize.x > resolution.x/4){
+        } else if(canvasSize.x > resolution.x/64){
          
           var before = {x:0,y:0}
           var after = {x:0,y:0}
           before.x = ((E.clientX-canvasOffset.x)*resScale);
           before.y = ((E.clientY-canvasOffset.y)*resScale);
-          canvasSize.x -= resolution.x/4;
-        canvasSize.y -= resolution.y/4;
+          canvasSize.x -= canvasSize.x/4;
+        canvasSize.y -= canvasSize.y/4;
         div.style.height = ""+canvasSize.y+"px";
     div.style.width = ""+canvasSize.x+"px";
     ChangeRes();
