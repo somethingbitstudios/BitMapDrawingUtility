@@ -614,6 +614,9 @@ var lineColorS = "rgba(255,255,255,1)";
 var EditedColor = "";
 
 var OverallAngle = 0;
+
+var Poly_sides=4;
+var Poly_center=false;
 //#endregion
 //#region Select
 
@@ -695,6 +698,7 @@ SelectPoints[8].onmouseup = function(){
 };
 var selectFill ="rgba(100,150,255,0.4)";
 var SelectActive = false; //if true, area is  selected
+var Select_snapangle=0.01;
 var SelectDragging = false;
 var SelectAreaCopy;
 var SelectArea;
@@ -2700,7 +2704,7 @@ return imagedt;
 }
 function ImageRotate(img,rX,rY,angle){
   //if angle close to constant, change to constant
- angle = SnapAngleToConstant(angle,0.01);        //     if set to snap to angles like 45 and stuff
+ angle = SnapAngleToConstant(angle,Select_snapangle);     //     if set to snap to angles like 45 and stuff
  var sine = Math.sin(-angle);
  var cosine = Math.cos(-angle);
  var half = rX/2;
@@ -3974,7 +3978,7 @@ if(left){
     Menu_Tool.textContent = "";
     name = document.createElement("h2"); 
       br = document.createElement("br");
-    name.innerHTML = "Picker";
+    name.innerHTML = "Select";
     Menu_Tool.appendChild(name);
     Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY","select"));
     Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE","select"));
@@ -3984,13 +3988,29 @@ if(left){
     name.innerHTML = "Mode:";
     Menu_Tool.appendChild(name);
     name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_SLOW","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_FAST","select"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/pencil.png","FILL_MODE_INST","select"));
-    Menu_Tool.appendChild(CreateIcon("./icons/line.png","FILL_MODE_PATTERN","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/selectbasic.png","SELECT_MODE_BASIC","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/selectrotate.png","SELECT_MODE_ROTATE","select"));
+
+    Menu_Tool.innerHtml = Menu_Tool.innerHTML+="<div><label>SnapAngle</label><input type='number' value="+Select_snapangle+" onblur='Select_snapangle=value;'id='select_snapangle'/></div>"
     
+   
+    break;
+    case("poly"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Polygon";
+    Menu_Tool.appendChild(name);
+  
+    name = document.createElement("p"); 
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/selectbasic.png","SELECT_MODE_BASIC","select"));
+    Menu_Tool.appendChild(CreateIcon("./icons/selectrotate.png","SELECT_MODE_ROTATE","select"));
+
+    Menu_Tool.innerHtml = Menu_Tool.innerHTML+="<div><label>Poly sides:</label><input type='number' value="+Poly_sides+" onblur='Poly_sides=value;'id='poly_sides'/></div>"
+    Menu_Tool.innerHtml = Menu_Tool.innerHTML+="<div><label>Centered:</label><input type='checkbox' value="+Poly_center+" onclick='Poly_center=!Poly_center;' id='poly_sides'/></div>"
    
     break;
   }
@@ -4823,9 +4843,10 @@ break;
 }
 break;
 case("poly"):
+console.log(MODE.poly)
 switch(MODE.poly){
   default:
-    pctx.fillRect(intPos.x,intPos.y,1,1);
+    //pctx.fillRect(intPos.x,intPos.y,1,1);
 PolyPreview();
   break;
 }
@@ -5926,16 +5947,12 @@ function PolyPreview(){
   }else{
     lineColor1 = lineColor;
   }
-  switch(polysides){
-    case(2):
-   
-    Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor1);
-    Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor1);
 
-    break;
+  switch(Poly_sides){
+    
     case(4):
    //rect
-    
+    pctx.fillRect(intPos.x,intPos.y,1,1);
     Line(false,pctx,downIntPos.x,downIntPos.y,downIntPos.x,lastIntPos.y,lineWidth,lineColor1);
 
     Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,downIntPos.y,lineWidth,lineColor1);
@@ -5957,6 +5974,9 @@ function PolyPreview(){
     Line(true,pctx,downIntPos.x,intPos.y,intPos.x,intPos.y,lineWidth,lineColor1);
 
     break;
+    default:
+      Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor1);
+      Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor1);
   }
   
   }
