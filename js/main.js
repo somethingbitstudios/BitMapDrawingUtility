@@ -5947,7 +5947,18 @@ function PolyPreview(){
   }else{
     lineColor1 = lineColor;
   }
-
+  let r = Math.sqrt(Math.pow(downIntPos.x-intPos.x,2)+Math.pow(downIntPos.y-intPos.y,2));
+  
+  if(Poly_sides<3)return;
+  let points=[intPos];
+  if(poly_sides%2!=0){
+	  for(let i = 1;i<Poly_sides;i++){
+		  
+	  }
+  }else{
+	  
+  }
+return;
   switch(Poly_sides){
     
     case(4):
@@ -5977,6 +5988,8 @@ function PolyPreview(){
     default:
       Line(false,pctx,downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor1);
       Line(true,pctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor1);
+	  
+	  
   }
   
   }
