@@ -614,6 +614,12 @@ var lineColorS = "rgba(255,255,255,1)";
 var EditedColor = "";
 
 var OverallAngle = 0;
+var Poly_Number_Of_Sides=4;
+var Polygon_Data=[];//points of the polygon
+var Poly_center={x:0.0,y:0.0};
+var Poly_scale=0.0;
+var Poly_angle=0.0;
+PolyCompile();
 //#endregion
 //#region Select
 
@@ -2555,6 +2561,15 @@ function ArrayEqual(arr1,arr2){
 
 //#endregion
 //#region angle
+function RotateVector(angle,vector){//radian,[0,0]
+	var tempVector = {x:0,y:0};
+	var cosb = Math.cos(angle);
+    var sinb = Math.sin(angle);
+    tempVector.x = cosb*vector.x-sinb*vector.y;
+    tempVector.y = sinb*vector.x+cosb*vector.y;
+	return tempVector;
+	
+}
 function SnapAngleToConstant(angle,tolerance){
   if(angle == 0){
     return 0;
@@ -3927,7 +3942,35 @@ function MenuChHelper(variable){
     Menu_Tool.appendChild(br);
    */
     break;
+	case("poly"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+      br = document.createElement("br");
+    name.innerHTML = "Polygon";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    name.innerHTML = "NumOfSides:";
+    Menu_Tool.appendChild(name);
+	name = document.createElement("input");
+	name.defaultValue=4;
+	name.type="number";
+    name.id ="poly_num_of_sides";
+	Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+    Menu_Tool.appendChild(CreateIcon("./icons/spread.png","FILL_MODE_SLOW","fill"));
+    Menu_Tool.appendChild(CreateIcon("./icons/scanline.png","FILL_MODE_FAST","fill"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/inst.png","FILL_MODE_INST","fill"));
+    //Menu_Tool.appendChild(CreateIcon("./icons/none.png","FILL_MODE_PATTERN","fill"));
+    //bookmark1
+    document.getElementById("poly_num_of_sides").addEventListener("focusout",()=>{
+		let data = document.getElementById("poly_num_of_sides").value;
+		Poly_Number_Of_Sides=data;
+		PolyCompile();
+	});
 
+    break;
 
     case("fill"): 
     Menu_Tool.textContent = "";
@@ -3945,7 +3988,7 @@ function MenuChHelper(variable){
     Menu_Tool.appendChild(br);
     Menu_Tool.appendChild(CreateIcon("./icons/inst.png","FILL_MODE_INST","fill"));
     //Menu_Tool.appendChild(CreateIcon("./icons/none.png","FILL_MODE_PATTERN","fill"));
-    
+    //bookmark1
    
     break;
     case("picker"): 
@@ -5131,7 +5174,7 @@ default:
      break;
      case("poly"):
      SQchanged=true;
-    PolyDraw(lineColor);
+    PolyDrawOld(lineColor);
     previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
@@ -5299,7 +5342,7 @@ default:
      break;
      case("poly"):
      SQchanged=true;
-    PolyDraw(lineColorS);
+    PolyDrawOld(lineColorS);
     previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
@@ -5763,8 +5806,18 @@ break;
       
       break;
       case("poly"):
-      PolyPreview();
-      break;
+      //PolyPreview();
+	  //PolyDraw(draw,cnvs,clr,w,center,scale,angle){
+	  PolyDraw(false,pctx,lineColor,lineWidthS,downIntPos,Poly_scale,Poly_angle);
+	  Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
+	  Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
+      PolyDraw(true,pctx,lineColorS,lineWidthS,downIntPos,Poly_scale,Poly_angle);
+	  	
+	  break;
+	
+//PolyDraw(false,pctx,lineColorS,lineWidthS,downIntPos,scale,angle);
+	
+	  break;
       case("select"):
       RenderSelectUI();
       break;
@@ -5786,7 +5839,29 @@ break;
 //#endregion
 
 //#region poly
-
+function PolyCompile(){
+	Polygon_Data=[{x:0,y:1}];
+	let step = (Math.PI*2)/Poly_Number_Of_Sides;
+	for(let i =1;i<Poly_Number_Of_Sides;i++){
+		Polygon_Data.push(RotateVector(step*i,Polygon_Data[0]));
+	}
+	
+}
+function PolyDraw(draw,cnvs,clr,w,center,scale,angle){
+	var rotated = RotateVector(angle,{x:Polygon_Data[0].x*scale,y:Polygon_Data[0].y*scale});
+	var lastPoint = {x:Math.floor(center.x+rotated.x),y:Math.floor(center.y+rotated.y)};
+	
+	for(let i =1;i<Polygon_Data.length;i++){
+		rotated =RotateVector(angle,{x:Polygon_Data[i].x*scale,y:Polygon_Data[i].y*scale});
+	var point = {x:Math.floor(center.x+rotated.x),y:Math.floor(center.y+rotated.y)};
+	Line(draw,cnvs,lastPoint.x,lastPoint.y,point.x,point.y,w,clr);
+	lastPoint=point;
+	}
+	rotated =RotateVector(angle,{x:Polygon_Data[0].x*scale,y:Polygon_Data[0].y*scale});
+	point = {x:Math.floor(center.x+rotated.x),y:Math.floor(center.y+rotated.y)};
+	Line(draw,cnvs,lastPoint.x,lastPoint.y,point.x,point.y,w,clr);
+	
+}
 function PolyPreview(){
   var lineColor1;
   if(right){
@@ -5794,6 +5869,7 @@ function PolyPreview(){
   }else{
     lineColor1 = lineColor;
   }
+  
   switch(polysides){
     case(2):
    
@@ -5830,7 +5906,7 @@ function PolyPreview(){
   }
 
 
-  function PolyDraw(lineColor){
+  function PolyDrawOld(lineColor){
     
     switch(polysides){
       case(2):
