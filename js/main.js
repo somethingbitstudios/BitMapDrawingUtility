@@ -1336,11 +1336,15 @@ function HandleCheat(cheatcode){
 function YUUM(){
 	var mainLoop;
 	var metaframe=300;
-		lineColor = "rgba(255,64,128,0.5)";
+		//lineColor = "rgba(255,64,128,0.5)";
 		var camera = {pos:{x:0,y:0,z:0},rot:{x:0,y:0,z:0}};
 		var objects = [];
+		var objects_idxs = [];
 		//box
+	objects_idxs.push(0);
 	objects.push({
+		color:"rgba(255,220,200,0.4)",
+		width:2,
 		pos:{x:10,y:-5,z:5},
 		rot:{x:0,y:0,z:0},
 		scale:{x:1,y:1,z:1},
@@ -1371,7 +1375,10 @@ function YUUM(){
 		
 		]
 		});
+		objects_idxs.push(1);
 		objects.push({
+			color:"rgba(26,255,200,0.5)",
+		width:1,
 		pos:{x:50,y:-0.5,z:50},
 		rot:{x:0,y:0,z:0},
 		scale:{x:1,y:1,z:1},
@@ -1402,7 +1409,10 @@ function YUUM(){
 		
 		]
 		});
+		objects_idxs.push(2);
 		objects.push({
+			color:"rgba(255,220,0,0.2)",
+		width:3,
 		pos:{x:-10,y:-10,z:-10},
 		rot:{x:0,y:0,z:0},
 		scale:{x:1,y:1,z:1},
@@ -1433,10 +1443,67 @@ function YUUM(){
 		
 		]
 		});
+		objects_idxs.push(3);
 		objects.push({
+			color:"rgba(0,220,0,0.5)",
+		width:1,
 		pos:{x:0,y:-0.5,z:10},
 		rot:{x:0,y:0,z:0},
 		scale:{x:1,y:1,z:1},
+		vertices:[
+		{x:-5,y:-5,z:-5},
+		{x:-5,y:-5,z:5},
+		{x:-5,y:5,z:-5},
+		{x:-5,y:5,z:5},
+		{x:5,y:-5,z:-5},
+		{x:5,y:-5,z:5},
+		{x:5,y:5,z:-5},
+		{x:5,y:5,z:5},
+		],
+		indices:[
+		0,1,4,
+		1,4,5,
+		0,1,2,
+		1,2,3,
+		0,4,6,
+		0,2,6,
+		4,5,6,
+		5,6,7,
+		1,3,7,
+		1,5,7,
+		2,3,6,
+		3,6,7
+		
+		
+		]
+		});
+			objects_idxs.push(4);
+		objects.push({
+			color:"rgba(255,255,255,0.05)",
+		width:3,
+		pos:{x:40,y:-50,z:500},
+		rot:{x:0,y:0,z:1.1},
+		scale:{x:1,y:1,z:1},
+		vertices:[
+		{x:-50,y:-50,z:-50},
+		{x:-50,y:-50,z:50},
+		{x:-50,y:50,z:-50},
+		{x:-50,y:50,z:50},
+		
+		],
+		indices:[
+		0,1,2,
+		1,2,3
+		
+		]
+		});
+			objects_idxs.push(5);
+		objects.push({
+			color:"rgba(255,255,255,0.05)",
+		width:3,
+		pos:{x:200,y:-50,z:500},
+		rot:{x:0,y:0,z:2},
+		scale:{x:10,y:10,z:10},
 		vertices:[
 		{x:-5,y:-5,z:-5},
 		{x:-5,y:-5,z:5},
@@ -1470,11 +1537,13 @@ function YUUM(){
 	var key_d=false;
 	var key_j=false;
 	var key_l=false;
+	var key_shift=false;
 	var key_space=false;
 	document.addEventListener("keydown", function(event) {
-//console.log(event.keyCode);
+console.log(event.keyCode);
   switch(event.keyCode){
-	  case 13:
+	  case 27:
+	  console.log("eit");
 		clearInterval(mainLoop);
 	  break;
 	  case 87://w
@@ -1498,6 +1567,9 @@ function YUUM(){
 	  break;
 	  case 32://space
 	  key_space=true;
+	  break;
+	   case 16://space
+	  key_shift=true;
 	  break;
 	 
 	  
@@ -1529,7 +1601,9 @@ document.addEventListener("keyup", function(event) {
 	  case 32://space
 	  key_space=false;
 	  break;
-	 
+	 case 16://space
+	  key_shift=false;
+	  break;
 	  
   }
 });
@@ -1574,6 +1648,11 @@ mainLoop = setInterval(function(){
 		camera.pos.z+=dirvec.y*0.15;
 		
 	}
+	if(key_space){
+		camera.pos.y-=0.15;
+	}else if(key_shift){
+		camera.pos.y+=0.15;		
+	}
 	
 	/*
 	console.log("--");
@@ -1613,24 +1692,95 @@ mainLoop = setInterval(function(){
   
   
 objects[0].pos.y+=Math.sin(Date.now()/500)/50;
+objects[0].rot.z+=0.01;
+ //sort depth
+   function compare( a, b ) {
+	var distA = (objects[a].pos.x-camera.pos.x)**2+(objects[a].pos.y-camera.pos.y)**2+(objects[a].pos.z-camera.pos.z)**2;
+	var distB = (objects[b].pos.x-camera.pos.x)**2+(objects[b].pos.y-camera.pos.y)**2+(objects[b].pos.z-camera.pos.z)**2;
+	
+  if ( distA > distB ){
+    return -1;
+  }
+  if ( distA < distB ){
+    return 1;
+  }
+  return 0;
+}
+
+objects_idxs.sort( compare );
   for(let i = 0;i< objects.length;i++){
 	  
-	  var toobjvec = RotateVector(camera.rot.z,{x:objects[i].pos.x-camera.pos.x,y:objects[i].pos.z-camera.pos.z});
+	  var toobjvec = RotateVector(camera.rot.z,{x:objects[objects_idxs[i]].pos.x-camera.pos.x,y:objects[objects_idxs[i]].pos.z-camera.pos.z});
 	  var angl = GetAngleBetweenVectors({x:0,y:1},toobjvec);
 	  
 	  if(Math.abs(angl)>1.5){continue;}
-	  //console.log(objects[i])
-	  for(let j = 0;j<objects[i].indices.length/3;j++){ //draw 1 poly
-		  let point = objects[i].vertices[objects[i].indices[j*3]];
-		  let point1 = {x:point.x+objects[i].pos.x,y:point.y+objects[i].pos.y,z:point.z+objects[i].pos.z};
-		  point = objects[i].vertices[objects[i].indices[j*3+1]];
-		  let point2 = {x:point.x+objects[i].pos.x,y:point.y+objects[i].pos.y,z:point.z+objects[i].pos.z};
-		  point = objects[i].vertices[objects[i].indices[j*3+2]];
-		  let point3 = {x:point.x+objects[i].pos.x,y:point.y+objects[i].pos.y,z:point.z+objects[i].pos.z};
+	  //console.log(objects[objects_idxs[i]])
+	  let calculated_points = [];
+	  
+	  for(let j = 0;j<objects[objects_idxs[i]].vertices.length;j++){ //draw 1 poly
+	   let point = objects[objects_idxs[i]].vertices[j];
+	   let rotatedpoint = RotateVector(objects[objects_idxs[i]].rot.z,{ x:point.x*objects[objects_idxs[i]].scale.x,y:point.z*objects[objects_idxs[i]].scale.z });
+	   
+	   let point1 = {x:rotatedpoint.x+objects[objects_idxs[i]].pos.x,y:point.y*objects[objects_idxs[i]].scale.y+objects[objects_idxs[i]].pos.y,z:rotatedpoint.y+objects[objects_idxs[i]].pos.z};
+	    let xy1 = {x:0,y:0};
+		xy1.y=Math.floor(resolution.y/2+((point1.y-camera.pos.y) * 150 /Math.sqrt((point1.x-camera.pos.x)**2+(point1.z-camera.pos.z)**2)));
+		let pppoin = RotateVector(camera.rot.z,{x:point1.x-camera.pos.x,y:point1.z-camera.pos.z});
+		let angle = GetAngleBetweenVectors({x:0,y:1},pppoin);
+  
+		xy1.x=Math.floor(resolution.x/2+(angle*2/Math.PI)*resolution.x);
+		calculated_points.push(xy1);
+	  }
+	  //que lines
+	  var lines = [];//int
+	   for(let j = 0;j<objects[objects_idxs[i]].indices.length/3;j++){
+		
+		  lines.push(objects[objects_idxs[i]].indices[j*3]);
+		  lines.push(objects[objects_idxs[i]].indices[j*3+1]);
+		  lines.push(objects[objects_idxs[i]].indices[j*3]);
+		  lines.push(objects[objects_idxs[i]].indices[j*3+2]);
+		  lines.push(objects[objects_idxs[i]].indices[j*3+2]);
+		  lines.push(objects[objects_idxs[i]].indices[j*3+1]);
+	  }
+	  //remove duplicates
+	  for(let j = 0;j<lines.length/2;j++){
+		  let x = lines[j*2];
+		  let y = lines[j*2+1];
+		  //check & remove
+		  for(let k = j+2;k<lines.length/2;k++){
+			  if(lines[k*2]==x&&lines[k*2+1]==y){
+				  lines.pop(k*2);
+				  lines.pop(k*2+1);
+			  }
+		  }
+		  //draw
+		  let xy1 = calculated_points[x];
+		  let xy2 = calculated_points[y];
+		  Line(true,ctx,xy1.x,xy1.y,xy2.x,xy2.y,objects[objects_idxs[i]].width,objects[objects_idxs[i]].color);
+	  }
+	  
+	  //draw lines
+	  
+	  /*
+	  for(let j = 0;j<objects[objects_idxs[i]].indices.length/3;j++){
+		  let xy1 = calculated_points[objects[objects_idxs[i]].indices[j*3]];
+		  let xy2 = calculated_points[objects[objects_idxs[i]].indices[j*3+1]];
+		  let xy3 = calculated_points[objects[objects_idxs[i]].indices[j*3+2]];
+		  Line(true,ctx,xy1.x,xy1.y,xy2.x,xy2.y,lineWidth,lineColor);
+		  Line(true,ctx,xy1.x,xy1.y,xy3.x,xy3.y,lineWidth,lineColor);
+		  Line(true,ctx,xy3.x,xy3.y,xy2.x,xy2.y,lineWidth,lineColor);
+	  }*/
+	  /*
+	  for(let j = 0;j<objects[objects_idxs[i]].indices.length/3;j++){ //draw 1 poly
+		  let point = objects[objects_idxs[i]].vertices[objects[objects_idxs[i]].indices[j*3]];
+		  let point1 = {x:point.x+objects[objects_idxs[i]].pos.x,y:point.y+objects[objects_idxs[i]].pos.y,z:point.z+objects[objects_idxs[i]].pos.z};
+		  point = objects[objects_idxs[i]].vertices[objects[objects_idxs[i]].indices[j*3+1]];
+		  let point2 = {x:point.x+objects[objects_idxs[i]].pos.x,y:point.y+objects[objects_idxs[i]].pos.y,z:point.z+objects[objects_idxs[i]].pos.z};
+		  point = objects[objects_idxs[i]].vertices[objects[objects_idxs[i]].indices[j*3+2]];
+		  let point3 = {x:point.x+objects[objects_idxs[i]].pos.x,y:point.y+objects[objects_idxs[i]].pos.y,z:point.z+objects[objects_idxs[i]].pos.z};
 		  //let point3 = point1;
 		  //Draw
 		  let xy1 = {x:0,y:0};
-  xy1.y=Math.floor(resolution.y/2+((point1.y-camera.pos.y) * 150 /Math.sqrt((point.x-camera.pos.x)**2+(point.z-camera.pos.z)**2)));
+  xy1.y=Math.floor(resolution.y/2+((point1.y-camera.pos.y) * 150 /Math.sqrt((point1.x-camera.pos.x)**2+(point1.z-camera.pos.z)**2)));
   let pppoin = RotateVector(camera.rot.z,{x:point1.x-camera.pos.x,y:point1.z-camera.pos.z});
   let angle = GetAngleBetweenVectors({x:0,y:1},pppoin);
   
@@ -1657,7 +1807,7 @@ Line(true,ctx,xy1.x,xy1.y,xy2.x,xy2.y,lineWidth,lineColor);
 Line(true,ctx,xy1.x,xy1.y,xy3.x,xy3.y,lineWidth,lineColor);
 Line(true,ctx,xy3.x,xy3.y,xy2.x,xy2.y,lineWidth,lineColor);
 
-	  }
+	  }*/
   }
   /*
   let xy = {x:0,y:0};
@@ -7755,6 +7905,3 @@ setInterval(function(){
 */
 
 
-
-
-//YUUM();
