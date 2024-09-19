@@ -1607,17 +1607,24 @@ document.addEventListener("keyup", function(event) {
 	  
   }
 });
+var timestamp=0;
+var fps = 0;
 mainLoop = setInterval(function(){
+	
+	var timestamp1 = performance.now();
+	var deltaTime=timestamp1-timestamp;
+	timestamp=timestamp1;
+	
 	//input
 	if(key_j){
 		metaframe+=2;
-		camera.rot.z+=0.01;
+		camera.rot.z+=0.005*deltaTime;
 		if(camera.rot.z>Math.PI){
 			camera.rot.z-=2*Math.PI;
 		}
 	}else if (key_l){
 		metaframe+=2;
-		camera.rot.z-=0.01;
+		camera.rot.z-=0.005*deltaTime;
 		if(camera.rot.z<-Math.PI){
 			camera.rot.z+=2*Math.PI;
 		}
@@ -1626,32 +1633,32 @@ mainLoop = setInterval(function(){
 		metaframe+=2;
 		//get direction
 		var dirvec = RotateVector(-camera.rot.z,{x:0,y:1});
-		camera.pos.x+=dirvec.x*0.15;
-		camera.pos.z+=dirvec.y*0.15;
+		camera.pos.x+=dirvec.x*0.05*deltaTime;
+		camera.pos.z+=dirvec.y*0.05*deltaTime;
 	}else if(key_s){
 		metaframe+=2;
 		var dirvec = RotateVector(-camera.rot.z,{x:0,y:-1});
-		camera.pos.x+=dirvec.x*0.15;
-		camera.pos.z+=dirvec.y*0.15;
+		camera.pos.x+=dirvec.x*0.05*deltaTime;
+		camera.pos.z+=dirvec.y*0.05*deltaTime;
 		
 	}
 	if(key_a){
 		metaframe+=2;
 		var dirvec = RotateVector(-camera.rot.z,{x:1,y:0});
-		camera.pos.x+=dirvec.x*0.15;
-		camera.pos.z+=dirvec.y*0.15;
+		camera.pos.x+=dirvec.x*0.05*deltaTime;
+		camera.pos.z+=dirvec.y*0.05*deltaTime;
 		
 	}else if(key_d){
 		metaframe+=2;
 		var dirvec = RotateVector(-camera.rot.z,{x:-1,y:0});
-		camera.pos.x+=dirvec.x*0.15;
-		camera.pos.z+=dirvec.y*0.15;
+		camera.pos.x+=dirvec.x*0.05*deltaTime;
+		camera.pos.z+=dirvec.y*0.05*deltaTime;
 		
 	}
 	if(key_space){
-		camera.pos.y-=0.15;
+		camera.pos.y-=0.05*deltaTime;
 	}else if(key_shift){
-		camera.pos.y+=0.15;		
+		camera.pos.y+=0.05*deltaTime;		
 	}
 	
 	/*
@@ -1664,17 +1671,15 @@ mainLoop = setInterval(function(){
   //draw point
   ctx.clearRect(0,0,resolution.x,resolution.y);
   
-  if(metaframe>16){
-	  metaframe=0;
-	  OS_canvas = new ImageData(resolution.x,resolution.y);
+  OS_canvas = new ImageData(resolution.x,resolution.y);
 	
 	let xy = {x:0,y:0}
 	for(;xy.x<resolution.x;xy.x++){
 		for(;xy.y<resolution.y;xy.y++){
 			
-			let valu = xy.y-resolution.y/2;
-			let rand = Math.floor((64-valu*4*Math.random())*3);
-			let clr = [64-valu*4+rand,Math.min(Math.max(valu*2+100+rand,180),255),64-valu*4+rand,255];
+			let valu = xy.y-resolution.y/2-3;
+			let rand = Math.floor((64-valu*4*0.5)*3);
+			let clr = [Math.min(Math.max(valu*2+100+rand,180),255),255,64-valu*8+rand,255];
 			
 			if(valu<0){
 				
@@ -1685,14 +1690,12 @@ mainLoop = setInterval(function(){
 		}
 		xy.y=0;
 	}
-	ctx.putImageData(OS_canvas,0,0);
-  }else{
-	  ctx.putImageData(OS_canvas,0,0);
-  }
+	
   
   
-objects[0].pos.y+=Math.sin(Date.now()/500)/50;
-objects[0].rot.z+=0.01;
+  
+objects[0].pos.y+=(Math.sin(Date.now()*0.002)*0.002)*deltaTime;
+objects[0].rot.z+=0.001*deltaTime;
  //sort depth
    function compare( a, b ) {
 	var distA = (objects[a].pos.x-camera.pos.x)**2+(objects[a].pos.y-camera.pos.y)**2+(objects[a].pos.z-camera.pos.z)**2;
@@ -1706,6 +1709,31 @@ objects[0].rot.z+=0.01;
   }
   return 0;
 }
+
+
+
+//draw grid points
+for(let i = -20;i<20;i++){
+for(let j = -20;j<20;j++){
+	 let point1 = {x:i*16-(camera.pos.x%16),y:5,z:j*16-(camera.pos.z%16)};
+	   let xy1 = {x:0,y:0};
+	   let dist =Math.sqrt((point1.x)**2+(point1.z)**2);
+		xy1.y=Math.floor(resolution.y/2+((point1.y-camera.pos.y) * 150 /dist));
+		let pppoin = RotateVector(camera.rot.z,{x:point1.x,y:point1.z});
+		let angle = GetAngleBetweenVectors({x:0,y:1},pppoin);
+		  if(Math.abs(angle)>0.85){continue;}
+		xy1.x=Math.floor(resolution.x/2+(angle*2/Math.PI)*resolution.x);
+		if(xy1.x>resolution.x||xy1.x<0){continue;}
+		let pxl = OS_GetPixel(xy1);
+		let ratio = 1-(Math.max(0,255-dist)/255);
+		pxl[0]=pxl[0]*ratio;
+		pxl[1]=pxl[1]*ratio;
+		pxl[2]=pxl[2]*ratio;
+		OS_SetPixel(xy1,pxl,false);
+}}
+
+ctx.putImageData(OS_canvas,0,0);
+
 
 objects_idxs.sort( compare );
   for(let i = 0;i< objects.length;i++){
@@ -1755,6 +1783,7 @@ objects_idxs.sort( compare );
 		  //draw
 		  let xy1 = calculated_points[x];
 		  let xy2 = calculated_points[y];
+		  //ctx.fillRect(xy1.x-1,xy1.y-1,3,3,lineColor);
 		  Line(true,ctx,xy1.x,xy1.y,xy2.x,xy2.y,objects[objects_idxs[i]].width,objects[objects_idxs[i]].color);
 	  }
 	  
@@ -7903,5 +7932,4 @@ setInterval(function(){
   console.log(background)
 },1000);
 */
-
 
