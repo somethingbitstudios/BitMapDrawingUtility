@@ -83,6 +83,8 @@ let Input_lnW = document.getElementById("lnW");
 Input_lnW.addEventListener("input",function(e){
   if(Input_lnW.value < 1024 && Input_lnW.value > 0){
     lineWidth = Input_lnW.value;
+    lineWidthS = Input_lnW.value;
+	
 }else{
   lineWidth = 1;
   Input_lnW.value = 1;
@@ -714,6 +716,7 @@ var polysides = 4;
 //#region fill
  var fillTool = false;
 var OS_canvas;
+var OS_canvas_OUT;
 var OS_fillColor;
 
 var tobefilledpos = [];
@@ -1316,6 +1319,430 @@ var lrtb = {left:1,right:-1,top:1,bottom:-1};
 //#endregion
 
 //#region functions
+//#region cheats
+function HandleCheat(cheatcode){
+	switch(cheatcode){
+	case "random":
+	Cheat_Random();
+	break;
+	case "yuum":
+	YUUM();
+	break;
+	}
+	if(cheatcode.includes("interlace")){
+		Cheat_Interlace(Number(cheatcode.split(" ")[1]));
+	}
+}
+function YUUM(){
+	var mainLoop;
+	var metaframe=300;
+		lineColor = "rgba(255,64,128,0.5)";
+		var camera = {pos:{x:0,y:0,z:0},rot:{x:0,y:0,z:0}};
+		var objects = [];
+		//box
+	objects.push({
+		pos:{x:10,y:-5,z:5},
+		rot:{x:0,y:0,z:0},
+		scale:{x:1,y:1,z:1},
+		vertices:[
+		{x:-5,y:-5,z:-5},
+		{x:-5,y:-5,z:5},
+		{x:-5,y:5,z:-5},
+		{x:-5,y:5,z:5},
+		{x:5,y:-5,z:-5},
+		{x:5,y:-5,z:5},
+		{x:5,y:5,z:-5},
+		{x:5,y:5,z:5},
+		],
+		indices:[
+		0,1,4,
+		1,4,5,
+		0,1,2,
+		1,2,3,
+		0,4,6,
+		0,2,6,
+		4,5,6,
+		5,6,7,
+		1,3,7,
+		1,5,7,
+		2,3,6,
+		3,6,7
+		
+		
+		]
+		});
+		objects.push({
+		pos:{x:50,y:-0.5,z:50},
+		rot:{x:0,y:0,z:0},
+		scale:{x:1,y:1,z:1},
+		vertices:[
+		{x:-5,y:-5,z:-5},
+		{x:-5,y:-5,z:5},
+		{x:-5,y:5,z:-5},
+		{x:-5,y:5,z:5},
+		{x:5,y:-5,z:-5},
+		{x:5,y:-5,z:5},
+		{x:5,y:5,z:-5},
+		{x:5,y:5,z:5},
+		],
+		indices:[
+		0,1,4,
+		1,4,5,
+		0,1,2,
+		1,2,3,
+		0,4,6,
+		0,2,6,
+		4,5,6,
+		5,6,7,
+		1,3,7,
+		1,5,7,
+		2,3,6,
+		3,6,7
+		
+		
+		]
+		});
+		objects.push({
+		pos:{x:-10,y:-10,z:-10},
+		rot:{x:0,y:0,z:0},
+		scale:{x:1,y:1,z:1},
+		vertices:[
+		{x:-5,y:-5,z:-5},
+		{x:-5,y:-5,z:5},
+		{x:-5,y:5,z:-5},
+		{x:-5,y:5,z:5},
+		{x:5,y:-5,z:-5},
+		{x:5,y:-5,z:5},
+		{x:5,y:5,z:-5},
+		{x:5,y:5,z:5},
+		],
+		indices:[
+		0,1,4,
+		1,4,5,
+		0,1,2,
+		1,2,3,
+		0,4,6,
+		0,2,6,
+		4,5,6,
+		5,6,7,
+		1,3,7,
+		1,5,7,
+		2,3,6,
+		3,6,7
+		
+		
+		]
+		});
+		objects.push({
+		pos:{x:0,y:-0.5,z:10},
+		rot:{x:0,y:0,z:0},
+		scale:{x:1,y:1,z:1},
+		vertices:[
+		{x:-5,y:-5,z:-5},
+		{x:-5,y:-5,z:5},
+		{x:-5,y:5,z:-5},
+		{x:-5,y:5,z:5},
+		{x:5,y:-5,z:-5},
+		{x:5,y:-5,z:5},
+		{x:5,y:5,z:-5},
+		{x:5,y:5,z:5},
+		],
+		indices:[
+		0,1,4,
+		1,4,5,
+		0,1,2,
+		1,2,3,
+		0,4,6,
+		0,2,6,
+		4,5,6,
+		5,6,7,
+		1,3,7,
+		1,5,7,
+		2,3,6,
+		3,6,7
+		
+		
+		]
+		});
+	var key_w=false;
+	var key_a=false;
+	var key_s=false;
+	var key_d=false;
+	var key_j=false;
+	var key_l=false;
+	var key_space=false;
+	document.addEventListener("keydown", function(event) {
+//console.log(event.keyCode);
+  switch(event.keyCode){
+	  case 13:
+		clearInterval(mainLoop);
+	  break;
+	  case 87://w
+	  key_w=true;
+	  break;
+	  case 65://a
+	  key_a=true;
+	  break;
+	  case 83://s
+	  key_s=true;
+	  break;
+	  case 68://d
+	  key_d=true;
+	  break;
+	  case 74://j
+	  key_j=true;
+	 
+	  break;
+	  case 76://l
+	  key_l=true;
+	  break;
+	  case 32://space
+	  key_space=true;
+	  break;
+	 
+	  
+  }
+});
+document.addEventListener("keyup", function(event) {
+ 
+  switch(event.keyCode){
+	 
+	  case 87://w
+	  key_w=false;
+	  break;
+	  case 65://a
+	  key_a=false;
+	  break;
+	  case 83://s
+	  key_s=false;
+	  break;
+	  case 68://d
+	  key_d=false;
+	  break;
+	  case 74://j
+	  key_j=false;
+	 
+	  break;
+	  case 76://l
+	  key_l=false;
+	  break;
+	  case 32://space
+	  key_space=false;
+	  break;
+	 
+	  
+  }
+});
+mainLoop = setInterval(function(){
+	//input
+	if(key_j){
+		metaframe+=2;
+		camera.rot.z+=0.01;
+		if(camera.rot.z>Math.PI){
+			camera.rot.z-=2*Math.PI;
+		}
+	}else if (key_l){
+		metaframe+=2;
+		camera.rot.z-=0.01;
+		if(camera.rot.z<-Math.PI){
+			camera.rot.z+=2*Math.PI;
+		}
+	}
+	if(key_w){
+		metaframe+=2;
+		//get direction
+		var dirvec = RotateVector(-camera.rot.z,{x:0,y:1});
+		camera.pos.x+=dirvec.x*0.15;
+		camera.pos.z+=dirvec.y*0.15;
+	}else if(key_s){
+		metaframe+=2;
+		var dirvec = RotateVector(-camera.rot.z,{x:0,y:-1});
+		camera.pos.x+=dirvec.x*0.15;
+		camera.pos.z+=dirvec.y*0.15;
+		
+	}
+	if(key_a){
+		metaframe+=2;
+		var dirvec = RotateVector(-camera.rot.z,{x:1,y:0});
+		camera.pos.x+=dirvec.x*0.15;
+		camera.pos.z+=dirvec.y*0.15;
+		
+	}else if(key_d){
+		metaframe+=2;
+		var dirvec = RotateVector(-camera.rot.z,{x:-1,y:0});
+		camera.pos.x+=dirvec.x*0.15;
+		camera.pos.z+=dirvec.y*0.15;
+		
+	}
+	
+	/*
+	console.log("--");
+	console.log("camera debug");
+	console.log("pos: x:"+camera.pos.x+" ;y:"+camera.pos.y+";z:"+camera.pos.z);
+	console.log("rot: x:"+camera.rot.x+" ;y:"+camera.rot.y+";z:"+camera.rot.z);
+	*/
+  //OS_canvas = new ImageData(resolution.x,resolution.y);
+  //draw point
+  ctx.clearRect(0,0,resolution.x,resolution.y);
+  
+  if(metaframe>16){
+	  metaframe=0;
+	  OS_canvas = new ImageData(resolution.x,resolution.y);
+	
+	let xy = {x:0,y:0}
+	for(;xy.x<resolution.x;xy.x++){
+		for(;xy.y<resolution.y;xy.y++){
+			
+			let valu = xy.y-resolution.y/2;
+			let rand = Math.floor((64-valu*4*Math.random())*3);
+			let clr = [64-valu*4+rand,Math.min(Math.max(valu*2+100+rand,180),255),64-valu*4+rand,255];
+			
+			if(valu<0){
+				
+					clr = [255+valu*2,255+valu*2,255+valu,255];
+				
+			}
+		OS_SetPixel(xy,clr,false);	
+		}
+		xy.y=0;
+	}
+	ctx.putImageData(OS_canvas,0,0);
+  }else{
+	  ctx.putImageData(OS_canvas,0,0);
+  }
+  
+  
+objects[0].pos.y+=Math.sin(Date.now()/500)/50;
+  for(let i = 0;i< objects.length;i++){
+	  
+	  var toobjvec = RotateVector(camera.rot.z,{x:objects[i].pos.x-camera.pos.x,y:objects[i].pos.z-camera.pos.z});
+	  var angl = GetAngleBetweenVectors({x:0,y:1},toobjvec);
+	  
+	  if(Math.abs(angl)>1.5){continue;}
+	  //console.log(objects[i])
+	  for(let j = 0;j<objects[i].indices.length/3;j++){ //draw 1 poly
+		  let point = objects[i].vertices[objects[i].indices[j*3]];
+		  let point1 = {x:point.x+objects[i].pos.x,y:point.y+objects[i].pos.y,z:point.z+objects[i].pos.z};
+		  point = objects[i].vertices[objects[i].indices[j*3+1]];
+		  let point2 = {x:point.x+objects[i].pos.x,y:point.y+objects[i].pos.y,z:point.z+objects[i].pos.z};
+		  point = objects[i].vertices[objects[i].indices[j*3+2]];
+		  let point3 = {x:point.x+objects[i].pos.x,y:point.y+objects[i].pos.y,z:point.z+objects[i].pos.z};
+		  //let point3 = point1;
+		  //Draw
+		  let xy1 = {x:0,y:0};
+  xy1.y=Math.floor(resolution.y/2+((point1.y-camera.pos.y) * 150 /Math.sqrt((point.x-camera.pos.x)**2+(point.z-camera.pos.z)**2)));
+  let pppoin = RotateVector(camera.rot.z,{x:point1.x-camera.pos.x,y:point1.z-camera.pos.z});
+  let angle = GetAngleBetweenVectors({x:0,y:1},pppoin);
+  
+  xy1.x=Math.floor(resolution.x/2+(angle*2/Math.PI)*resolution.x);
+ 
+  
+  let xy2 = {x:0,y:0};
+  xy2.y=Math.floor(resolution.y/2+((point2.y-camera.pos.y) * 150 /Math.sqrt((point2.x-camera.pos.x)**2+(point2.z-camera.pos.z)**2)));
+  let pppoin2 = RotateVector(camera.rot.z,{x:point2.x-camera.pos.x,y:point2.z-camera.pos.z});
+  let angle2 = GetAngleBetweenVectors({x:0,y:1},pppoin2);
+  
+  xy2.x=Math.floor(resolution.x/2+(angle2*2/Math.PI)*resolution.x);
+  
+  let xy3 = {x:0,y:0};
+  xy3.y=Math.floor(resolution.y/2+((point3.y-camera.pos.y) * 150 /Math.sqrt((point3.x-camera.pos.x)**2+(point3.z-camera.pos.z)**2)));
+  let pppoin3 = RotateVector(camera.rot.z,{x:point3.x-camera.pos.x,y:point3.z-camera.pos.z});
+  let angle3 = GetAngleBetweenVectors({x:0,y:1},pppoin3);
+  
+  xy3.x=Math.floor(resolution.x/2+(angle3*2/Math.PI)*resolution.x);
+ 
+ 
+ 
+Line(true,ctx,xy1.x,xy1.y,xy2.x,xy2.y,lineWidth,lineColor);
+Line(true,ctx,xy1.x,xy1.y,xy3.x,xy3.y,lineWidth,lineColor);
+Line(true,ctx,xy3.x,xy3.y,xy2.x,xy2.y,lineWidth,lineColor);
+
+	  }
+  }
+  /*
+  let xy = {x:0,y:0};
+  xy.y=Math.floor(resolution.y/2+((point.y-camera.pos.y)/Math.sqrt((point.x-camera.pos.x)**2+(point.z-camera.pos.z)**2)));
+  let pppoin = RotateVector(camera.rot.z,{x:point.x-camera.pos.x,y:point.z-camera.pos.z});
+  let angle = GetAngleBetweenVectors({x:0,y:1},pppoin);
+  
+  xy.x=Math.floor(resolution.x/2+(angle*2/Math.PI)*resolution.x);
+ 
+  
+  let xy2 = {x:0,y:0};
+  xy2.y=Math.floor(resolution.y/2+((point2.y-camera.pos.y)/Math.sqrt((point2.x-camera.pos.x)**2+(point2.z-camera.pos.z)**2)));
+  let pppoin2 = RotateVector(camera.rot.z,{x:point2.x-camera.pos.x,y:point2.z-camera.pos.z});
+  let angle2 = GetAngleBetweenVectors({x:0,y:1},pppoin2);
+  
+  xy2.x=Math.floor(resolution.x/2+(angle2*2/Math.PI)*resolution.x);
+ ctx.clearRect(0,0,resolution.x,resolution.y);
+Line(true,ctx,xy.x,xy.y,xy2.x,xy2.y,lineWidth,lineColor);
+
+   xy = {x:0,y:0};
+  xy.y=Math.floor(resolution.y/2+((point.y-20-camera.pos.y)/Math.sqrt((point.x-camera.pos.x)**2+(point.z-camera.pos.z)**2)));
+  pppoin = RotateVector(camera.rot.z,{x:point.x-camera.pos.x,y:point.z-camera.pos.z});
+   angle = GetAngleBetweenVectors({x:0,y:1},pppoin);
+  
+  xy.x=Math.floor(resolution.x/2+(angle*2/Math.PI)*resolution.x);
+ 
+  Line(true,ctx,xy.x,xy.y,xy2.x,xy2.y,lineWidth,lineColor);
+    xy = {x:0,y:0};
+  xy.y=Math.floor(resolution.y/2+((point.y-camera.pos.y)/Math.sqrt((point.x-camera.pos.x)**2+(point.z-camera.pos.z)**2)));
+   pppoin = RotateVector(camera.rot.z,{x:point.x-camera.pos.x,y:point.z-camera.pos.z});
+   angle = GetAngleBetweenVectors({x:0,y:1},pppoin);
+  
+  xy.x=Math.floor(resolution.x/2+(angle*2/Math.PI)*resolution.x);
+ 
+ 
+   xy2 = {x:0,y:0};
+  xy2.y=Math.floor(resolution.y/2+((point2.y-20-camera.pos.y)/Math.sqrt((point2.x-camera.pos.x)**2+(point2.z-camera.pos.z)**2)));
+   pppoin2 = RotateVector(camera.rot.z,{x:point2.x-camera.pos.x,y:point2.z-camera.pos.z});
+   angle2 = GetAngleBetweenVectors({x:0,y:1},pppoin2);
+  
+  xy2.x=Math.floor(resolution.x/2+(angle2*2/Math.PI)*resolution.x);
+ ctx.clearRect(0,0,resolution.x,resolution.y);
+Line(true,ctx,xy.x,xy.y,xy2.x,xy2.y,lineWidth,lineColor);
+ xy = {x:0,y:0};
+  xy.y=Math.floor(resolution.y/2+((point.y-20-camera.pos.y)/Math.sqrt((point.x-camera.pos.x)**2+(point.z-camera.pos.z)**2)));
+   pppoin = RotateVector(camera.rot.z,{x:point.x-camera.pos.x,y:point.z-camera.pos.z});
+   angle = GetAngleBetweenVectors({x:0,y:1},pppoin);
+  
+  xy.x=Math.floor(resolution.x/2+(angle*2/Math.PI)*resolution.x);
+ Line(true,ctx,xy.x,xy.y,xy2.x,xy2.y,lineWidth,lineColor);
+ */
+  //OS_SetPixel(xy,[255,0,0,255],false);
+  //console.log(xy);
+  //ctx.putImageData(OS_canvas,0,0);
+  },TICK);
+  
+	
+	
+}
+function Cheat_Random(){
+	OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
+	
+	let xy = {x:0,y:0}
+	for(;xy.x<resolution.x;xy.x++){
+		for(;xy.y<resolution.y;xy.y++){
+		OS_SetPixel(xy,[Math.floor(Math.random()*256),Math.floor(Math.random()*256),Math.floor(Math.random()*256),255],false);	
+		}
+		xy.y=0;
+	}
+	ctx.putImageData(OS_canvas,0,0);
+}
+function Cheat_Interlace(offset){
+	//let tstamp = performance.now();
+	OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
+	OS_canvas_OUT=ctx.getImageData(0,0,resolution.x,resolution.y);;
+	let xy = {x:0,y:0}
+	for(;xy.x<resolution.x;xy.x++){
+		for(;xy.y<resolution.y;xy.y+=2){
+		OS_SetPixel(xy,OS_GetPixel({x:(xy.x+offset),y:xy.y}),true);	
+		}
+		xy.y=0;
+	}
+	ctx.putImageData(OS_canvas_OUT,0,0);
+	//console.log(performance.now()-tstamp);
+}
 //#region external
 function sleep(millis)
 {
@@ -4734,9 +5161,12 @@ break;
 case("poly"):
 switch(MODE.poly){
   default:
-    pctx.fillRect(intPos.x,intPos.y,1,1);
-PolyPreview();
-  break;
+    PolyDraw(false,pctx,lineColor,lineWidthS,downIntPos,Poly_scale,Poly_angle);
+	  Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
+	  Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
+      PolyDraw(true,pctx,lineColorS,lineWidthS,downIntPos,Poly_scale,Poly_angle);
+	  	
+ break;
 }
 
 //console.log("poly");
@@ -4959,8 +5389,12 @@ break;
 case("poly"):
 switch(MODE.poly){
  default:
-   pctx.fillRect(intPos.x,intPos.y,1,1);
-PolyPreview();
+    PolyDraw(false,pctx,lineColor,lineWidthS,downIntPos,Poly_scale,Poly_angle);
+	  Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
+	  Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
+      PolyDraw(true,pctx,lineColor,lineWidth,downIntPos,Poly_scale,Poly_angle);
+	  	
+//PolyPreview();
  break;
 }
 
@@ -5174,8 +5608,12 @@ default:
      break;
      case("poly"):
      SQchanged=true;
-    PolyDrawOld(lineColor);
-    previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
+    //PolyDrawOld(lineColor);
+    Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
+	Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
+    PolyDraw(true,ctx,lineColor,lineWidth,downIntPos,Poly_scale,Poly_angle);
+	
+	previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
      case("select"):
@@ -5342,8 +5780,12 @@ default:
      break;
      case("poly"):
      SQchanged=true;
-    PolyDrawOld(lineColorS);
-    previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
+    //PolyDrawOld(lineColorS);
+	//PolyDraw(draw,cnvs,clr,w,center,scale,angle){
+	Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
+	Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
+    PolyDraw(true,ctx,lineColorS,lineWidthS,downIntPos,Poly_scale,Poly_angle);
+	previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
      case("select"):
@@ -5728,8 +6170,13 @@ break;
       
       break;
       case("poly"):
-      PolyPreview();
-      break;
+      //PolyPreview();
+       PolyDraw(false,pctx,lineColor,lineWidth,downIntPos,Poly_scale,Poly_angle);
+	  Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
+	  Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
+      PolyDraw(true,pctx,lineColor,lineWidth,downIntPos,Poly_scale,Poly_angle);
+	  	
+	  break;
       case("select"):
       RenderSelectUI();
       break;
@@ -6060,7 +6507,10 @@ function OS_SetPixel(xy,color,add){
   OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+2] = color[2];
   OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+3] = color[3];
   }else{
-
+OS_canvas_OUT.data[(xy.x+xy.y*resolution.x)* 4] = color[0];
+  OS_canvas_OUT.data[(xy.x+xy.y*resolution.x)* 4+1] = color[1];
+  OS_canvas_OUT.data[(xy.x+xy.y*resolution.x)* 4+2] = color[2];
+  OS_canvas_OUT.data[(xy.x+xy.y*resolution.x)* 4+3] = color[3];
   }
 
 }
@@ -7270,7 +7720,10 @@ ScrollUpdate();
 InitializeColorPaletteOR(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
 }
 Init();
-
+document.getElementById("cheats").addEventListener("focusout",()=>{
+	HandleCheat(document.getElementById("cheats").value);
+	
+});
 
 /*
 var re = new ImageData(16,16);
@@ -7300,3 +7753,8 @@ setInterval(function(){
   console.log(background)
 },1000);
 */
+
+
+
+
+//YUUM();
