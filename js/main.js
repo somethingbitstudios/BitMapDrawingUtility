@@ -352,7 +352,7 @@ function CreateIcon(img,id,tool){
         break;
       }
      
-      
+   MenuChHelper(tool);   
   }
 
 
@@ -4562,14 +4562,12 @@ function MenuChHelper(variable){
 	name.type="number";
     name.id ="poly_num_of_sides";
 	Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
-    Menu_Tool.appendChild(CreateIcon("./icons/spread.png","FILL_MODE_SLOW","fill"));
-    Menu_Tool.appendChild(CreateIcon("./icons/scanline.png","FILL_MODE_FAST","fill"));
+	
+   
+    Menu_Tool.appendChild(CreateIcon("./icons/spread.png",(MODE.poly=="default")?"legacy":"default","poly"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/inst.png","FILL_MODE_INST","fill"));
-    //Menu_Tool.appendChild(CreateIcon("./icons/none.png","FILL_MODE_PATTERN","fill"));
-    //bookmark1
+	console.log(MODE.poly);
     document.getElementById("poly_num_of_sides").addEventListener("focusout",()=>{
 		let data = document.getElementById("poly_num_of_sides").value;
 		Poly_Number_Of_Sides=data;
@@ -5339,6 +5337,9 @@ break;
 break;
 case("poly"):
 switch(MODE.poly){
+	case "legacy":
+	PolyPreview();
+	break;
   default:
     PolyDraw(false,pctx,lineColor,lineWidthS,downIntPos,Poly_scale,Poly_angle);
 	  Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
@@ -5567,6 +5568,9 @@ break;
 break;
 case("poly"):
 switch(MODE.poly){
+	case "legacy":
+	PolyPreview();
+	break;
  default:
     PolyDraw(false,pctx,lineColor,lineWidthS,downIntPos,Poly_scale,Poly_angle);
 	  Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
@@ -5787,11 +5791,18 @@ default:
      break;
      case("poly"):
      SQchanged=true;
-    //PolyDrawOld(lineColor);
-    Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
+	 switch(MODE.poly){
+		 case "legacy":
+		 PolyDrawOld(lineColor);
+		 break;
+		 default:
+		 Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
 	Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
     PolyDraw(true,ctx,lineColor,lineWidth,downIntPos,Poly_scale,Poly_angle);
 	
+	 }
+    //PolyDrawOld(lineColor);
+    
 	previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
@@ -5959,12 +5970,19 @@ default:
      break;
      case("poly"):
      SQchanged=true;
-    //PolyDrawOld(lineColorS);
-	//PolyDraw(draw,cnvs,clr,w,center,scale,angle){
-	Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
+	 switch(MODE.poly){
+		 case "legacy":
+		 PolyDrawOld(lineColorS);
+		 break;
+		 default:
+		 Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
 	Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
     PolyDraw(true,ctx,lineColorS,lineWidthS,downIntPos,Poly_scale,Poly_angle);
-	previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
+	prev
+	 }
+    //PolyDrawOld(lineColorS);
+	//PolyDraw(draw,cnvs,clr,w,center,scale,angle){
+	iewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
      case("select"):
@@ -6349,12 +6367,20 @@ break;
       
       break;
       case("poly"):
-      //PolyPreview();
+	  switch(MODE.poly){
+		  case "legacy":
+	PolyPreview();
+	break;
+	default:
+	
+	 //PolyPreview();
        PolyDraw(false,pctx,lineColor,lineWidth,downIntPos,Poly_scale,Poly_angle);
 	  Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
 	  Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
       PolyDraw(true,pctx,lineColor,lineWidth,downIntPos,Poly_scale,Poly_angle);
 	  	
+	  }
+     
 	  break;
       case("select"):
       RenderSelectUI();
@@ -6432,13 +6458,20 @@ break;
       
       break;
       case("poly"):
-      //PolyPreview();
-	  //PolyDraw(draw,cnvs,clr,w,center,scale,angle){
-	  PolyDraw(false,pctx,lineColor,lineWidthS,downIntPos,Poly_scale,Poly_angle);
+	  switch(MODE.poly){
+		  case "legacy":
+		  PolyPreview();
+		  break;
+		  default:
+		  PolyDraw(false,pctx,lineColor,lineWidthS,downIntPos,Poly_scale,Poly_angle);
 	  Poly_scale = Math.sqrt((downIntPos.x-intPos.x)**2+(downIntPos.y-intPos.y)**2);
 	  Poly_angle = GetAngleBetweenVectors({x:1,y:0},{x:intPos.x-downIntPos.x,y:intPos.y-downIntPos.y});
       PolyDraw(true,pctx,lineColorS,lineWidthS,downIntPos,Poly_scale,Poly_angle);
 	  	
+	  }
+      //PolyPreview();
+	  //PolyDraw(draw,cnvs,clr,w,center,scale,angle){
+	  
 	  break;
 	
 //PolyDraw(false,pctx,lineColorS,lineWidthS,downIntPos,scale,angle);
