@@ -603,7 +603,7 @@ LoadPalette(palettelist.value);
   var selected = false; //false = primary,true = secondary
 var PRIMARY = "pencil";
 var MODE = {pencil:"3",line:"1",poly:"1",fill:"FILL_MODE_INST",picker:"1",eraser:"1"};
-var lineWidth = 1;
+var lineWidth = 10;
 var lineCap = 'butt';
 var lineColor = "rgba(0,0,0,1)";
 
@@ -1333,17 +1333,116 @@ function HandleCheat(cheatcode){
 		Cheat_Interlace(Number(cheatcode.split(" ")[1]));
 	}
 }
+// Function to fill a triangle defined by points pt1, pt2, and pt3
+function fillTriangle(pt1, pt2, pt3, color, dist) {
+	var step = Math.max(2,20-Math.floor(dist/30));
+    // Sort points by y-coordinate
+    var points = [pt1, pt2, pt3].sort((a, b) => a.y - b.y);
+    var [p1, p2, p3] = points; // p1 is the top point, p3 is the bottom point
+
+    // Calculate total height
+    var total_height = p3.y - p1.y;
+
+    // Iterate through each y-coordinate from top to bottom
+    for (var y = p1.y; y <= p3.y; y+=step) {
+        // Determine if we are on the left or right side of the triangle
+        var isLeft = y < p2.y || total_height === 0;
+
+        // Calculate the heights of the segments
+        var segment_height = isLeft ? p2.y - p1.y : p3.y - p2.y;
+
+        // Calculate alpha and beta for interpolation
+        var alpha = (total_height > 0) ? (y - p1.y) / total_height : 0;
+        var beta = (segment_height > 0) ? (y - (isLeft ? p1.y : p2.y)) / segment_height : 0;
+
+        // Calculate x-coordinates for the left and right edges
+        var x1 = Math.round(p1.x + (p3.x - p1.x) * alpha);
+        var x2 = isLeft
+            ? Math.round(p1.x + (p2.x - p1.x) * alpha)
+            : Math.round(p2.x + (p3.x - p2.x) * beta);
+
+        // Ensure x1 is less than x2
+        if (x1 > x2) {
+            [x1, x2] = [x2, x1]; // Swap if necessary
+        }
+
+        // Draw a horizontal line between x1 and x2
+        for (var x = x1; x <= x2; x+=step) {
+            if (x > resolution.x || x < 0) continue;
+
+            // Get the original color at the pixel
+            var origclr = OS_GetPixel({ x: x, y: y });
+
+            // Calculate alpha based oni distance
+            var a1 = Math.min(color[3] / 255.0, (color[3] / 255.0) / (dist / 2000));
+
+            // Calculate the final color using alpha blending
+            var finalcol = [
+                Math.round(color[0] * a1 + origclr[0] * (1 - a1)),
+                Math.round(color[1] * a1 + origclr[1] * (1 - a1)),
+                Math.round(color[2] * a1 + origclr[2] * (1 - a1)),
+                255
+            ];
+
+            // Set the pixel color
+            OS_SetPixel({ x: x, y: y }, finalcol, false);
+        }
+    }
+}
+
+function DrawLineOS(pt1, pt2, color, width,dist) {
+	
+    let x1 = pt1.x;
+    let y1 = pt1.y;
+    let x2 = pt2.x;
+    let y2 = pt2.y;
+
+    let dx = Math.abs(x2 - x1);
+    let dy = Math.abs(y2 - y1);
+    let sx = (x1 < x2) ? 1 : -1;
+    let sy = (y1 < y2) ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+        // Draw the line with the specified width
+        for (let w = -Math.floor(width / 2); w <= Math.floor(width / 2); w++) {
+			if(x1+w>resolution.x||x1+w<0){break;}
+			var origclr = OS_GetPixel({ x: x1+w, y: y1 });
+			var a1 = (color[3]/255.0)/(dist/1500);
+			
+			
+			var finalcol = [(color[0]*a1+origclr[0]*(1-a1)),(color[1]*a1+origclr[1]*(1-a1)),(color[2]*a1+origclr[2]*(1-a1)),255];
+            OS_SetPixel({ x: x1+w, y: y1 }, finalcol, false);
+           
+        }
+
+        // Check if we've reached the end point
+        if (x1 === x2 && y1 === y2) break;
+
+        let err2 = err * 2;
+        if (err2 > -dy) {
+            err -= dy;
+            x1 += sx;
+        }
+        if (err2 < dx) {
+            err += dx;
+            y1 += sy;
+        }
+    }
+}
 function YUUM(){
 	var mainLoop;
 	var metaframe=300;
 		//lineColor = "rgba(255,64,128,0.5)";
-		var camera = {pos:{x:0,y:0,z:0},rot:{x:0,y:0,z:0}};
+		var velocity=0;
+		var camera = {pos:{x:0,y:0,z:-50},rot:{x:0,y:0,z:0}};
 		var objects = [];
 		var objects_idxs = [];
 		//box
 	objects_idxs.push(0);
 	objects.push({
-		color:"rgba(255,220,200,0.4)",
+		dist: 0,
+		color:[255,255,0,128],
 		width:2,
 		pos:{x:10,y:-5,z:5},
 		rot:{x:0,y:0,z:0},
@@ -1377,7 +1476,8 @@ function YUUM(){
 		});
 		objects_idxs.push(1);
 		objects.push({
-			color:"rgba(26,255,200,0.5)",
+			dist: 0,
+			color:[255,0,255,128],
 		width:1,
 		pos:{x:50,y:-0.5,z:50},
 		rot:{x:0,y:0,z:0},
@@ -1410,8 +1510,8 @@ function YUUM(){
 		]
 		});
 		objects_idxs.push(2);
-		objects.push({
-			color:"rgba(255,220,0,0.2)",
+		objects.push({dist: 0,
+			color:[0,255,0,128],
 		width:3,
 		pos:{x:-10,y:-10,z:-10},
 		rot:{x:0,y:0,z:0},
@@ -1445,7 +1545,8 @@ function YUUM(){
 		});
 		objects_idxs.push(3);
 		objects.push({
-			color:"rgba(0,220,0,0.5)",
+			dist: 0,
+			color:[0,255,128,128],
 		width:1,
 		pos:{x:0,y:-0.5,z:10},
 		rot:{x:0,y:0,z:0},
@@ -1479,7 +1580,8 @@ function YUUM(){
 		});
 			objects_idxs.push(4);
 		objects.push({
-			color:"rgba(255,255,255,0.05)",
+			dist: 0,
+			color:[255,255,128,128],
 		width:3,
 		pos:{x:40,y:-50,z:500},
 		rot:{x:0,y:0,z:1.1},
@@ -1499,7 +1601,8 @@ function YUUM(){
 		});
 			objects_idxs.push(5);
 		objects.push({
-			color:"rgba(255,255,255,0.05)",
+			dist: 0,
+			color:[255,255,255,128],
 		width:3,
 		pos:{x:200,y:-50,z:500},
 		rot:{x:0,y:0,z:2},
@@ -1531,6 +1634,42 @@ function YUUM(){
 		
 		]
 		});
+				objects_idxs.push(6);
+		objects.push({
+			dist: 0,
+			color:[0,0,0,128],
+		width:3,
+		pos:{x:100,y:-50,z:500},
+		rot:{x:0,y:0,z:2},
+		scale:{x:2,y:2,z:2},
+		vertices:[
+		{x:-5,y:-5,z:-5},
+		{x:-5,y:-5,z:5},
+		{x:-5,y:5,z:-5},
+		{x:-5,y:5,z:5},
+		{x:5,y:-5,z:-5},
+		{x:5,y:-5,z:5},
+		{x:5,y:5,z:-5},
+		{x:5,y:5,z:5},
+		],
+		indices:[
+		0,1,4,
+		1,4,5,
+		0,1,2,
+		1,2,3,
+		0,4,6,
+		0,2,6,
+		4,5,6,
+		5,6,7,
+		1,3,7,
+		1,5,7,
+		2,3,6,
+		3,6,7
+		
+		
+		]
+		});
+		
 	var key_w=false;
 	var key_a=false;
 	var key_s=false;
@@ -1540,7 +1679,7 @@ function YUUM(){
 	var key_shift=false;
 	var key_space=false;
 	document.addEventListener("keydown", function(event) {
-console.log(event.keyCode);
+
   switch(event.keyCode){
 	  case 27:
 	  console.log("eit");
@@ -1609,11 +1748,31 @@ document.addEventListener("keyup", function(event) {
 });
 var timestamp=0;
 var fps = 0;
+var velo ={x:0,z:0};
 mainLoop = setInterval(function(){
 	
+	var mag=1;
+	var amount=Math.sin((camera.pos.x+camera.pos.z)/10.0)*mag;
+	camera.pos.y+=amount;
+	
+	
+
 	var timestamp1 = performance.now();
 	var deltaTime=timestamp1-timestamp;
 	timestamp=timestamp1;
+	
+  
+  
+  //enemy
+  velo.x+=Math.sign(objects[objects_idxs[objects_idxs.length-1]].pos.x-camera.pos.x)*0.0005*deltaTime;
+  velo.z+=Math.sign(objects[objects_idxs[objects_idxs.length-1]].pos.z-camera.pos.z)*0.0005*deltaTime;
+  velo.x=Math.max(-5,Math.min(velo.x,5));
+  velo.z=Math.max(-5,Math.min(velo.z,5));
+  objects[objects_idxs[objects_idxs.length-1]].pos.x-=velo.x;
+  objects[objects_idxs[objects_idxs.length-1]].pos.z-=velo.z;
+  
+	//objects[objects_idxs[objects_idxs.length-1]].pos.x-=Math.sign(objects[objects_idxs[objects_idxs.length-1]].pos.x-camera.pos.x)*0.01*deltaTime;
+	//objects[objects_idxs[objects_idxs.length-1]].pos.z-=Math.sign(objects[objects_idxs[objects_idxs.length-1]].pos.z-camera.pos.z)*0.01*deltaTime;
 	
 	//input
 	if(key_j){
@@ -1656,9 +1815,12 @@ mainLoop = setInterval(function(){
 		
 	}
 	if(key_space){
-		camera.pos.y-=0.05*deltaTime;
+		if(camera.pos.y>0){
+			camera.pos.y=0;
+			velocity=-0.05;
+		}
 	}else if(key_shift){
-		camera.pos.y+=0.05*deltaTime;		
+		camera.pos.y=1;
 	}
 	
 	/*
@@ -1669,6 +1831,16 @@ mainLoop = setInterval(function(){
 	*/
   //OS_canvas = new ImageData(resolution.x,resolution.y);
   //draw point
+  //gravity
+  
+	camera.pos.y+=velocity*deltaTime;
+  if(camera.pos.y>=0){
+	  camera.pos.y==0;
+	  velocity=0;
+  }else{
+	  velocity+=0.0001*deltaTime;
+  }
+
   ctx.clearRect(0,0,resolution.x,resolution.y);
   
   OS_canvas = new ImageData(resolution.x,resolution.y);
@@ -1698,13 +1870,13 @@ objects[0].pos.y+=(Math.sin(Date.now()*0.002)*0.002)*deltaTime;
 objects[0].rot.z+=0.001*deltaTime;
  //sort depth
    function compare( a, b ) {
-	var distA = (objects[a].pos.x-camera.pos.x)**2+(objects[a].pos.y-camera.pos.y)**2+(objects[a].pos.z-camera.pos.z)**2;
-	var distB = (objects[b].pos.x-camera.pos.x)**2+(objects[b].pos.y-camera.pos.y)**2+(objects[b].pos.z-camera.pos.z)**2;
+	objects[a].dist = (objects[a].pos.x-camera.pos.x)**2+(objects[a].pos.y-camera.pos.y)**2+(objects[a].pos.z-camera.pos.z)**2;
+	objects[b].dist = (objects[b].pos.x-camera.pos.x)**2+(objects[b].pos.y-camera.pos.y)**2+(objects[b].pos.z-camera.pos.z)**2;
 	
-  if ( distA > distB ){
+  if ( objects[a].dist > objects[b].dist ){
     return -1;
   }
-  if ( distA < distB ){
+  if ( objects[a].dist < objects[b].dist ){
     return 1;
   }
   return 0;
@@ -1732,12 +1904,13 @@ for(let j = -20;j<20;j++){
 		OS_SetPixel(xy1,pxl,false);
 }}
 
-ctx.putImageData(OS_canvas,0,0);
+
+
 
 
 objects_idxs.sort( compare );
   for(let i = 0;i< objects.length;i++){
-	  
+	  if(objects[objects_idxs[i]].dist>128000){continue;}
 	  var toobjvec = RotateVector(camera.rot.z,{x:objects[objects_idxs[i]].pos.x-camera.pos.x,y:objects[objects_idxs[i]].pos.z-camera.pos.z});
 	  var angl = GetAngleBetweenVectors({x:0,y:1},toobjvec);
 	  
@@ -1760,7 +1933,7 @@ objects_idxs.sort( compare );
 	  }
 	  //que lines
 	  var lines = [];//int
-	   for(let j = 0;j<objects[objects_idxs[i]].indices.length/3;j++){
+	   for(let j = 0;j<objects[objects_idxs[i]].indices.length/3;j+=1){
 		
 		  lines.push(objects[objects_idxs[i]].indices[j*3]);
 		  lines.push(objects[objects_idxs[i]].indices[j*3+1]);
@@ -1768,7 +1941,15 @@ objects_idxs.sort( compare );
 		  lines.push(objects[objects_idxs[i]].indices[j*3+2]);
 		  lines.push(objects[objects_idxs[i]].indices[j*3+2]);
 		  lines.push(objects[objects_idxs[i]].indices[j*3+1]);
+	  
+	  //DRAW POLY
+	  var pt1=calculated_points[objects[objects_idxs[i]].indices[j*3]];
+	  var pt2=calculated_points[objects[objects_idxs[i]].indices[j*3+1]];
+	  var pt3=calculated_points[objects[objects_idxs[i]].indices[j*3+2]];
+	  
+	  fillTriangle(pt1,pt2,pt3,objects[objects_idxs[i]].color,objects[objects_idxs[i]].dist);
 	  }
+	  
 	  //remove duplicates
 	  for(let j = 0;j<lines.length/2;j++){
 		  let x = lines[j*2];
@@ -1784,7 +1965,7 @@ objects_idxs.sort( compare );
 		  let xy1 = calculated_points[x];
 		  let xy2 = calculated_points[y];
 		  //ctx.fillRect(xy1.x-1,xy1.y-1,3,3,lineColor);
-		  Line(true,ctx,xy1.x,xy1.y,xy2.x,xy2.y,objects[objects_idxs[i]].width,objects[objects_idxs[i]].color);
+		  DrawLineOS(xy1,xy2,objects[objects_idxs[i]].color,objects[objects_idxs[i]].width,objects[objects_idxs[i]].dist);
 	  }
 	  
 	  //draw lines
@@ -1838,6 +2019,8 @@ Line(true,ctx,xy3.x,xy3.y,xy2.x,xy2.y,lineWidth,lineColor);
 
 	  }*/
   }
+  ctx.putImageData(OS_canvas,0,0);
+  camera.pos.y-=amount;
   /*
   let xy = {x:0,y:0};
   xy.y=Math.floor(resolution.y/2+((point.y-camera.pos.y)/Math.sqrt((point.x-camera.pos.x)**2+(point.z-camera.pos.z)**2)));
@@ -1896,6 +2079,7 @@ Line(true,ctx,xy.x,xy.y,xy2.x,xy2.y,lineWidth,lineColor);
 	
 	
 }
+YUUM();
 function Cheat_Random(){
 	OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
 	
@@ -2987,8 +3171,10 @@ canvas.width=resolution.x;
 canvas.height=resolution.y;
 var Tctx = canvas.getContext("2d");
 for(let i = 0;i< layers.length;i++){
-  putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
-}
+	if(layers[i][2]){
+		 putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
+	}
+ }
 
 
 //download canvas
@@ -4761,14 +4947,23 @@ return;
 //#endregion
 //#region canvas
 function UpdateCanvas(){
-  canvas.height = resolution.y;
-  canvas.width = resolution.x;
   onionCanvas.height = resolution.y;
   onionCanvas.width = resolution.x;
   previewCanvas.height = resolution.y;
   previewCanvas.width = resolution.x;
   uiCanvas.height = resolution.y;
   uiCanvas.width = resolution.x;
+  //canvas.width  = resolution.x;
+  //canvas.height  = resolution.y;
+  
+  ChangeResAll();
+}
+function ChangeResAll(){
+	for(let i = 0;i< layers.length;i++){
+		var ele = document.getElementById(layers[i][3]);
+		 ele.width=resolution.x;
+	     ele.height=resolution.y;
+	}
 }
 function ChangeRes(){
   if(resolution.x > resolution.y){
@@ -5017,17 +5212,20 @@ document.getElementById(div.id+"_up").onclick=function(e){
     layers[index-1][1]=layers[index][1];
     layers[index][1]=temp2;
     */
-    console.log(layers);
-    document.getElementById(layers[index][3]).style.zIndex=layers[layers_ptr[index-1]][1];
-    document.getElementById(layers[index-1][3]).style.zIndex=layers[layers_ptr[index]][1];
- 
+   
+	
     var tmpptr=layers_ptr[index-1];
     layers_ptr[index-1]=layers_ptr[index];
     layers_ptr[index]=tmpptr;
+	
     var tmpz=layers[layers_ptr[index-1]][1];
     layers[layers_ptr[index-1]][1]=layers[layers_ptr[index]][1];
     layers[layers_ptr[index]][1]=tmpz;
-    
+	
+    document.getElementById(layers[index][3]).style.zIndex = layers[index][1];
+    document.getElementById(layers[index-1][3]).style.zIndex = layers[index-1][1];
+	
+	
     LoadLayersUI();
   }
 
@@ -5046,15 +5244,16 @@ document.getElementById(div.id+"_down").onclick=function(e){
     layers[index+1][1]=layers[index][1];
     layers[index][1]=temp2;
     */
-    document.getElementById(layers[index][3]).style.zIndex=layers[layers_ptr[index+1]][1];
-    document.getElementById(layers[index+1][3]).style.zIndex=layers[layers_ptr[index]][1];
-
+  
     var tmpptr=layers_ptr[index+1];
     layers_ptr[index+1]=layers_ptr[index];
     layers_ptr[index]=tmpptr;
     var tmpz=layers[layers_ptr[index+1]][1];
     layers[layers_ptr[index+1]][1]=layers[layers_ptr[index]][1];
     layers[layers_ptr[index]][1]=tmpz;
+	
+	document.getElementById(layers[layers_ptr[index]][3]).style.zIndex = layers[layers_ptr[index]][1];
+    document.getElementById(layers[layers_ptr[index+1]][3]).style.zIndex = layers[layers_ptr[index+1]][1];
     LoadLayersUI();
   }
 
@@ -7960,9 +8159,13 @@ setInterval(function(){
   
 /*
 setInterval(function(){
-  console.log(canvas);
-  console.log(div)
-  console.log(background)
+ 
+  console.clear();
+  for(var i = 0;i< layers.length;i++){
+	  console.log(layers[i][0]+" "+layers[i][1]); 
+  }
+  console.log("----");
+ 
 },1000);
-*/
 
+*/
