@@ -1,4 +1,5 @@
 //#region vars
+
 //#region global
 var ProjectName="MyProject";
 var Description="I made this...";
@@ -1328,11 +1329,15 @@ function HandleCheat(cheatcode){
 	case "yuum":
 	YUUM();
 	break;
+	case "jrpg":
+	JRPG();
+	break;
 	}
 	if(cheatcode.includes("interlace")){
 		Cheat_Interlace(Number(cheatcode.split(" ")[1]));
 	}
 }
+//JRPG();
 // Function to fill a triangle defined by points pt1, pt2, and pt3
 function fillTriangle(pt1, pt2, pt3, color, dist) {
 	var step = Math.max(2,20-Math.floor(dist/30));
@@ -1430,6 +1435,389 @@ function DrawLineOS(pt1, pt2, color, width,dist) {
         }
     }
 }
+var veczero = {x:0,y:0};
+var image_text;
+var image_battle_top_background1;
+var image_battle_bottom_background1;
+var image_clouds=[];
+function JRPG(){
+	//assets
+	
+	fetch("./data/bitmap/text.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_text = {data:ex,res:{x:x,y:y}};
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	
+	fetch("./data/bitmap/battle_top_background1.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_battle_top_background1 = {data:ex,res:{x:x,y:y}};
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	fetch("./data/bitmap/battle_bottom_background1.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_battle_bottom_background1 = {data:ex,res:{x:x,y:y}};
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	
+	
+	
+	fetch("./data/bitmap/cloud4.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_clouds.push( {data:ex,res:{x:x,y:y}});
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	fetch("./data/bitmap/cloud2.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_clouds.push( {data:ex,res:{x:x,y:y}});
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	fetch("./data/bitmap/cloud3.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_clouds.push( {data:ex,res:{x:x,y:y}});
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	fetch("./data/bitmap/cloud1.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_clouds.push( {data:ex,res:{x:x,y:y}});
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	
+	var mainLoop;
+	
+	var key_w=false;
+	var key_a=false;
+	var key_s=false;
+	var key_d=false;
+	var key_i=false;
+	var key_j=false;
+	var key_k=false;
+	var key_l=false;
+	var key_shift=false;
+	var key_space=false;
+	var key_enter=false;
+	document.addEventListener("keydown", function(event) {
+	console.log(event.keyCode)
+  switch(event.keyCode){
+	 
+	  case 27:
+	  console.log("exit");
+		clearInterval(mainLoop);
+	  break;
+	   case 13:
+	  key_enter=true;
+	  break;
+	  case 87://w
+	  key_w=true;
+	  break;
+	  case 65://a
+	  key_a=true;
+	  break;
+	  case 83://s
+	  key_s=true;
+	  break;
+	  case 68://d
+	  key_d=true;
+	  break;
+	   case 73://i
+	  key_i=true;
+	  break;
+	  case 74://j
+	  key_j=true;
+	 case 75://k
+	  key_k=true;
+	  break;
+	  break;
+	  case 76://l
+	  key_l=true;
+	  break;
+	  case 32://space
+	  key_space=true;
+	  break;
+	   case 16://space
+	  key_shift=true;
+	  break;
+	 
+	  
+  }
+});
+document.addEventListener("keyup", function(event) {
+	
+ 
+  switch(event.keyCode){
+	   case 13:
+	  key_enter=false;
+	  break;
+	  case 87://w
+	  key_w=false;
+	  break;
+	  case 65://a
+	  key_a=false;
+	  break;
+	  case 83://s
+	  key_s=false;
+	  break;
+	  case 68://d
+	  key_d=false;
+	  break;
+	  case 73://i
+	  key_i=false;
+	  break;
+	  case 74://j
+	  key_j=false;
+	 case 75://k
+	  key_k=false;
+	  break;
+	  break;
+	  case 76://l
+	  key_l=false;
+	  break;
+	  case 32://space
+	  key_space=false;
+	  break;
+	 case 16://space
+	  key_shift=false;
+	  break;
+	  
+  }
+});
+
+ UILeft.style.visibility = "hidden";
+ leftHidden=true;
+ UIRight.style.visibility = "hidden";
+ rightHidden=true;
+ UIBottom.style.visibility = "hidden";
+ rightHidden=true;
+resolution.x=256;
+resolution.y=224;
+
+  canvasSize.x = resolution.x*3;
+  canvasSize.y = resolution.y*3;
+  
+  div.style.height = ""+canvasSize.y+"px";
+  div.style.width = ""+canvasSize.x+"px";
+  UpdateCanvas();
+  div.style.left = "119px";
+  div.style.top = "40px";
+  ChangeRes();
+ScrollUpdate();
+
+var timestamp=0;
+OS_canvas = new ImageData(resolution.x,resolution.y);
+OS_canvas_OUT = new ImageData(resolution.x,resolution.y);
+
+
+
+
+
+
+//start
+var tempo = 0;
+
+mainLoop = setInterval(function(){
+	var timestamp1 = performance.now();
+	var deltaTime=timestamp1-timestamp;
+	timestamp=timestamp1;
+	//tempo+=deltaTime;
+	let xy = {x:0,y:0}
+	for(;xy.x<resolution.x;xy.x++){
+		for(;xy.y<resolution.y;xy.y++){
+			var old=OS_GetPixel(xy)
+		OS_SetPixel(xy,[Math.floor(old[0]/1.07),Math.floor(old[1]/1.2),Math.floor(old[2]/1.3),255],true);	
+		}
+		xy.y=0;
+	}
+	//draw battle background
+	
+	//custom draw for floor
+	/*
+	OS_DrawImage({x:Math.floor(40+((tempo/32)%resolution.x)),y:20},{x:0,y:0},image_text.res,image_text.data,image_text.res,true);
+	OS_DrawImage({x:Math.floor(40+((tempo/16)%resolution.x)),y:40},{x:0,y:0},image_text.res,image_text.data,image_text.res,true);
+	OS_DrawImage({x:Math.floor(40+((tempo/10)%resolution.x)),y:80},{x:0,y:0},image_text.res,image_text.data,image_text.res,true);
+	OS_DrawImage({x:Math.floor(40+((tempo/6)%resolution.x)),y:120},{x:0,y:0},image_text.res,image_text.data,image_text.res,true);
+	*/
+	
+	
+	OS_DrawImage({x:-(Math.floor(tempo/512.0)%resolution.x),y:0},veczero,image_battle_top_background1.res,image_battle_top_background1.data,image_battle_top_background1.res,true);
+	
+	
+	//OS_DrawImage({x:-Math.floor(tempo/16.0)%resolution.x,y:128},veczero,image_battle_bottom_background1.res,image_battle_bottom_background1.data,image_battle_bottom_background1.res,true);
+	
+	for(let i = 98;i<160;i++){
+		
+		for(let j = 0;j<resolution.x;j++){
+			
+				var cr=(j+i*resolution.x)*4;
+				var sr=((Math.floor(    ((j-98)/((i-98.1)/32.0)+((tempo/1280.0)%1280)*(32+(i-98)/64.0) )*1.5   )%resolution.x+resolution.x)%resolution.x+((i-32)*((i-64)/64.0))*resolution.x)*4;
+				var a = (i-98)/(32.0);
+				 OS_canvas_OUT.data[cr] = Math.floor(image_battle_bottom_background1.data[sr]*a+119*(1-a));
+				 OS_canvas_OUT.data[cr+1] = Math.floor(image_battle_bottom_background1.data[sr+1]*a+171*(1-a));
+			     OS_canvas_OUT.data[cr+2] = Math.floor(image_battle_bottom_background1.data[sr+2]*a+255*(1-a));
+			     OS_canvas_OUT.data[cr+3] = 255;
+		}
+	}
+	//OS_DrawImage({x:-(Math.floor(tempo/150.0+80)%resolution.x),y:50},veczero,image_clouds[2].res,image_clouds[2].data,image_clouds[2].res,true);
+	
+	OS_DrawImage({x:-(Math.floor(tempo/128.0)%resolution.x),y:70},veczero,image_clouds[0].res,image_clouds[0].data,image_clouds[0].res,true);
+	OS_DrawImage({x:-(Math.floor(tempo/120.0+40)%resolution.x),y:65},veczero,image_clouds[0].res,image_clouds[0].data,image_clouds[0].res,true);
+	OS_DrawImage({x:-(Math.floor(tempo/124.0+140)%resolution.x),y:55},veczero,image_clouds[0].res,image_clouds[0].data,image_clouds[0].res,true);
+	OS_DrawImage({x:-(Math.floor(tempo/132.0+2509)%resolution.x),y:30},veczero,image_clouds[0].res,image_clouds[0].data,image_clouds[0].res,true);
+	//OS_DrawImage({x:-(Math.floor(tempo/64.0)%resolution.x),y:60},veczero,image_clouds[1].res,image_clouds[1].data,image_clouds[1].res,true);
+	OS_DrawImage({x:-(Math.floor(tempo/136.0)%resolution.x),y:45},veczero,image_clouds[3].res,image_clouds[3].data,image_clouds[3].res,true);
+	
+	OS_DrawString({x:16,y:184},"   Faux    Anne    Quasi    Coco\nHP:67/130  80/100  120/200 60/70\nMP:0/0     45/140  6č TECH 30/30",[255,255,255,255]);
+	
+	//debug fps
+	//OS_SetPixel({x:Math.floor(deltaTime),y:0},[255,0,0,255],true);
+	
+	ctx.putImageData(OS_canvas_OUT,0,0);
+	var TEMP = OS_canvas;
+	OS_CANVAS=OS_canvas_OUT;
+	OS_canvas_OUT=TEMP;
+	tempo+=deltaTime*2;
+  },TICK);
+}
+
 function YUUM(){
 	var mainLoop;
 	var metaframe=300;
@@ -1768,8 +2156,8 @@ mainLoop = setInterval(function(){
   velo.z+=Math.sign(objects[objects_idxs[objects_idxs.length-1]].pos.z-camera.pos.z)*0.0005*deltaTime;
   velo.x=Math.max(-5,Math.min(velo.x,5));
   velo.z=Math.max(-5,Math.min(velo.z,5));
-  objects[objects_idxs[objects_idxs.length-1]].pos.x-=velo.x;
-  objects[objects_idxs[objects_idxs.length-1]].pos.z-=velo.z;
+  objects[objects_idxs[objects_idxs.length-1]].pos.x-=velo.x*(deltaTime/50.0);
+  objects[objects_idxs[objects_idxs.length-1]].pos.z-=velo.z*(deltaTime/50.0);
   
 	//objects[objects_idxs[objects_idxs.length-1]].pos.x-=Math.sign(objects[objects_idxs[objects_idxs.length-1]].pos.x-camera.pos.x)*0.01*deltaTime;
 	//objects[objects_idxs[objects_idxs.length-1]].pos.z-=Math.sign(objects[objects_idxs[objects_idxs.length-1]].pos.z-camera.pos.z)*0.01*deltaTime;
@@ -1841,7 +2229,7 @@ mainLoop = setInterval(function(){
 	  velocity+=0.0001*deltaTime;
   }
 
-  ctx.clearRect(0,0,resolution.x,resolution.y);
+  //ctx.clearRect(0,0,resolution.x,resolution.y);
   
   OS_canvas = new ImageData(resolution.x,resolution.y);
 	
@@ -1858,6 +2246,8 @@ mainLoop = setInterval(function(){
 					clr = [255+valu*2,255+valu*2,255+valu,255];
 				
 			}
+		xy.x=Math.floor(xy.x);
+		xy.y=Math.floor(xy.y);
 		OS_SetPixel(xy,clr,false);	
 		}
 		xy.y=0;
@@ -1901,6 +2291,7 @@ for(let j = -20;j<20;j++){
 		pxl[0]=pxl[0]*ratio;
 		pxl[1]=pxl[1]*ratio;
 		pxl[2]=pxl[2]*ratio;
+		
 		OS_SetPixel(xy1,pxl,false);
 }}
 
@@ -1964,6 +2355,10 @@ objects_idxs.sort( compare );
 		  //draw
 		  let xy1 = calculated_points[x];
 		  let xy2 = calculated_points[y];
+		  xy1.x=Math.floor(xy1.x);
+		xy1.y=Math.floor(xy1.y);
+		xy2.x=Math.floor(xy2.x);
+		xy2.y=Math.floor(xy2.y);
 		  //ctx.fillRect(xy1.x-1,xy1.y-1,3,3,lineColor);
 		  DrawLineOS(xy1,xy2,objects[objects_idxs[i]].color,objects[objects_idxs[i]].width,objects[objects_idxs[i]].dist);
 	  }
@@ -2079,7 +2474,7 @@ Line(true,ctx,xy.x,xy.y,xy2.x,xy2.y,lineWidth,lineColor);
 	
 	
 }
-YUUM();
+
 function Cheat_Random(){
 	OS_canvas = ctx.getImageData(0,0,resolution.x,resolution.y);
 	
@@ -3195,11 +3590,58 @@ function download_layers(){
     
     }
     }
-  
+	
+function import_bitmap(filePath){
+// script.js
+fetch(filePath)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_tmp = {data:ex,res:{x:x,y:y}};
+	console.log(image_tmp);
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	
+
+}
 function export_bitmap(){
 
-  var canvARRAY = document.getElementById(layers[layers.length-1][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data;
+  var canvARRAY = canvas.getContext("2d").getImageData(0,0,resolution.x,resolution.y).data;
+  var exportString = "BBMP%";
+  exportString+=(resolution.x+"").padStart(4, '0')+";"+(resolution.y+"").padStart(4, '0')+"%";
+  var len = resolution.x*resolution.y*4;
+  for(let i = 0;i<len;i++){
+	  exportString+=String.fromCharCode(canvARRAY[i]);
+  }
   
+  
+  
+	   const link = document.createElement("a");
+			
+         const file = new Blob([exportString], { type: 'text/plain' });
+         link.href = URL.createObjectURL(file);
+         link.download = "bitmap.bbmp";
+         link.click();
+         URL.revokeObjectURL(link.href);
+  
+  /*
   var pallete = colorpalettes[colorpaletteindex];
 
   var bitsperpixel = Math.ceil(Math.log2(pallete.length-1));
@@ -3259,36 +3701,6 @@ exportB+= pallete[j]+", ";
    exportB=exportB.substr(0,exportB.length-1);//get rid of comma
    
    
-  /*
-  var x = resolution.x;
-  var p = 8;
- //ONLY SUPPORTS 1 BIT DEEP RN
-  for(let i =0;i<canvARRAY.length;i+=4){
-	  
-	  if(canvARRAY[i+3]>0){
-		    exportB+="1";
-	  }else{
-		   exportB+="0";
-	  }
-	  
-	  x--;
-	  p--;
-	  if(i>canvARRAY.length-5){
-		  break;
-	  }
-	  if(p==0){
-	   exportB+=",0b";
-	  p=8;
-	  }
-	  else if(x==0){
-	  x=resolution.x;
-	  exportB+=",0b";
-	  p=8;
-	  }
-	  
-  }
-  
-	  */
 	   const link = document.createElement("a");
 			
          const file = new Blob([exportB], { type: 'text/plain' });
@@ -3296,7 +3708,7 @@ exportB+= pallete[j]+", ";
          link.download = "bitmap.txt";
          link.click();
          URL.revokeObjectURL(link.href);
-	 
+	 */
   }
 
 
@@ -6911,6 +7323,7 @@ function OS_GetPixel(xy){
   return [OS_canvas.data[(xy.x+xy.y*resolution.x)* 4],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+1],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+2],OS_canvas.data[(xy.x+xy.y*resolution.x)* 4+3]];
 }
 function OS_SetPixel(xy,color,add){
+	xy.x = xy.x % resolution.x;
   //console.log("set");
   if(!add){ // with no regard to alpha
       OS_canvas.data[(xy.x+xy.y*resolution.x)* 4] = color[0];
@@ -6925,6 +7338,484 @@ OS_canvas_OUT.data[(xy.x+xy.y*resolution.x)* 4] = color[0];
   }
 
 }
+function OS_DrawImage_Opaque(xy,startXY,wh,imagedata,imageres,add){
+	if(!add){
+		
+		for(let i = 0;i<wh.x;i++){
+			for(let j =0;j<wh.y;j++){
+				//get color
+				var coords = ((i+startXY.x)+((j+startXY.y)*imageres.x))*4;
+				var color = [imagedata[coords],imagedata[coords+1],imagedata[coords+2],imagedata[coords+3]];
+				 OS_canvas.data[(xy.x+i+(xy.y+j)*resolution.x)* 4] = color[0];
+				 OS_canvas.data[(xy.x+i+(xy.y+j)*resolution.x)* 4+1] = color[1];
+			     OS_canvas.data[(xy.x+i+(xy.y+j)*resolution.x)* 4+2] = color[2];
+			     OS_canvas.data[(xy.x+i+(xy.y+j)*resolution.x)* 4+3] = color[3];
+			}
+		}
+	}else{
+		for(let i = 0;i<wh.x;i++){
+			for(let j =0;j<wh.y;j++){
+				//get color
+				var coords = ((i+startXY.x)+((j+startXY.y)*imageres.x))*4;
+				var color = [imagedata[coords],imagedata[coords+1],imagedata[coords+2],imagedata[coords+3]];
+				 OS_canvas_OUT.data[(xy.x+i+(xy.y+j)*resolution.x)* 4] = color[0];
+				 OS_canvas_OUT.data[(xy.x+i+(xy.y+j)*resolution.x)* 4+1] = color[1];
+			     OS_canvas_OUT.data[(xy.x+i+(xy.y+j)*resolution.x)* 4+2] = color[2];
+			     OS_canvas_OUT.data[(xy.x+i+(xy.y+j)*resolution.x)* 4+3] = color[3];
+			}
+		}
+	}
+}
+function OS_DrawString(xy,string,clr){
+	var offset = {x:0,y:0};
+	for(let i = 0;i<string.length;i++){
+		if(string[i]=='\n'){
+			offset.x=0;
+			offset.y+=12;
+			continue;
+		}
+		OS_DrawChar({x:xy.x+offset.x,y:xy.y+ offset.y},string[i],clr);
+		var chara = string[i];
+		if(chara=="M"||chara=="m"||chara=="w"||chara=="W"){
+			offset.x+=8;
+		}else if (chara=="I"||chara=="i"||chara=="l"){
+			offset.x+=3;
+		}else if(chara=="j"||chara=="f"){
+			offset.x+=5;
+		}else{
+			offset.x+=7;
+		}
+	}
+}
+function OS_DrawChar(xy,character,clr){
+	var ab= {x:0,y:0}
+	switch(character){
+		case" ":
+	    break;
+		case"!":
+		ab.x=16;//OS_DrawImage(xy,{x:16,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"\"":
+		ab.x=32;//OS_DrawImage(xy,{x:32,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"•":
+		ab.x=48;//OS_DrawImage(xy,{x:48,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"$":
+		ab.x=64;//nooage(xy,{x:64,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"%":
+		ab.x=80;//nooage(xy,{x:80,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"ů":
+		ab.x=96;//nooage(xy,{x:96,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"\'":
+		ab.x=112;//nooage(xy,{x:112,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"(":
+		ab.x=128;//nooage(xy,{x:128,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case")":
+		ab.x=144;//nooage(xy,{x:144,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"*":
+		ab.x=160;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"+":
+		ab.x=176;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case",":
+		ab.x=192;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"-":
+		ab.x=208;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case".":
+		ab.x=224;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"/":
+		ab.x=240;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		
+		
+		
+		case"0":
+		ab.y=16;
+	    break;
+		case"1":
+		ab.x=16;//nooage(xy,{x:16,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		ab.y=16;
+		break;
+		case"2":
+		ab.y=16;
+		ab.x=32;//nooage(xy,{x:32,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"3":
+		ab.y=16;
+		ab.x=48;//nooage(xy,{x:48,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"4":
+		ab.y=16;
+		ab.x=64;//nooage(xy,{x:64,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"5":
+		ab.y=16;
+		ab.x=80;//nooage(xy,{x:80,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"6":
+		ab.y=16;
+		ab.x=96;//nooage(xy,{x:96,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"7":
+		ab.y=16;
+		ab.x=112;//nooage(xy,{x:112,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"8":
+		ab.y=16;
+		ab.x=128;//nooage(xy,{x:128,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"9":
+		ab.y=16;
+		ab.x=144;//nooage(xy,{x:144,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case":":
+		ab.y=16;
+		ab.x=160;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case";":
+		ab.y=16;
+		ab.x=176;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"ú":
+		ab.y=16;
+		ab.x=192;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"=":
+		ab.y=16;
+		ab.x=208;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"§":
+		ab.y=16;
+		ab.x=224;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"?":
+		ab.y=16;
+		ab.x=240;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		
+		
+		
+		
+		case"ˇ":
+		ab.y=32;
+	    break;
+		case"A":
+		ab.x=16;//nooage(xy,{x:16,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		ab.y=32;
+		break;
+		case"B":
+		ab.y=32;
+		ab.x=32;//nooage(xy,{x:32,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"C":
+		ab.y=32;
+		ab.x=48;//nooage(xy,{x:48,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"D":
+		ab.y=32;
+		ab.x=64;//nooage(xy,{x:64,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"E":
+		ab.y=32;
+		ab.x=80;//nooage(xy,{x:80,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"F":
+		ab.y=32;
+		ab.x=96;//nooage(xy,{x:96,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"G":
+		ab.y=32;
+		ab.x=112;//nooage(xy,{x:112,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"H":
+		ab.y=32;
+		ab.x=128;//nooage(xy,{x:128,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"I":
+		ab.y=32;
+		ab.x=144;//nooage(xy,{x:144,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"J":
+		ab.y=32;
+		ab.x=160;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"K":
+		ab.y=32;
+		ab.x=176;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"L":
+		ab.y=32;
+		ab.x=192;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"M":
+		ab.y=32;
+		ab.x=208;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"N":
+		ab.y=32;
+		ab.x=224;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"O":
+		ab.y=32;
+		ab.x=240;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		
+		
+		
+		
+		
+		
+		case"P":
+		ab.y=48;
+	    break;
+		case"Q":
+		ab.x=16;//nooage(xy,{x:16,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		ab.y=48;
+		break;
+		case"R":
+		ab.y=48;
+		ab.x=32;//nooage(xy,{x:32,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"S":
+		ab.y=48;
+		ab.x=48;//nooage(xy,{x:48,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"T":
+		ab.y=48;
+		ab.x=64;//nooage(xy,{x:64,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"U":
+		ab.y=48;
+		ab.x=80;//nooage(xy,{x:80,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"V":
+		ab.y=48;
+		ab.x=96;//nooage(xy,{x:96,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"W":
+		ab.y=48;
+		ab.x=112;//nooage(xy,{x:112,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"X":
+		ab.y=48;
+		ab.x=128;//nooage(xy,{x:128,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"Y":
+		ab.y=48;
+		ab.x=144;//nooage(xy,{x:144,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"Z":
+		ab.y=48;
+		ab.x=160;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"ě":
+		ab.y=48;
+		ab.x=176;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"š":
+		ab.y=48;
+		ab.x=192;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"č":
+		ab.y=48;
+		ab.x=208;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"ř":
+		ab.y=48;
+		ab.x=224;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"ž":
+		ab.y=48;
+		ab.x=240;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		
+		
+		
+		
+		case" ":
+		ab.y=64;
+	    break;
+		case"a":
+		ab.x=16;//nooage(xy,{x:16,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		ab.y=64;
+		break;
+		case"b":
+		ab.y=64;
+		ab.x=32;//nooage(xy,{x:32,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"c":
+		ab.y=64;
+		ab.x=48;//nooage(xy,{x:48,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"d":
+		ab.y=64;
+		ab.x=64;//nooage(xy,{x:64,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"e":
+		ab.y=64;
+		ab.x=80;//nooage(xy,{x:80,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"f":
+		ab.y=64;
+		ab.x=96;//nooage(xy,{x:96,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"g":
+		ab.y=64;
+		ab.x=112;//nooage(xy,{x:112,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"h":
+		ab.y=64;
+		ab.x=128;//nooage(xy,{x:128,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"i":
+		ab.y=64;
+		ab.x=144;//nooage(xy,{x:144,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"j":
+		ab.y=64;
+		ab.x=160;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"k":
+		ab.y=64;
+		ab.x=176;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"l":
+		ab.y=64;
+		ab.x=192;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"m":
+		ab.y=64;
+		ab.x=208;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"n":
+		ab.y=64;
+		ab.x=224;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"o":
+		ab.y=64;
+		ab.x=240;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		
+		
+		
+		
+		
+		
+		
+		case"p":
+		ab.y=80;
+	    break;
+		case"q":
+		ab.x=64;//nooage(xy,{x:16,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		ab.y=80;
+		break;
+		case"r":
+		ab.y=80;
+		ab.x=32;//nooage(xy,{x:32,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"s":
+		ab.y=80;
+		ab.x=48;//nooage(xy,{x:48,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"t":
+		ab.y=80;
+		ab.x=64;//nooage(xy,{x:64,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"u":
+		ab.y=80;
+		ab.x=80;//nooage(xy,{x:80,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"v":
+		ab.y=80;
+		ab.x=96;//nooage(xy,{x:96,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"w":
+		ab.y=80;
+		ab.x=112;//nooage(xy,{x:112,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"x":
+		ab.y=80;
+		ab.x=128;//nooage(xy,{x:128,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"y":
+		ab.y=80;
+		ab.x=144;//nooage(xy,{x:144,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"z":
+		ab.y=80;
+		ab.x=160;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"[":
+		ab.y=80;
+		ab.x=176;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"§":
+		ab.y=80;
+		ab.x=192;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"]":
+		ab.y=80;
+		ab.x=208;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+		case"~":
+		ab.y=80;
+		ab.x=224;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+	case"@":
+		ab.y=80;
+		ab.x=240;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
+		break;
+	}
+	OS_DrawImage(xy,ab,{x:8,y:16},image_text.data,image_text.res,true);
+		
+	/*
+	OS_DrawImage(xy,{x:16*(Math.floor(kk)%16),y:0},{x:16,y:16},image_text.data,image_text.res,true);
+	kk+=0.05;*/
+}
+function OS_DrawImage(xy,startXY,wh,imagedata,imageres,add){
+	if(!add){
+		
+		for(let i = 0;i<wh.x;i++){
+			for(let j =0;j<wh.y;j++){
+				//get color
+				var coords = ((i+startXY.x)+((j+startXY.y)*imageres.x))*4;
+				var color = [imagedata[coords],imagedata[coords+1],imagedata[coords+2],imagedata[coords+3]];
+				var a=color[3]/256.0;
+				var cr=((xy.x+i+resolution.x)%resolution.x+(xy.y+j)*resolution.x)* 4;
+				 OS_canvas.data[cr] = color[0]*a+OS_canvas.data[cr]*(1-a);
+				 OS_canvas.data[cr+1] = color[1]*a+OS_canvas.data[cr+1]*(1-a);
+			     OS_canvas.data[cr+2] = color[2]*a+OS_canvas.data[cr+2]*(1-a);
+			     OS_canvas.data[cr+3] = 255;
+			}
+		}
+	}else{
+		for(let i = 0;i<wh.x;i++){
+			for(let j =0;j<wh.y;j++){
+				//get color
+				var coords = ((i+startXY.x)+((j+startXY.y)*imageres.x))*4;
+				var color = [imagedata[coords],imagedata[coords+1],imagedata[coords+2],imagedata[coords+3]];
+				var a=color[3]/256.0;
+				var cr=((xy.x+i+resolution.x)%resolution.x+(xy.y+j)*resolution.x)* 4;
+				 OS_canvas_OUT.data[cr] = color[0]*a+OS_canvas.data[cr]*(1-a);
+				 OS_canvas_OUT.data[cr+1] = color[1]*a+OS_canvas.data[cr+1]*(1-a);
+			     OS_canvas_OUT.data[cr+2] = color[2]*a+OS_canvas.data[cr+2]*(1-a);
+			     OS_canvas_OUT.data[cr+3] = 255;
+				 }
+		}
+	}
+}
+
 function OS_FillLine(xy){
 //ctx.get... = OS_GetPixel ale je to array
 //console.log(filledcolor);
