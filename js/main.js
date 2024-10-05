@@ -1440,6 +1440,7 @@ var image_text;
 var image_battle_top_background1;
 var image_battle_bottom_background1;
 var image_clouds=[];
+var image_main_characters=[];
 function JRPG(){
 	//assets
 	
@@ -1520,6 +1521,112 @@ function JRPG(){
         console.error('Error fetching the file:', error);
     });
 	
+	
+	
+	
+	fetch("./data/bitmap/quasi.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_main_characters.push( {data:ex,res:{x:x,y:y}});
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	
+	fetch("./data/bitmap/anne.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_main_characters.push( {data:ex,res:{x:x,y:y}});
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	
+	fetch("./data/bitmap/emma.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_main_characters.push( {data:ex,res:{x:x,y:y}});
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
+	
+	fetch("./data/bitmap/faux.bbmp")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+	
+        var x = Number(data.substring(5,9));
+	var y = Number(data.substring(10,14));
+	console.log(x+" "+y)
+    var ex = [];
+	
+	for(let i = 15;i<data.length;i++){
+		ex.push(data[i].charCodeAt(0));
+	}
+	
+	image_main_characters.push( {data:ex,res:{x:x,y:y}});
+	
+	
+    })
+    .catch(error => {
+        console.error('Error fetching the file:', error);
+    });
 	
 	
 	fetch("./data/bitmap/cloud4.bbmp")
@@ -1624,7 +1731,330 @@ function JRPG(){
     });
 	
 	var mainLoop;
+	var enemyLoop;
+	var spawnLoop;
+	var inventory=[{name:"30 MP Pot",hp:0,mp:30}];
+	var dialogue_index=0;
+	var character_index = 0;
+	var d_base = "Fight\nMagic\nDefend\nItem"
+	var dialogue_string=d_base;
+	var oldtime = 0;
+	function itemmaybe(){
+		if(Math.random()>0.5){
+			inventory.push({name:"HP Pot",hp:Math.floor(25+Math.random()*70),mp:0})
+		}else if(Math.random()>0.5){
+		inventory.push({name:"MP Pot",mp:Math.floor(25+Math.random()*70),hp:0})
+		}else if(Math.random()>0.25){
+			inventory.push({name:"Pot++",mp:Math.floor(50+Math.random()*70),hp:Math.floor(50+Math.random()*70)})
+		}
+	}
+	function handle_diag(e){
+		if(character_index<4){
+		switch(e){
+			case "next":
+			character_index=(character_index+1);
+			console.log(character_index);
+			if(character_index<4){
+			while(character_index<4&&characters[character_index].hp<=0){character_index=(character_index+1);}
+				
+			}
+			var now = performance.now();
+			var timedif = now-oldtime;
+			oldtime=now;
+			dialogue_string=d_base;
+			if(character_index==4){
+				dialogue_string="Wait...\n...\n..\n.";
+				setTimeout(()=>{
+					character_index=0;
+					while(characters[character_index].hp<=0){character_index=(character_index+1)%4;}
+					dialogue_string=d_base;
+					dialogue_events=["fight","magic","defend","item"]
+				},4000-timedif);
+			}else{
+				dialogue_events=["fight","magic","defend","item"]
+			}
+			break;
+			case "fight":
+			console.log("fight");
+			if(enemies.length>0){
+				enemies[0].hp-=characters[character_index].attack;
+				if(enemies[0].hp<0){score+=enemies[0].maxHP;itemmaybe();enemies.splice(0,1);}
+			}
+			if(character_index==3){
+				characters[character_index].mp=Math.min(characters[character_index].mp+3,characters[character_index].maxMP);
+			}
+			handle_diag("next");
+			
+			break;
+			case "defend":
+			//console.log("fight");
+			
+			if(character_index==3){
+				characters[character_index].mp=Math.min(characters[character_index].mp+6,characters[character_index].maxMP);
+			}else{
+					characters[character_index].mp=Math.min(characters[character_index].mp+1,characters[character_index].maxMP);
+			
+			}
+			handle_diag("next");
+			
+			break;
+			case "magic":
+			switch(character_index){
+				case 0:
+				dialogue_string="None";
+				dialogue_events=["","","",""]
+				break;
+					case 1:
+				dialogue_string="Heal 1\nHeal 2\nWhirlwind\nShield";
+				dialogue_events=["heal1","heal2","whirlwind","shield"]
+				break;
+				case 2:
+				dialogue_string="Rocket\nEnemy's stand\nWeb\nScythe ě";
+				dialogue_events=["rocket","mirror","attackdown","scythe"]
+				break;
+				case 3:
+				dialogue_string="Fireball\nLightning\nInferno\nHeal 1";
+				dialogue_events=["fireball","lightning","inferno","heal1"]
+				break;
+				
+			}
+			break;
+			case "heal1":
+			if(characters[character_index].mp<5){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			dialogue_string=characters[0].name+"\n"+characters[1].name+"\n"+characters[2].name+"\n"+characters[3].name;
+				dialogue_events=["heal1f","heal1f","heal1f","heal1f"]
+			}
+			break;
+			case "heal1f":
+			if(characters[dialogue_index].hp>0){
+				characters[dialogue_index].hp = Math.min(characters[dialogue_index].hp+40,	characters[dialogue_index].maxHP); 
+			characters[character_index].mp=Math.max(characters[character_index].mp-5);
+			
+			}
+			handle_diag("next");
+			break;
+			case "heal2":
+			if(characters[character_index].mp<12){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			dialogue_string=characters[0].name+"\n"+characters[1].name+"\n"+characters[2].name+"\n"+characters[3].name;
+				dialogue_events=["heal2f","heal2f","heal2f","heal2f"]
+			}
+			break;
+			case "heal2f":
+			characters[dialogue_index].hp = Math.min(characters[dialogue_index].hp+120,	characters[dialogue_index].maxHP); 
+			characters[character_index].mp=Math.max(characters[character_index].mp-12);
+			handle_diag("next");
+			break;
+			
+			
+			case "shield":
+			if(characters[character_index].mp<15){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			dialogue_string=characters[0].name+"\n"+characters[1].name+"\n"+characters[2].name+"\n"+characters[3].name;
+				dialogue_events=["sf","sf","sf","sf"]
+			}
+			break;
+			case "sf":
+			characters[dialogue_index].def = Math.min(characters[dialogue_index].def*0.6,	0.05); 
+			characters[character_index].mp=Math.max(characters[character_index].mp-15);
+			handle_diag("next");
+			break;
+			
+			case "scythe":
+				if(characters[character_index].mp<17){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			for(let i = 0;i<Math.min(enemies.length,3);i++){
+				enemies[i].hp-=35;
+				if(enemies[i].hp<0){score+=enemies[i].maxHP;itemmaybe();enemies.splice(i,1);}
+		
+			}	
+			characters[character_index].mp=Math.max(characters[character_index].mp-17);
+			handle_diag("next");
+			
+			}
+			
+			break;
+			case "mirror":
+				if(characters[character_index].mp<10){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			enemies[0].hp-=enemies[0].attack;
+				if(enemies[0].hp<0){score+=enemies[0].maxHP;itemmaybe();enemies.splice(0,1);}
+		
+			characters[character_index].mp=Math.max(characters[character_index].mp-10);
+			handle_diag("next");}
+			
+			
+			break;
+			case "attackdown":
+				if(characters[character_index].mp<13){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			enemies[0].attack-=enemies[0].attack*0.33;
+				//if(enemies[i].hp<0){score+=enemies[i].maxHP;enemies.splice(0,1);}
+		
+			characters[character_index].mp=Math.max(characters[character_index].mp-13);
+			handle_diag("next");}
+			
+			
+			break;
+			case "rocket":
+				if(characters[character_index].mp<20){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			enemies[0].hp-=Math.floor(40+Math.random()*100);
+				if(enemies[0].hp<0){score+=enemies[0].maxHP;itemmaybe();enemies.splice(0,1);}
+		
+			characters[character_index].mp=Math.max(characters[character_index].mp-13);
+			handle_diag("next");}
+			
+			
+			break;
+				case "whirlwind":
+				if(characters[character_index].mp<15){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			for(let i = 0;i<enemies.length;i++){
+				enemies[i].hp-=20;
+				if(enemies[i].hp<0){score+=enemies[i].maxHP;itemmaybe();enemies.splice(i,1);}
+		
+			}	
+			characters[character_index].mp=Math.max(characters[character_index].mp-15);
+			handle_diag("next");}
+			
+			
+			break;
+			case "fireball":
+				if(characters[character_index].mp<7){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+			enemies[0].hp-=40;
+				if(enemies[0].hp<0){score+=enemies[0].maxHP;itemmaybe();enemies.splice(0,1);}
+		
+			characters[character_index].mp=Math.max(characters[character_index].mp-7);
+			handle_diag("next");}
+			
+			
+			break;
+			case "lightning":
+				if(characters[character_index].mp<7){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+				var idx =Math.floor(Math.random()*100)%enemies.length;
+			enemies[idx].hp-=60;
+				if(enemies[idx].hp<0){score+=enemies[idx].maxHP;itemmaybe();enemies.splice(idx,1);}
+		
+			characters[character_index].mp=Math.max(characters[character_index].mp-7);
+			handle_diag("next");}
+			
+			
+			break;
+			case "inferno":
+				if(characters[character_index].mp<35){
+				dialogue_string="Not\nenough\MP\n!";
+				handle_diag("magic");
+			
+			}else{
+		    for(let i = 0;i<enemies.length-2;i++){itemmaybe()};
+			enemies=[];
+			characters[character_index].mp=Math.max(characters[character_index].mp-35);
+			handle_diag("next");}
+			
+			
+			break;
+			case "item":
+			
+			dialogue_string="";
+			dialogue_events=[];
+			for(let i = 0;i<Math.min(inventory.length,4);i++){
+				dialogue_string+=inventory[i].name+"\n";
+				dialogue_events.push("u");
+			}
+			dialogue_events.push("");
+			dialogue_events.push("");
+			dialogue_events.push("");
+			dialogue_events.push("");
+			
+			break;
+			case "u":
+			var item = inventory[dialogue_index];
+			inventory.splice(dialogue_index,1);
+			characters[character_index].hp=Math.min(characters[character_index].hp+item.hp,characters[character_index].maxHP);
+			characters[character_index].mp=Math.min(characters[character_index].mp+item.mp,characters[character_index].maxMP);
+			handle_diag("next")
+			
+			break;
+			case "defend":
+			break;
+			
+		}
+		}
+	}
+	var dialogue_events=["fight","magic","defend","item"];
 	
+	var score = 0;
+	
+	var characters= [
+	{name:"Faux",hp:130,maxHP:130,mp:0,maxMP:0,attack:45,def:0.80},
+	{name:"Anne",hp:100,maxHP:100,mp:140,maxMP:140,attack:10,def:0.85},
+	{name:"Quasi",hp:200,maxHP:200,mp:70,maxMP:70,attack:20,def:0.65},
+	{name:"Emma",hp:70,maxHP:70,mp:35,maxMP:35,attack:5,def:0.50},
+	]
+	var enemies = [{hp:20,maxHP:20,attack:1,attacking:false}];
+	var en_index = 0;
+	enemyLoop = setInterval(()=>{
+		for(let i = 0;i<enemies.length;i++){
+			if(i%6==en_index){
+				enemies[i].attacking=true;
+				var charidx=Math.floor(Math.random()*100)%4;
+				characters[charidx].hp-=Math.floor(enemies[i].attack*characters[charidx].def);
+				
+			}
+			else{
+				enemies[i].attacking=false;
+			}
+		}
+		en_index++;
+		en_index%=6;
+	},1200);
+	var difficulty = 50;
+	function helper(){
+		enemies.push({hp:difficulty,maxHP:difficulty,attack:Math.floor(difficulty/10),attacking:false});
+		difficulty+=5;
+		spawnLoop  = setTimeout(()=>{
+		helper();
+		
+	},8000+difficulty*10);
+	}
+	spawnLoop  = setTimeout(()=>{
+		helper();
+		
+	},2000+difficulty*10);
 	var key_w=false;
 	var key_a=false;
 	var key_s=false;
@@ -1646,26 +2076,38 @@ function JRPG(){
 	  break;
 	   case 13:
 	  key_enter=true;
+	  handle_diag(dialogue_events[dialogue_index]);
 	  break;
 	  case 87://w
 	  key_w=true;
+	   dialogue_index--;
+	  if(dialogue_index<0){dialogue_index=3};
+	  
 	  break;
 	  case 65://a
 	  key_a=true;
 	  break;
 	  case 83://s
 	  key_s=true;
+	  dialogue_index++;
+	  dialogue_index%=4;
 	  break;
 	  case 68://d
 	  key_d=true;
 	  break;
 	   case 73://i
 	  key_i=true;
+	  dialogue_index--;
+	  if(dialogue_index<0){dialogue_index=3};
+	  
 	  break;
 	  case 74://j
 	  key_j=true;
 	 case 75://k
 	  key_k=true;
+	 
+	   dialogue_index++;
+	  dialogue_index%=4;
 	  break;
 	  break;
 	  case 76://l
@@ -1673,6 +2115,11 @@ function JRPG(){
 	  break;
 	  case 32://space
 	  key_space=true;
+	  if(character_index<4){
+	  dialogue_string=d_base;
+	  dialogue_events=["fight","magic","defend","item"]
+	   
+	  }
 	  break;
 	   case 16://space
 	  key_shift=true;
@@ -1750,7 +2197,6 @@ OS_canvas_OUT = new ImageData(resolution.x,resolution.y);
 
 
 
-
 //start
 var tempo = 0;
 
@@ -1759,14 +2205,7 @@ mainLoop = setInterval(function(){
 	var deltaTime=timestamp1-timestamp;
 	timestamp=timestamp1;
 	//tempo+=deltaTime;
-	let xy = {x:0,y:0}
-	for(;xy.x<resolution.x;xy.x++){
-		for(;xy.y<resolution.y;xy.y++){
-			var old=OS_GetPixel(xy)
-		OS_SetPixel(xy,[Math.floor(old[0]/1.07),Math.floor(old[1]/1.2),Math.floor(old[2]/1.3),255],true);	
-		}
-		xy.y=0;
-	}
+	
 	//draw battle background
 	
 	//custom draw for floor
@@ -1804,11 +2243,62 @@ mainLoop = setInterval(function(){
 	OS_DrawImage({x:-(Math.floor(tempo/132.0+2509)%resolution.x),y:30},veczero,image_clouds[0].res,image_clouds[0].data,image_clouds[0].res,true);
 	//OS_DrawImage({x:-(Math.floor(tempo/64.0)%resolution.x),y:60},veczero,image_clouds[1].res,image_clouds[1].data,image_clouds[1].res,true);
 	OS_DrawImage({x:-(Math.floor(tempo/136.0)%resolution.x),y:45},veczero,image_clouds[3].res,image_clouds[3].data,image_clouds[3].res,true);
+	for(let i =0;i<enemies.length;i++){
+		var timess=1;
+		if(enemies[i].attacking){
+			timess=0;
+			OS_DrawString({x:Math.floor(100+(i%2)*90+Math.sin((tempo*timess)/2048.0+3+i)*20),y:Math.floor(133-i*20+Math.cos((tempo*timess)/512.0+3+i)*3)},"Attacks!",[255,255,255,255]);
 	
-	OS_DrawString({x:16,y:184},"   Faux    Anne    Quasi    Coco\nHP:67/130  80/100  120/200 60/70\nMP:0/0     45/140  6č TECH 30/30",[255,255,255,255]);
+		}
+		OS_DrawImage({x:Math.floor(100+(i%2)*90+Math.sin((tempo*timess)/2048.0+i)*20),y:Math.floor(90-i*20+Math.cos((tempo*timess)/512.0+i)*3)},veczero,{x:16,y:16},image_main_characters[Math.floor((tempo*timess)/1280.0+1)%4].data,{x:Math.floor((tempo*timess)%90),y:40},true);
+	OS_DrawImage({x:Math.floor(100+(i%2)*90+Math.sin((tempo*timess)/2048.0+1+i)*20),y:Math.floor(90-i*20+Math.cos((tempo*timess)/512.0+1+i)*3)},veczero,{x:16,y:16},image_main_characters[Math.floor(tempo/1280.0+2)%4].data,{x:Math.floor((tempo*timess)%90),y:40},true);
+	OS_DrawImage({x:Math.floor(100+(i%2)*90+Math.sin((tempo*timess)/2048.0+1.5+i)*20),y:Math.floor(90-i*20+Math.cos((tempo*timess)/512.0+1.5+i)*3)},veczero,{x:16,y:16},image_main_characters[Math.floor((tempo*timess)/1280.0+3)%4].data,{x:Math.floor((tempo*timess)%90),y:40},true);
+	OS_DrawImage({x:Math.floor(100+(i%2)*90+Math.sin((tempo*timess)/2048.0+2+i)*20),y:Math.floor(90-i*20+Math.cos((tempo*timess)/512.0+3+i)*2)},veczero,{x:16,y:16},image_main_characters[Math.floor((tempo*timess)/1280.0+4)%4].data,{x:Math.floor((tempo*timess)%90),y:40},true);
+	OS_DrawImage({x:Math.floor(100+(i%2)*90+Math.sin((tempo*timess)/2048.0+2.5+i)*20),y:Math.floor(90-i*20+Math.cos((tempo*timess)/512.0+2.5+i)*3)},veczero,{x:16,y:16},image_main_characters[Math.floor((tempo*timess)/1280.0+5)%4].data,{x:Math.floor((tempo*timess)%90),y:40},true);
+	OS_DrawImage({x:Math.floor(100+(i%2)*90+Math.sin((tempo*timess)/2048.0+3+i)*20),y:Math.floor(90-i*20+Math.cos((tempo*timess)/512.0+3)*3+i)},veczero,{x:32,y:32},image_main_characters[Math.floor((tempo*timess)/1280.0+6)%4].data,{x:Math.floor((tempo*timess)%90),y:40},true);
+	OS_DrawString({x:Math.floor(100+(i%2)*90+Math.sin((tempo*timess)/2048.0+3+i)*20),y:Math.floor(122-i*20+Math.cos((tempo*timess)/512.0+3+i)*3)},"HP "+enemies[i].hp+"/"+enemies[i].maxHP,[255,255,255,255]);
 	
+	}
+	
+	//let xy = {x:0,y:160}
+	/*for(;xy.x<resolution.x;xy.x++){
+		for(;xy.y<resolution.y;xy.y++){
+			var old=OS_GetPixel(xy)
+		OS_SetPixel(xy,[Math.floor((old[0])/1.07),Math.floor(old[1]/1.2),Math.floor(old[2]/1.3),255],true);	
+		}
+		xy.y=0;
+	}*/
+	let xy = {x:0,y:160}
+	for(;xy.x<resolution.x;xy.x++){
+		for(;xy.y<resolution.y;xy.y++){
+			var old=OS_GetPixel(xy)
+		OS_SetPixel(xy,[Math.floor(old[0]/1.06),Math.floor(old[1]/1.2),Math.floor(old[2]/1.2),255],true);	
+		}
+		xy.y=160;
+	}
+	xy = {x:0,y:128}
+	for(;xy.x<60;xy.x++){
+		for(;xy.y<resolution.y;xy.y++){
+			var old=OS_GetPixel(xy)
+		OS_SetPixel(xy,[Math.floor(old[0]/1.06),Math.floor(old[1]/1.2),Math.floor(old[2]/1.2),255],true);	
+		}
+		xy.y=0;
+	}
+	
+	//ACTION UI
+	OS_DrawString({x:10,y:3},"Score:\n"+score,[255,255,255,255]);
+	
+	OS_DrawString({x:10,y:91},dialogue_string,[255,255,255,255]);
+	OS_DrawChar({x:2,y:91+12*dialogue_index},"§",[255,255,255,255]);
+	OS_DrawImage({x:32,y:145},veczero,image_main_characters[3].res,image_main_characters[3].data,image_main_characters[3].res,true);
+	OS_DrawImage({x:92,y:145},veczero,image_main_characters[1].res,image_main_characters[1].data,image_main_characters[1].res,true);
+	OS_DrawImage({x:143,y:145},veczero,image_main_characters[0].res,image_main_characters[0].data,image_main_characters[0].res,true);
+	OS_DrawImage({x:206,y:145},veczero,image_main_characters[2].res,image_main_characters[2].data,image_main_characters[2].res,true);
+	
+	OS_DrawString({x:12,y:184},"   Faux    Anne    Quasi     Emma\nHP:"+characters[0].hp+"/"+characters[0].maxHP+" "+characters[1].hp+"/"+characters[1].maxHP+"  "+characters[2].hp+"/"+characters[2].maxHP+"  "+characters[3].hp+"/"+characters[3].maxHP+"\nMP:"+characters[0].mp+"/"+characters[0].maxMP+"    "+characters[1].mp+"/"+characters[1].maxMP+"   "+characters[2].mp+"/"+characters[2].maxMP+"   "+characters[3].mp+"/"+characters[3].maxMP,[255,255,255,255]);
+	OS_DrawChar({x:26+56*character_index,y:184},"§",[255,255,255,255]);
 	//debug fps
-	//OS_SetPixel({x:Math.floor(deltaTime),y:0},[255,0,0,255],true);
+	OS_SetPixel({x:Math.floor(deltaTime),y:0},[255,0,0,255],true);
 	
 	ctx.putImageData(OS_canvas_OUT,0,0);
 	var TEMP = OS_canvas;
@@ -7495,7 +7985,7 @@ function OS_DrawChar(xy,character,clr){
 		ab.y=16;
 		ab.x=208;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
 		break;
-		case"§":
+		case"¨":
 		ab.y=16;
 		ab.x=224;//nooage(xy,{x:160,y:0},{x:10,y:16},image_text.data,image_text.res,true);
 		break;
