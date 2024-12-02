@@ -23,6 +23,7 @@ var Qindex = -1;
 var StateQueue = []; //max size- 32?
 var QueueSize = 128;
 var SQchanged = true;
+var swapMouseBtns = false;
 //#endregion
 
 //#region key
@@ -91,6 +92,11 @@ Input_lnW.addEventListener("input",function(e){
   Input_lnW.value = 1;
 }
 
+});
+
+let Input_m = document.getElementById("swapM");
+Input_m.addEventListener("click",function(e){
+	swapMouseBtns=!swapMouseBtns;
 });
 
     //FILE MENU//
@@ -6457,8 +6463,8 @@ switch(MODE.poly){
          E = e;
          Draw();
          break;
-        case(1): /*console.log("middle");*/ middle = true; break;
-      case(2):
+        case((swapMouseBtns)?2:1): /*console.log("middle");*/ middle = true; break;
+      case((swapMouseBtns)?1:2):
        
         right = true;
         if(rightClicked){
@@ -6924,7 +6930,7 @@ default:
       }
     }
      break;
-        case(1): /*console.log("middle");*/ middle = false;
+        case((swapMouseBtns)?2:1): /*console.log("middle");*/ middle = false;
 
 
 
@@ -7002,7 +7008,7 @@ default:
         
         
         break;
-        case(2): /*console.log("right");*/ right = false;
+        case((swapMouseBtns)?1:2): /*console.log("right");*/ right = false;
         /*rightDouble=false;
         rightClicked = true;
         setTimeout(function(){
