@@ -19,10 +19,10 @@ var br = false; //break?
 
 var TICK = 0;
 let E;
-var Qindex = -1;
-var StateQueue = []; //max size- 32?
+var Qindex = [-1];
+var StateQueue = [[]]; //max size- 32?
 var QueueSize = 128;
-var SQchanged = true;
+var SQchanged = [true];
 var swapMouseBtns = false;
 //#endregion
 
@@ -85,11 +85,24 @@ let Input_lnW = document.getElementById("lnW");
 Input_lnW.addEventListener("input",function(e){
   if(Input_lnW.value < 1024 && Input_lnW.value > 0){
     lineWidth = Input_lnW.value;
-    lineWidthS = Input_lnW.value;
+    //lineWidthS = Input_lnW.value;
 	
 }else{
   lineWidth = 1;
   Input_lnW.value = 1;
+}
+
+});
+
+let Input_lnW2 = document.getElementById("lnW2");
+Input_lnW2.addEventListener("input",function(e){
+  if(Input_lnW2.value < 1024 && Input_lnW2.value > 0){
+    lineWidthS = Input_lnW2.value;
+    //lineWidthS = Input_lnW.value;
+	
+}else{
+  lineWidthS = 1;
+  Input_lnW2.value = 1;
 }
 
 });
@@ -105,6 +118,7 @@ New.addEventListener("click",function(e){
 ctx.clearRect(0,0,resolution.x,resolution.y);  
 previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);   
 uiCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);   
+SQ_SAVE();
 });
 let Resize = document.getElementById("resize");
 let UIResize = document.getElementById("UIres");
@@ -221,7 +235,8 @@ UpdateCanvas();
  
   }
   
-  
+  SQ_SAVE();
+  this.value = '';
 });
 Import.addEventListener("change",function(e){
   ConfirmSelect();
@@ -253,10 +268,13 @@ Import.addEventListener("change",function(e){
   uictx.fillStyle = selectFill;
   uictx.fillRect(0,0,image.width,image.height);
   EnableSelectPoints();
+
   SaveFrame(curr_frame);
+  MoveSelectedPr(0,0);
   }
   image.src = URL.createObjectURL(this.files[0]);
-  
+  SQ_SAVE();
+ this.value = '';
  
 });
 
@@ -610,7 +628,7 @@ LoadPalette(palettelist.value);
   var selected = false; //false = primary,true = secondary
 var PRIMARY = "pencil";
 var MODE = {pencil:"3",line:"1",poly:"1",fill:"FILL_MODE_INST",picker:"1",eraser:"1"};
-var lineWidth = 10;
+var lineWidth = 1;
 var lineCap = 'butt';
 var lineColor = "rgba(0,0,0,1)";
 
@@ -647,9 +665,11 @@ SelectPoints.push(document.getElementById("SelectRotate"));
 for(let i =0;i< SelectPoints.length;i++){
   SelectPoints[i].onmouseover = function(){
     hoveringON="points";
+	//console.error("points_set");
   };
   SelectPoints[i].onmouseout = function(){
     hoveringON="none";
+	//console.error("points_unset");
   };
   SelectPoints[i].onmousedown = function(){
    busy=true;
@@ -714,6 +734,7 @@ var SelectDragging = false;
 var SelectAreaCopy;
 var SelectArea;
 var SelectAreaT;
+var SelectAntialiasing=0;
 var SelectPos = {x:-1,y:-1,w:0,h:0};
 var LastDir = -1;
 //#endregion
@@ -4388,7 +4409,7 @@ function ColorsToArray(){
 }
 //#endregion
 //#region linear algebra and stuff
-function TransformImageData(imagedata,neww,newh){
+function TransformImageDataOld(imagedata,neww,newh){
   var it = new ImageData(neww,newh);
   const ratioX = imagedata.width/neww;
   const ratioY = imagedata.height/newh;
@@ -4403,20 +4424,62 @@ function TransformImageData(imagedata,neww,newh){
  }
  return it;
 }
+function TransformImageData(imagedata, neww, newh) {
+  var it = new ImageData(neww, newh);
+  const ratioX = imagedata.width / neww;
+  const ratioY = imagedata.height / newh;
+
+  for (let i = 0; i < newh; i++) {
+    for (let j = 0; j < neww; j++) {
+      let startX = Math.floor(j * ratioX);
+      let startY = Math.floor(i * ratioY);
+      let endX = Math.min(Math.ceil((j + 1) * ratioX), imagedata.width);
+      let endY = Math.min(Math.ceil((i + 1) * ratioY), imagedata.height);
+
+      let r = 0, g = 0, b = 0, a = 0;
+      let count = 0;
+
+      for (let y = startY; y < endY; y++) {
+        for (let x = startX; x < endX; x++) {
+          const index = (x + y * imagedata.width) * 4;
+          r += imagedata.data[index];
+          g += imagedata.data[index + 1];
+          b += imagedata.data[index + 2];
+          a += imagedata.data[index + 3];
+          count++;
+        }
+      }
+
+      const destIndex = (j + i * neww) * 4;
+      it.data[destIndex] = Math.round(r / count);
+      it.data[destIndex + 1] = Math.round(g / count);
+      it.data[destIndex + 2] = Math.round(b / count);
+      it.data[destIndex + 3] = Math.round(a / count);
+    }
+  }
+
+  return it;
+}
+
+
+
 //#endregion
 //#region main
 function SQ_SAVE(){
-
+	
   var canv = ctx.getImageData(0,0,resolution.x,resolution.y).data;
 if(Qindex != -1){
-  StateQueue.splice(Qindex+1,StateQueue.length-Qindex);
+  //StateQueue[curr_frame].splice(Qindex[curr_frame]+1,StateQueue[curr_frame].length-Qindex[curr_frame]);
 }
 
-  StateQueue.push( canv);
-  if(StateQueue.length > QueueSize){
-    StateQueue.splice(0,1);
+  StateQueue[curr_frame].push( canv);
+  if(StateQueue[curr_frame].length > QueueSize){
+    //StateQueue[curr_frame].splice(0,1);
   }
-  Qindex = -1;  
+  Qindex[curr_frame] = -1;  
+  
+  
+  console.log(StateQueue[curr_frame].length);
  // console.log(StateQueue.length);
 
  //frame save
@@ -4424,23 +4487,26 @@ if(Qindex != -1){
 }
 function SQ_UNDO(){
   DisableSelectPoints();
-  if(StateQueue.length<2){return;}
-if(Qindex==-1){
-  Qindex=StateQueue.length-2;
-}else if (Qindex>0){
-Qindex--;
+  console.log(StateQueue);
+  console.log(StateQueue[curr_frame]);
+  console.log(StateQueue[curr_frame]);
+  if(StateQueue[curr_frame].length<2){console.error("len low! :"+StateQueue[curr_frame].length);console.error("curr_f:"+curr_frame);return;}
+if(Qindex[curr_frame]==-1){
+  Qindex[curr_frame]=StateQueue[curr_frame].length-2;
+}else if (Qindex[curr_frame]>0){
+Qindex[curr_frame]--;
 }
 
 
-ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
+ctx.putImageData(new ImageData(StateQueue[curr_frame][Qindex[curr_frame]],resolution.x),0,0);
 }
 function SQ_REDO(){
   DisableSelectPoints();
-  if(Qindex == -1){return;}
-  if(Qindex == StateQueue.length-1){Qindex=-1;return;}
-  Qindex++;
+  if(Qindex[curr_frame] == -1){return;}
+  if(Qindex[curr_frame] == StateQueue[curr_frame].length-1){Qindex[curr_frame]=-1;return;}
+  Qindex[curr_frame]++;
 
-  ctx.putImageData(new ImageData(StateQueue[Qindex],resolution.x),0,0);
+  ctx.putImageData(new ImageData(StateQueue[curr_frame][Qindex[curr_frame]],resolution.x),0,0);
 }
 //#endregion
 //#region keyhandling
@@ -5285,6 +5351,74 @@ if(ImageFlip.x == false && ImageFlip.y==false){
 return imagedt;
 }
 function ImageRotate(img,rX,rY,angle){
+	if(SelectAntialiasing==-1){
+		
+		 angle = SnapAngleToConstant(angle, 0.01);
+    const sine = Math.sin(-angle);
+    const cosine = Math.cos(-angle);
+    const half = rX / 2;
+    const image = new ImageData(rX, rY);
+
+    for (let i = 0; i < rY; i++) {
+        for (let j = 0; j < rX; j++) {
+            let iwh = i - half;
+            let jwh = j - half;
+
+            if ((jwh ** 2 + iwh ** 2) > half ** 2) {
+                continue;
+            }
+
+            const x = jwh * cosine - iwh * sine + half;
+            const y = jwh * sine + iwh * cosine + half;
+
+            let r = 0, g = 0, b = 0, a = 0;
+            let count = 0;
+			let counta = 0;
+            const startX = Math.floor(x);
+            const startY = Math.floor(y);
+            const endX = Math.min(Math.ceil(x), rX - 1);
+            const endY = Math.min(Math.ceil(y), rY - 1);
+
+           for (let subY = startY; subY <= endY; subY++) {
+  for (let subX = startX; subX <= endX; subX++) {
+    if (subX >= 0 && subX < rX && subY >= 0 && subY < rY) {
+		 const index = (subX + subY * rX) * 4;
+      const weightX = Math.max(0, 1 - Math.abs(subX - x));
+      const weightY = Math.max(0, 1 - Math.abs(subY - y));
+      const weighta = weightX * weightY
+	  const weight = weighta*(img.data[index + 3]/255.0);
+
+     
+      r += img.data[index] * weight;
+      g += img.data[index + 1] * weight;
+      b += img.data[index + 2] * weight;
+      a += img.data[index + 3] * weight;
+      count += weight;
+	  counta += weighta;
+    }
+  }
+}
+
+
+            const destIndex = (j + i * rX) * 4;
+            if (count > 0) {
+                image.data[destIndex] = Math.round(r / count);
+                image.data[destIndex + 1] = Math.round(g / count);
+                image.data[destIndex + 2] = Math.round(b / count);
+                image.data[destIndex + 3] = Math.round(a / counta); 
+            } else {
+                image.data[destIndex] = 0;
+                image.data[destIndex + 1] = 0;
+                image.data[destIndex + 2] = 0;
+                image.data[destIndex + 3] = 0;
+            }
+        }
+    }
+
+    return image;
+  
+  
+	}else{
   //if angle close to constant, change to constant
  angle = SnapAngleToConstant(angle,0.01);        //     if set to snap to angles like 45 and stuff
  var sine = Math.sin(-angle);
@@ -5322,6 +5456,8 @@ for(let i = 0; i < rY;i++){
   }
   }
   return image;
+}
+
 }
 function CenteredCrop(image){
   var pos = {x:0,y:0,w:image.width,h:image.height};
@@ -5455,62 +5591,29 @@ function ExpandImageFromCenter(image,x,y){
    
   }
 
-function putImageDataOptimized(ctx,arrayOrig,x,y,w,h){
-var ctxArray = ctx.getImageData(x,y,w,h).data;
-var array = arrayOrig.map((x) => x); //needed to not change orig array below, which would cause issues with paste
+function putImageDataOptimized(ctx, arrayOrig, x, y, w, h) {
+    var ctxArray = ctx.getImageData(x, y, w, h).data;
+    var array = arrayOrig.map((x) => x);
 
-for(let i = 0;i < array.length;i+=4){
-/* old method
-var tr0 = ctxArray[i+3]/255;
-var tr1 = array[i+3]/255;
-if(array[i+3]+ctxArray[i+3] > 255){
-  array[i+3] = 255;
-}else{
-  array[i+3] = array[i+3]+ctxArray[i+3]; 
-}
-array[i] = ((array[i]*tr1)+(ctxArray[i]*((1-tr1)*tr0)))/(array[i+3]/255);//nefungujege
-array[i+1] = ((array[i+1]*tr1)+(ctxArray[i+1]*((1-tr1)*tr0)))/(array[i+3]/255);
-array[i+2] = ((array[i+2]*tr1)+(ctxArray[i+2]*((1-tr1)*tr0)))/(array[i+3]/255);
+    for (let i = 0; i < array.length; i += 4) {
+        var a0 = ctxArray[i + 3] / 255;
+        var a1 = array[i + 3] / 255;
+        var a2 = a1 + a0 * (1 - a1);
 
-*/
+        if (a2 > 0) {
+            array[i] = (array[i] * a1 + ctxArray[i] * a0 * (1 - a1)) / a2;
+            array[i + 1] = (array[i + 1] * a1 + ctxArray[i + 1] * a0 * (1 - a1)) / a2;
+            array[i + 2] = (array[i + 2] * a1 + ctxArray[i + 2] * a0 * (1 - a1)) / a2;
+        } else {
+            array[i] = 0;
+            array[i + 1] = 0;
+            array[i + 2] = 0;
+        }
 
-var a0 = ctxArray[i+3]/255;
-var a1 = array[i+3]/255;
-var a2 = a1 + (1-a1)*a0;
+        array[i + 3] = a2 * 255;
+    }
 
-if(a1==0){
-array[i]=ctxArray[i];
-array[i+1]=ctxArray[i+1];
-array[i+2]=ctxArray[i+2];
-array[i+3]=ctxArray[i+3];
-continue;
-} else if(a0==0)
-{
-	continue;
-}
-if((1-((1-a1)*(1-a0)))*255<255){
-	
-/*rarray[i] = (a1*array[i]+((1-a1)*a0)*ctxArray[i])/((a1+a0)/1.31);
-/*garray[i+1] = (a1*array[i+1]+((1-a1)*a0)*ctxArray[i+1])/((a1+a0)/1.31);
-/*barray[i+2] = (a1*array[i+2]+((1-a1)*a0)*ctxArray[i+2])/((a1+a0)/1.31);
-*/
-
-/*r*/array[i] = array[i]*(a1/a2)+ctxArray[i]*(((1-a1)*a0)/a2);
-/*g*/array[i+1] = array[i+1]*(a1/a2)+ctxArray[i+1]*(((1-a1)*a0)/a2);
-/*b*/array[i+2] = array[i+2]*(a1/a2)+ctxArray[i+2]*(((1-a1)*a0)/a2);
-}else{
-/*r*/array[i] = (a1*array[i]+((1-a1)*a0)*ctxArray[i]);
-/*g*/array[i+1] = (a1*array[i+1]+((1-a1)*a0)*ctxArray[i+1]);
-/*b*/array[i+2] = (a1*array[i+2]+((1-a1)*a0)*ctxArray[i+2]);
-}
-
-/*a*/array[i+3]= a2*255;
-
-
-}
-ctx.putImageData(new ImageData(array,w),x,y);
-
-
+    ctx.putImageData(new ImageData(new Uint8ClampedArray(array), w, h), x, y);
 }
 
 
@@ -6217,8 +6320,14 @@ function AddFrame(){
   AnimFramesPreview.push("NODATA");
   AnimFramesFullRes.push(new ImageData(resolution.x,resolution.y));
   
-
   UpdateFrame_UI();
+  
+  
+  //add to sq
+ Qindex.push(-1);
+ StateQueue.push([]); //max size- 32?
+ SQchanged.push(false);
+ SQ_SAVE();
 }
 function DupeFrame(index){
  
@@ -6228,6 +6337,11 @@ AnimFramesFullRes.push(AnimFramesFullRes[index]);
 AnimFrames_duration.push(AnimFrames_duration[index]);
 AnimFrames_ptr.splice(AnimFrames_ptr.indexOf(index)+1,0,AnimFrames.length-1);
 UpdateFrame_UI();
+ //add to sq
+ Qindex.push(-1);
+ StateQueue.push([]); //max size- 32?
+ SQchanged.push(false);
+ SQ_SAVE();
 }
 function DeleteFrame(index){
   console.log(AnimFrames.length);
@@ -6249,6 +6363,11 @@ function DeleteFrame(index){
     curr_frame--;
   }
   LoadFrame(curr_frame);
+  
+   //add to sq
+ Qindex.splice(index,1);
+ StateQueue.splice(index,1); //max size- 32?
+ SQchanged.splice(index,1);
   
 }
 function MoveFrame(oldidx,newidx){
@@ -6586,6 +6705,27 @@ function MenuChHelper(variable){
       br = document.createElement("br");
     name.innerHTML = "Picker";
     Menu_Tool.appendChild(name);
+	
+	name = document.createElement("p"); 
+    name.innerHTML = "Antialiasing:";
+    Menu_Tool.appendChild(name);
+	name = document.createElement("p"); 
+    name.innerHTML = "(-1)=best;(0)=OFF;(>0)=NxPixelSamples";
+    Menu_Tool.appendChild(name);
+	
+	name = document.createElement("input");
+	name.defaultValue=0;
+	name.type="number";
+    name.id ="select_as";
+	Menu_Tool.appendChild(name);
+	
+   
+  
+    document.getElementById("select_as").addEventListener("focusout",()=>{
+		let data = document.getElementById("select_as").value;
+		SelectAntialiasing=data;
+	});
+
 	/*
     Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY","select"));
     Menu_Tool.appendChild(CreateIcon("./icons/paste.png","PASTE","select"));
@@ -7133,6 +7273,7 @@ function UpdatePos(){
 
          switch(PRIMARY){
 case("eraser"):
+SQchanged[curr_frame]=true;
      ctx.clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
       break;
           case("pencil"):
@@ -7306,7 +7447,7 @@ lastfilledpos.push(xy);
   //fillUpdate=setInterval(function(){ //this slowed the function down immensely, + it could allow for some glitches so while wins, just lags a bit
   while(filling){OS_ScanlineFill();}
   SQ_SAVE();
-  SQchanged=false;
+  SQchanged[curr_frame]=false;
 //},0);
 }
 break;
@@ -7360,7 +7501,10 @@ switch(MODE.poly){
 
         switch(SECONDARY){
 case("eraser"):
-      ctx.clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
+SQchanged[curr_frame]=true;
+
+      ctx.clearRect(intPos.x,intPos.y,lineWidthS,lineWidthS);
+	  
       break;
          case("pencil"):
          switch(MODE.pencil){
@@ -7536,7 +7680,7 @@ lastfilledpos.push(xy);
  //fillUpdate=setInterval(function(){ //this slowed the function down immensely, + it could allow for some glitches so while wins, just lags a bit
  while(filling){OS_ScanlineFill();}
  SQ_SAVE();
- SQchanged=false;
+ SQchanged[curr_frame]=false;
 
 //},0);
 }
@@ -7695,6 +7839,12 @@ switch(MODE.poly){
      UIbuttonCLICK(UIbtnObj);
      }
     });
+	
+	
+	
+	
+	
+	
     document.addEventListener("mouseup", function(e){
     //previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);
       //lastPos.x = pos.x;
@@ -7740,7 +7890,7 @@ switch(MODE.poly){
           
           switch(PRIMARY){
         case("pencil"):
-        SQchanged=true;
+        SQchanged[curr_frame]=true;
         switch(MODE.pencil){
     case("4"):
      previewCanvas.getContext("2d").clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
@@ -7759,7 +7909,7 @@ switch(MODE.poly){
     
    
      case("line"):
-     SQchanged=true;
+     SQchanged[curr_frame]=true;
     switch(MODE.line){
 default:
   Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
@@ -7768,7 +7918,7 @@ default:
     }
      break;
      case("poly"):
-     SQchanged=true;
+     SQchanged[curr_frame]=true;
 	 switch(MODE.poly){
 		 case "legacy":
 		 PolyDrawOld(lineColor);
@@ -7788,7 +7938,7 @@ default:
       SelectPr();
       RenderSelectUI();
       setTimeout(function(){
-         hoveringON="points";
+         //hoveringON="points";
          EnableSelectPoints();
       },1);
      
@@ -7797,7 +7947,7 @@ default:
       }
       if(SQchanged){
         SQ_SAVE();
-        SQchanged=false;
+        SQchanged[curr_frame]=false;
       }
     }
      break;
@@ -7919,7 +8069,7 @@ default:
           
           switch(SECONDARY){
         case("pencil"):
-        SQchanged=true;
+        SQchanged[curr_frame]=true;
         switch(MODE.pencil){
     case("4"):
      previewCanvas.getContext("2d").clearRect(intPos.x,intPos.y,lineWidthS,lineWidthS);
@@ -7938,7 +8088,7 @@ default:
     
    
      case("line"):
-     SQchanged=true;
+     SQchanged[curr_frame]=true;
     switch(MODE.line){
 default:
   Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
@@ -7947,7 +8097,7 @@ default:
     }
      break;
      case("poly"):
-     SQchanged=true;
+     SQchanged[curr_frame]=true;
 	 switch(MODE.poly){
 		 case "legacy":
 		 PolyDrawOld(lineColorS);
@@ -7967,16 +8117,16 @@ default:
       SelectPr();
       RenderSelectUI();
       setTimeout(function(){
-         hoveringON="points";
+         //hoveringON="points";
          EnableSelectPoints();
       },1);
      
      //pctx
      break;
       }
-      if(SQchanged){
+      if(SQchanged[curr_frame]){
         SQ_SAVE();
-        SQchanged=false;
+        SQchanged[curr_frame]=false;
       }
     }
        
@@ -8024,7 +8174,9 @@ default:
       //AbsLastPos.y = AbsPos.y;
       //lastPos.y = pos.y;
        UpdatePos();
+	   console.log("hoveredON:"+hoveredON);
     if(middle && (hoveredON=="canvas"||hoveredON=="background")){
+		console.log("moving :3")
       MoveCanvas();
       return true;
     }else if(middle && movedColor != null){
@@ -10256,15 +10408,87 @@ function RotateSelectedArea(angle){
 pctx.putImageData(tempImage,SelectPos.x,SelectPos.y);
 uictx.fillRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
 SelectAreaT = tempImage;
+
+
+
 }
+
+
+
 function SelectResizeFromTo(AnchorX,AnchorY,x,y){
+  if(SelectAntialiasing==-1){
+	  
+	  pctx.clearRect(SelectPos.x, SelectPos.y, SelectPos.w, SelectPos.h);
+uictx.clearRect(SelectPos.x, SelectPos.y, SelectPos.w, SelectPos.h);
+
+if (AnchorX < x) {
+  SelectPos.w = x - AnchorX;
+  SelectPos.x = AnchorX;
+} else {
+  SelectPos.w = AnchorX - x;
+  SelectPos.x = x;
+}
+if (AnchorY < y) {
+  SelectPos.h = y - AnchorY;
+  SelectPos.y = AnchorY;
+} else {
+  SelectPos.h = AnchorY - y;
+  SelectPos.y = y;
+}
+lrtb.top = SelectPos.y;
+lrtb.bottom = SelectPos.y + SelectPos.h;
+lrtb.left = SelectPos.x;
+lrtb.right = SelectPos.x + SelectPos.w;
+
+var tempImage = (function(imagedata, neww, newh) {
+  var it = new ImageData(neww, newh);
+  const ratioX = imagedata.width / neww;
+  const ratioY = imagedata.height / newh;
+
+  for (let i = 0; i < newh; i++) {
+    for (let j = 0; j < neww; j++) {
+      let startX = Math.floor(j * ratioX);
+      let startY = Math.floor(i * ratioY);
+      let endX = Math.min(Math.ceil((j + 1) * ratioX), imagedata.width);
+      let endY = Math.min(Math.ceil((i + 1) * ratioY), imagedata.height);
+
+      let r = 0, g = 0, b = 0, a = 0;
+      let count = 0;
+
+      for (let y = startY; y < endY; y++) {
+        for (let x = startX; x < endX; x++) {
+          const index = (x + y * imagedata.width) * 4;
+          r += imagedata.data[index];
+          g += imagedata.data[index + 1];
+          b += imagedata.data[index + 2];
+          a += imagedata.data[index + 3];
+          count++;
+        }
+      }
+
+      const destIndex = (j + i * neww) * 4;
+      it.data[destIndex] = Math.round(r / count);
+      it.data[destIndex + 1] = Math.round(g / count);
+      it.data[destIndex + 2] = Math.round(b / count);
+      it.data[destIndex + 3] = Math.round(a / count);
+    }
+  }
+
+  return it;
+})(SelectArea, SelectPos.w, SelectPos.h);
+
+UpdateSelectPoints(SelectPos, { x: SelectPos.x + SelectPos.w - 1, y: SelectPos.y + SelectPos.h - 1 }, SelectPos, { x: SelectPos.x + SelectPos.w - 1, y: SelectPos.y + SelectPos.h - 1 });
+pctx.putImageData(tempImage, SelectPos.x, SelectPos.y);
+uictx.fillRect(SelectPos.x, SelectPos.y, SelectPos.w, SelectPos.h);
+
+SelectAreaT = tempImage;
+
+	  
+  }
+  else{
   pctx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
   uictx.clearRect(SelectPos.x,SelectPos.y,SelectPos.w,SelectPos.h);
   
-  
-  
-  
-
 if(AnchorX< x){
 SelectPos.w = x-AnchorX;
 SelectPos.x = AnchorX;
@@ -10303,6 +10527,11 @@ var tempImage = ImageTransform(SelectArea,SelectPos.w,SelectPos.h);
 
 SelectAreaT=tempImage;
 
+  }
+  
+  
+  
+
 
 }
 function CopySelect(){
@@ -10323,24 +10552,33 @@ function PasteSelect(){
   SelectAreaT=SelectAreaCopy;
 
 
-  SelectPos.x=0;
-  SelectPos.y=0;
+  SelectPos.x=intPos.x;
+  SelectPos.y=intPos.y;
   SelectPos.w=SelectAreaCopy.width;
   SelectPos.h=SelectAreaCopy.height;
 
   SelectActive = true;
 
-  lrtb.left = 0;  //not the same as pos
-  lrtb.top = 0;
-  lrtb.right = SelectAreaCopy.width;  //0+width
-  lrtb.bottom = SelectAreaCopy.height;//0+height
+  lrtb.left = intPos.x;  //not the same as pos
+  lrtb.top = intPos.y;
+  lrtb.right = intPos.x+SelectAreaCopy.width;  //0+width
+  lrtb.bottom = intPos.y+SelectAreaCopy.height;//0+height
 
-
-  pctx.putImageData(SelectAreaCopy,0,0);
+  
+  pctx.putImageData(SelectAreaCopy,intPos.x,intPos.y);
   uictx.fillStyle = selectFill;
-  uictx.fillRect(0,0,SelectAreaCopy.width,SelectAreaCopy.height);
+  uictx.fillRect(intPos.x,intPos.y,SelectAreaCopy.width,SelectAreaCopy.height);
   EnableSelectPoints();
   UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
+  /*
+  
+  var SelectAreaCopy;
+var SelectArea;
+var SelectAreaT;
+var SelectAntialiasing=0;
+var SelectPos = {x:-1,y:-1,w:0,h:0};*/
+
+
   }
   function RemoveSelect(){
     if(!SelectActive){
