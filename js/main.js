@@ -225,7 +225,7 @@ UpdateCanvas();
 
  ctx.drawImage(image,0,0);
   AddFrame();
-  SaveFrame(curr_frame);
+  SaveFrame(AnimFrames_ptr[curr_frame]);
   
 
 
@@ -269,7 +269,7 @@ Import.addEventListener("change",function(e){
   uictx.fillRect(0,0,image.width,image.height);
   EnableSelectPoints();
 
-  SaveFrame(curr_frame);
+  SaveFrame(AnimFrames_ptr[curr_frame]);
   MoveSelectedPr(0,0);
   }
   image.src = URL.createObjectURL(this.files[0]);
@@ -587,7 +587,7 @@ div.style.width = ""+canvasSize.x+"px";
 //#endregion
 //#region layer
 //layer has: name z-index visible canvasId
-var layerselected = "UI_layer0";
+var layerselected = "layer0";
 var layers = [["Background 1", -1, true, "layer0" ],["Layer 1", 0, true, "layer1" ]];
 var layerdiv = document.getElementById("layerdiv");
 var layersui = document.getElementById("layersui");
@@ -4468,45 +4468,51 @@ function TransformImageData(imagedata, neww, newh) {
 function SQ_SAVE(){
 	
   var canv = ctx.getImageData(0,0,resolution.x,resolution.y).data;
-if(Qindex != -1){
-  //StateQueue[curr_frame].splice(Qindex[curr_frame]+1,StateQueue[curr_frame].length-Qindex[curr_frame]);
+  var Cid = layerselected;
+if(Qindex[AnimFrames_ptr[curr_frame]] != -1){
+  StateQueue[AnimFrames_ptr[curr_frame]].splice(Qindex[curr_frame]+1,StateQueue[AnimFrames_ptr[curr_frame]].length-Qindex[AnimFrames_ptr[curr_frame]]);
 }
 
-  StateQueue[curr_frame].push( canv);
-  if(StateQueue[curr_frame].length > QueueSize){
-    //StateQueue[curr_frame].splice(0,1);
+  StateQueue[AnimFrames_ptr[curr_frame]].push({data:canv,id:Cid});
+  if(StateQueue[AnimFrames_ptr[curr_frame]].length > QueueSize){
+    StateQueue[AnimFrames_ptr[curr_frame]].splice(0,1);
   }
-  Qindex[curr_frame] = -1;  
+  Qindex[AnimFrames_ptr[curr_frame]] = -1;  
   
   
-  console.log(StateQueue[curr_frame].length);
+  console.log(StateQueue[AnimFrames_ptr[curr_frame]].length);
  // console.log(StateQueue.length);
 
  //frame save
- SaveFrame(curr_frame);
+ SaveFrame(AnimFrames_ptr[curr_frame]);
 }
 function SQ_UNDO(){
   DisableSelectPoints();
   console.log(StateQueue);
-  console.log(StateQueue[curr_frame]);
-  console.log(StateQueue[curr_frame]);
-  if(StateQueue[curr_frame].length<2){console.error("len low! :"+StateQueue[curr_frame].length);console.error("curr_f:"+curr_frame);return;}
-if(Qindex[curr_frame]==-1){
-  Qindex[curr_frame]=StateQueue[curr_frame].length-2;
-}else if (Qindex[curr_frame]>0){
-Qindex[curr_frame]--;
+  console.log(StateQueue[AnimFrames_ptr[curr_frame]]);
+  console.log(StateQueue[AnimFrames_ptr[curr_frame]]);
+  if(StateQueue[AnimFrames_ptr[curr_frame]].length<2){console.error("len low! :"+StateQueue[AnimFrames_ptr[curr_frame]].length);console.error("curr_f:"+curr_frame);return;}
+if(Qindex[AnimFrames_ptr[curr_frame]]==-1){
+  Qindex[AnimFrames_ptr[curr_frame]]=StateQueue[AnimFrames_ptr[curr_frame]].length-2;
+}else if (Qindex[AnimFrames_ptr[curr_frame]]>0){
+Qindex[AnimFrames_ptr[curr_frame]]--;
 }
 
-
-ctx.putImageData(new ImageData(StateQueue[curr_frame][Qindex[curr_frame]],resolution.x),0,0);
+var Cid = StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].id;
+var tx = document.getElementById(Cid);
+console.log(Cid+" "+ tx)
+document.getElementById(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].id).getContext("2d").putImageData(new ImageData(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].data,resolution.x),0,0);
+SaveFrame(AnimFrames_ptr[curr_frame]);
 }
+
 function SQ_REDO(){
   DisableSelectPoints();
   if(Qindex[curr_frame] == -1){return;}
-  if(Qindex[curr_frame] == StateQueue[curr_frame].length-1){Qindex[curr_frame]=-1;return;}
-  Qindex[curr_frame]++;
+  if(Qindex[curr_frame] == StateQueue[AnimFrames_ptr[curr_frame]].length-1){Qindex[AnimFrames_ptr[curr_frame]]=-1;return;}
+  Qindex[AnimFrames_ptr[curr_frame]]++;
 
-  ctx.putImageData(new ImageData(StateQueue[curr_frame][Qindex[curr_frame]],resolution.x),0,0);
+  document.getElementById(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].id).getContext("2d").putImageData(new ImageData(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].data,resolution.x),0,0);
+  SaveFrame(AnimFrames_ptr[curr_frame]);
 }
 //#endregion
 //#region keyhandling
@@ -6402,6 +6408,7 @@ else if(curr_frame>oldidx&&curr_frame<newidx){
 
 LoadFrame(curr_frame);
 UpdateFrame_UI();
+console.log(AnimFrames_ptr);
 }
 function LoadFrame(index_abs){
   var index = AnimFrames_ptr[index_abs];
@@ -6951,7 +6958,7 @@ function LoadLayersUI(){
  }
 
  try{
-      document.getElementById(layerselected+"_name").style.color="#FFFF00";
+      document.getElementById("UI_"+layerselected+"_name").style.color="#FFFF00";
   }catch{
     try{
         document.getElementById("UI_"+layers[0][3]+"_name").style.color="#FFFF00";
@@ -6963,8 +6970,8 @@ function LoadLayersUI(){
       }
       ctx = document.getElementById("layer0").getContext("2d");
       layers.push(lr);
-      layerselected="UI_"+lr[3];
-      document.getElementById(layerselected+"_name").style.color="#FFFF00";
+      layerselected=lr[3];
+      document.getElementById("UI_"+layerselected+"_name").style.color="#FFFF00";
     }
   
   }
@@ -7013,7 +7020,7 @@ function LoadLayersUI(){
       AnimFrames[i].push(new ImageData(resolution.x, resolution.y));
       
       }
-     layerselected="UI_"+layer[3];
+     layerselected=layer[3];
       LoadLayersUI();
       
   }
@@ -7041,10 +7048,10 @@ function AddLayerUI(layer,index){
       }else{
         ctx = document.getElementById(layer[3]).getContext("2d");
         console.log(layerselected);
-        document.getElementById(layerselected+"_name").style.color="#00AA00";
+        document.getElementById("UI_"+layerselected+"_name").style.color="#00AA00";
          document.getElementById(div.id+"_name").style.color="#FFFF00";
     
-        layerselected=div.id;
+        layerselected=layer[3];
 
       }
      templr=true;
@@ -7096,12 +7103,12 @@ function AddLayerUI(layer,index){
       AnimFrames[i].push(new ImageData(resolution.x, resolution.y));
       
       }
-     layerselected="UI_"+layer[3];
+     layerselected=layer[3];
       
       
           
         }
-        layerselected="UI_"+layers[0][3];
+        layerselected=layers[0][3];
         break;
       }
     }
@@ -7118,66 +7125,57 @@ document.getElementById(div.id+"_visible").onclick=function(e){
 
   LoadLayersUI();
 }
-document.getElementById(div.id+"_up").onclick=function(e){
- 
-  if(index!=0){
-   /*
-    var temp = [layers[index][0],layers[index][1],layers[index][2],layers[index][3]];
-    var temp2 = layers[index][1];
-
-    layers[index]=layers[index-1];
-    layers[index-1]=temp;
-    
-    layers[index-1][1]=layers[index][1];
-    layers[index][1]=temp2;
-    */
-   
-	
-    var tmpptr=layers_ptr[index-1];
-    layers_ptr[index-1]=layers_ptr[index];
-    layers_ptr[index]=tmpptr;
-	
-    var tmpz=layers[layers_ptr[index-1]][1];
-    layers[layers_ptr[index-1]][1]=layers[layers_ptr[index]][1];
-    layers[layers_ptr[index]][1]=tmpz;
-	
-    document.getElementById(layers[index][3]).style.zIndex = layers[index][1];
-    document.getElementById(layers[index-1][3]).style.zIndex = layers[index-1][1];
-	
-	
-    LoadLayersUI();
-  }
 
 
-}
-document.getElementById(div.id+"_down").onclick=function(e){
- 
-  if(index<layers.length-1){
-   /*
-    var temp = [layers[index][0],layers[index][1],layers[index][2],layers[index][3]];
-    var temp2 = layers[index][1];
-
-    layers[index]=layers[index+1];
-    layers[index+1]=temp;
-    
-    layers[index+1][1]=layers[index][1];
-    layers[index][1]=temp2;
-    */
-  
-    var tmpptr=layers_ptr[index+1];
-    layers_ptr[index+1]=layers_ptr[index];
-    layers_ptr[index]=tmpptr;
-    var tmpz=layers[layers_ptr[index+1]][1];
-    layers[layers_ptr[index+1]][1]=layers[layers_ptr[index]][1];
-    layers[layers_ptr[index]][1]=tmpz;
-	
-	document.getElementById(layers[layers_ptr[index]][3]).style.zIndex = layers[layers_ptr[index]][1];
-    document.getElementById(layers[layers_ptr[index+1]][3]).style.zIndex = layers[layers_ptr[index+1]][1];
-    LoadLayersUI();
-  }
 
 
-}
+
+
+
+document.getElementById(div.id + "_up").onclick = function(e) {
+    if (index != 0) {
+        // Swap pointers in layers_ptr
+        var tmpptr = layers_ptr[index - 1];
+        layers_ptr[index - 1] = layers_ptr[index];
+        layers_ptr[index] = tmpptr;
+
+        // Update z-index values in the layers array using the updated pointers
+        var tmpz = layers[layers_ptr[index - 1]][1];
+        layers[layers_ptr[index - 1]][1] = layers[layers_ptr[index]][1];
+        layers[layers_ptr[index]][1] = tmpz;
+
+        // Update DOM elements zIndex based on updated layers array
+        document.getElementById(layers[layers_ptr[index - 1]][3]).style.zIndex = layers[layers_ptr[index - 1]][1];
+        document.getElementById(layers[layers_ptr[index]][3]).style.zIndex = layers[layers_ptr[index]][1];
+
+        // Reload UI
+        LoadLayersUI();
+    }
+};
+
+document.getElementById(div.id + "_down").onclick = function(e) {
+    if (index < layers.length - 1) {
+        // Swap pointers in layers_ptr
+        var tmpptr = layers_ptr[index + 1];
+        layers_ptr[index + 1] = layers_ptr[index];
+        layers_ptr[index] = tmpptr;
+
+        // Update z-index values in the layers array using the updated pointers
+        var tmpz = layers[layers_ptr[index + 1]][1];
+        layers[layers_ptr[index + 1]][1] = layers[layers_ptr[index]][1];
+        layers[layers_ptr[index]][1] = tmpz;
+
+        // Update DOM elements zIndex based on updated layers array
+        document.getElementById(layers[layers_ptr[index]][3]).style.zIndex = layers[layers_ptr[index]][1];
+        document.getElementById(layers[layers_ptr[index + 1]][3]).style.zIndex = layers[layers_ptr[index + 1]][1];
+
+        // Reload UI
+        LoadLayersUI();
+    }
+};
+
+
+
   /*document.getElementById(div.id+"_in").oninput=function(e){
     if(document.getElementById(div.id+"_in").value.length==0){
       //document.getElementById(div.id+"_name").innerHTML = "    ";
@@ -8174,9 +8172,9 @@ default:
       //AbsLastPos.y = AbsPos.y;
       //lastPos.y = pos.y;
        UpdatePos();
-	   console.log("hoveredON:"+hoveredON);
+	   //console.log("hoveredON:"+hoveredON);
     if(middle && (hoveredON=="canvas"||hoveredON=="background")){
-		console.log("moving :3")
+		//console.log("moving :3")
       MoveCanvas();
       return true;
     }else if(middle && movedColor != null){
