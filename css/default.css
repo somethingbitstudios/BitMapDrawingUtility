@@ -1,16 +1,25 @@
 :root {
-  --color: #409544;
-  --main-primary-color: #1d8b31;
-  --light-primary-color: #94c29d;
-  --main-secondary-color:  #1d3e8b;
-  --light-secondary-color:  #9eb0da;
-  --main-selected-color:  #4b4b4b;
-  --light-selected-color:  #989898;
-  --background-color: #310642;
---menu-background-1: #000000;
---body-color: #5eb76e;
+  --color: #B59CFA; /*basic text color*/
+  --main-primary-color: #805AFA; /*primary tool color*/
+  --main-primary-color-2: #603ADA; /*primary tool color*/
+  --main-secondary-color:  #EB6954;/*secondary tool color*/
+   --main-secondary-color-2:  #B55141;/*secondary tool color*/
+  --main-selected-color:  #EB6B98; /* combo tool color*/
+  --main-selected-color-2:  #AB4B78;
+  --background-color: #201020; /* canvas background */
+--menu-background-1: #101010; /* menu background */
+--body-color: #E095FA; /* input field text color */
 --link-color: #f9f614;
   --menu-top-height: 35px;
+  
+  --main-highlight: #FFCC22;
+  
+  --button-background-color: #E5F9E0;
+  --button-background-color-2: #BECFBA;
+  
+  --button-background-color-click: #BBBBBB;
+  --button-background-color-click-2: #777777;
+  --button-color: #444444;
   
 }
 
@@ -71,7 +80,7 @@ user-select: none; /* Standard */
     -ms-user-select: none;
     image-rendering: pixelated;
     
-      font-family: regu;
+      font-family: geist;
       color: var(--color);
   }
   input {
@@ -84,7 +93,7 @@ user-select: all; /* Standard */
   
     image-rendering: pixelated;
     
-      font-family: regu;
+      font-family: geist;
 
 
       background-color: var(--menu-background-1);
@@ -107,8 +116,11 @@ user-select: all; /* Standard */
       font-family: "regu";
       src: url('../fonts/Montserrat-Regular.ttf');
   }
-  
-  
+
+  @font-face {
+      font-family: "geist";
+      src: url('../fonts/Geist.ttf');
+  }
   @media (min-width: 768px) {
     html {
       font-size: 12px;
@@ -237,6 +249,10 @@ left: 2px;
 .icon {
   width: 52px;
   height: 52px;
+  
+}
+.icon * {
+	margin-left:-4px;
 }
 #colorpalette_select{
   position: relative;
@@ -265,31 +281,32 @@ margin-top: 2px;
 }
 .invicon {
 background-color: #00000000;
+border:none;
 }
 select {
-  color: var(--menu-background-1);
-  background-color: #bfbfbf;
-  border-left:  2px solid #ffffff;
-  border-top:2px solid #ffffff;
-  border-bottom:2px solid #404040;
-  border-right:2px solid #404040;
-  border-radius: 0px;
+  color: var(--button-color);
+  background-color: var(--button-background-color);
+  border-radius: 5px;
+  border-top:none;
+  border-left:none;
+  border-right:none;
+  border-bottom:3px solid var(--button-background-color-2);
 }
 button {
-  color: var(--menu-background-1);
-  font-size: 16px;
+  color: var(--button-color);
+  background-color: var(--button-background-color);
+  font-size: 15.5px;
   width: 52px;
   height: 25px;
-  background-color: #bfbfbf;
-  
-  border-left:  2px solid #ffffff;
-  border-top:2px solid #ffffff;
-  border-bottom:2px solid #404040;
-  border-right:2px solid #404040;
-  border-radius: 0px;
+ 
+  border-radius: 5px;
+  border-top:none;
+  border-left:none;
+  border-right:none;
+  border-bottom:3px solid var(--button-background-color-2);
   margin: 2px;
   /*border: 0px;*/
-  padding: 0px;
+  
 }
 /*
 button:hover{
@@ -297,11 +314,11 @@ button:hover{
 }
 */
 button:active{
-  /*background-color: #939393;*/
-  border-left:  2px solid #404040;
-  border-top:2px solid #404040;
-  border-bottom:2px solid #ffffff;
-  border-right:2px solid #ffffff;
+  border-top:none;
+  border-left:none;
+  border-right:none;
+  border-bottom:3px solid var(--button-background-color-click-2);
+  background-color: var(--button-background-color-click);
 }
 
 input {
@@ -319,17 +336,29 @@ display: none;
 .select{
   background-color:var(--main-selected-color);
 }
+button.select{
+  background-color: var(--main-selected-color);
+  border-bottom:3px solid var(--main-selected-color-2);
+}
 .selectP{
   background-color: var(--main-primary-color);
 }
+button.selectP{
+  background-color: var(--main-primary-color);
+  border-bottom:3px solid var(--main-primary-color-2);
+}
 .selectS{
   background-color: var(--main-secondary-color);
+}
+button.selectS{
+  background-color: var(--main-secondary-color);
+  border-bottom:3px solid var(--main-secondary-color-2);
 }
 .double{
   width: 111px;
 }
 .layer{
-  background-color: #1d3e8b;
+  background-color: var(--main-primary-color);
   margin-right: 2px;
   display: flex;flex-direction: row; align-items: center;
 }
@@ -415,7 +444,7 @@ padding: 0px;
   height: 85px;
  
   padding-top: 2px;
-  background-color: #344837;
+  background-color: var(--menu-background-1);
   overflow-y: scroll;
 }
 #colorpalette_header,#colorpalette_footer {
@@ -424,8 +453,8 @@ left: 4px;
   width: 170px;
   height: 25px;
  
-  padding-top: 2px;
-  background-color: #2e8e3c;
+  padding: 5px;
+  background-color: var(--main-primary-color);
 }
 #colorpalette_footer{
   height: 54px;
@@ -436,9 +465,15 @@ left: 4px;
   margin-left: 4px;
   width: 170px;
   height: 48px;
-  border-bottom: #1d8b31 solid 4px;
+  border-bottom: var(--main-selected-color) solid 4px;
+  padding-bottom:10px;
   padding-top: 2px;
-  background-color: #dddddd;
+  background-color: var(--main-selected-color-2);
+}
+.colorPick * {
+	
+	color: var(--main-selected-color);
+
 }
 
 .color,.colorE{
@@ -575,7 +610,7 @@ left: 4px;
   height: 28px;
   width: 28px;
  
-  border: rgb(207, 207, 207) solid 2px;
+  border: var(--main-selected-color) solid 2px;
  
 }
 
@@ -603,13 +638,13 @@ left: 4px;
 }
 
 .primaryColor{
-  border-color:#4dd261;
+  border-color:var(--main-primary-color);
 }
 .secondaryColor{
-  border-color:#475cd6;
+  border-color:var(--main-secondary-color-2);
 }
 .bothColor{
-  border-color:#a82d2d;
+  border-color:var(--main-highlight);
 }
 .selected{
   border-color:#ffd813;

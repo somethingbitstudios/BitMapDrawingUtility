@@ -1352,19 +1352,24 @@ function HandleCheat(cheatcode){
 	switch(cheatcode){
 	case "random":
 	Cheat_Random();
-	break;
+	return;
 	case "yuum":
 	YUUM();
-	break;
+	return;
 	case "jrpg":
 	JRPG();
-	break;
+	return;
 	case "pano":
 	PANO();
-	break;
+	return;
 	}
 	if(cheatcode.includes("interlace")){
 		Cheat_Interlace(Number(cheatcode.split(" ")[1]));
+		return;
+	}
+	if(cheatcode.includes("style")){
+		SetStyle(cheatcode.split(" ")[1]);
+		return;
 	}
 }
 //JRPG();
@@ -6218,7 +6223,7 @@ if(tmp!=null){
   }
   colr.setAttribute("style","background-color: "+Color+";");
   colr.style.position="relative";
-  colr.style.top="-6px";
+  colr.style.top="0px";
   colr.style.marginBottom="-10px";
   colr.onmousedown = function(e){
     
@@ -7063,7 +7068,7 @@ function AddLayerUI(layer,index){
       }else{
         ctx = document.getElementById(layer[3]).getContext('2d', { willReadFrequently: true });
         //console.log(layerselected);
-        document.getElementById("UI_"+layerselected+"_name").style.color="#00AA00";
+        document.getElementById("UI_"+layerselected+"_name").style.color = null;
          document.getElementById(div.id+"_name").style.color="#FFFF00";
     
         layerselected=layer[3];
@@ -10607,7 +10612,15 @@ var SelectPos = {x:-1,y:-1,w:0,h:0};*/
 
 //#endregion
 
+function SetStyle(style){
+	
+	document.getElementById("styyle").href="./css/"+style+".css";
+	
+	
+}
+
 function Init() {
+  SetStyle("default");
   AddFrame();
   LoadFromCookies();
 SQ_SAVE();

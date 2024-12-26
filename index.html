@@ -5,12 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The advanced bit map utility</title>
-    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/default.css" id="styyle">
 	<link rel="shortcut icon" href="./favicon.ico" />
 </head>
 
  <body> 
-
    <div id="background"></div>
         <div id="UIbottom">
           <div id="frames">
@@ -131,7 +130,7 @@
   <button style="margin-left: 16px;" id="getPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/savepal.png" width="16" height="16"></button>
  </div>
 </div>
-          
+          <br/><br/>
           <div class="colorPick" >
            
            
@@ -174,7 +173,7 @@
             
             <br/>
             <button onclick="AnimPlay()">Play</button>
-            <button onclick="AnimPause()">Pause</button>
+            <button onclick="AnimPause()" style="width: 58px;">Pause</button>
             <button onclick="AnimPause();curr_frame=0;">Stop</button>
             <br/>
             <label>Onion</label><input type="checkbox" onclick="onion=!onion;LoadFrame(curr_frame)"/>
