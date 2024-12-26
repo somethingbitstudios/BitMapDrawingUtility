@@ -116,8 +116,8 @@ Input_m.addEventListener("click",function(e){
 let New = document.getElementById("new");
 New.addEventListener("click",function(e){
 ctx.clearRect(0,0,resolution.x,resolution.y);  
-previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);   
-uiCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);   
+previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(0,0,resolution.x,resolution.y);   
+uiCanvas.getContext('2d', { willReadFrequently: true }).clearRect(0,0,resolution.x,resolution.y);   
 SQ_SAVE();
 });
 let Resize = document.getElementById("resize");
@@ -249,7 +249,7 @@ Import.addEventListener("change",function(e){
   canv.width = image.width;
   canv.height = image.height;
 
-  const Actx = canv.getContext("2d");  Actx.drawImage(image, 0, 0);
+  const Actx = canv.getContext('2d', { willReadFrequently: true });  Actx.drawImage(image, 0, 0);
   SelectArea = Actx.getImageData(0,0,image.width,image.height);
   SelectAreaT=SelectArea;
 
@@ -574,11 +574,11 @@ var resScale = 0.25; //for mouse
 
 
     //ELEMENTS//
-var uiCanvas = document.getElementById("uicanvas"); var uictx = uiCanvas.getContext("2d");
+var uiCanvas = document.getElementById("uicanvas"); var uictx = uiCanvas.getContext('2d', { willReadFrequently: true });
 
-var previewCanvas = document.getElementById("previewcanvas");var pctx = previewCanvas.getContext("2d");
+var previewCanvas = document.getElementById("previewcanvas");var pctx = previewCanvas.getContext('2d', { willReadFrequently: true });
 var onionCanvas = document.getElementById("onioncanvas");
-var canvas = document.getElementById("layer0");var ctx = canvas.getContext("2d");
+var canvas = document.getElementById("layer0");var ctx = canvas.getContext('2d', { willReadFrequently: true });
 var canvasBackground = document.getElementById("canvasBackground");
 let background = document.getElementById("background");
 var div = document.getElementById("canvasdiv");
@@ -724,7 +724,7 @@ RotateSelectedArea(0);
 SelectPoints[8].onmouseup = function(){
   busy=false;
   //last process was 2: rotation
-  lastProc = 2; console.log("2 mouse up on");
+  lastProc = 2; //console.log("2 mouse up on");
   EnableSelectPoints();
   UpdateSelectPoints(SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1},SelectPos,{x:SelectPos.x+SelectPos.w-1,y:SelectPos.y+SelectPos.h-1});
 };
@@ -913,15 +913,15 @@ GetPaletteButton.addEventListener("click",function(){
     let rgbaElem = document.getElementById("rgba");
     let hslaElem = document.getElementById("hsla");
 let colorpickerBackground = document.getElementById("colorCanvasGradient"); //SATURATIONxLEVEL gradient
-let cpbtx = colorpickerBackground.getContext("2d");
+let cpbtx = colorpickerBackground.getContext('2d', { willReadFrequently: true });
 colorpickerBackground.width = 256;
 colorpickerBackground.height = 256;
 let huepickerBackground = document.getElementById("hueCanvasGradient"); //HUE gradient
-let htx = huepickerBackground.getContext("2d");
+let htx = huepickerBackground.getContext('2d', { willReadFrequently: true });
 huepickerBackground.width = 1;
 huepickerBackground.height = 360;
 let trpickerBackground = document.getElementById("trCanvasGradient"); //TRANSPARENTCY gradient
-let trtx = trpickerBackground.getContext("2d");
+let trtx = trpickerBackground.getContext('2d', { willReadFrequently: true });
 trpickerBackground.width = 1;
 trpickerBackground.height = 360;
 
@@ -937,12 +937,12 @@ PRIMARY_COLOR.addEventListener("click",function(e){
 const SECONDARY_COLOR = document.getElementById("SECONDARYCOLORcanvas");
 SECONDARY_COLOR.width = 1;
 SECONDARY_COLOR.height = 1;
-PRIMARY_COLOR.getContext("2d").fillStyle = "rgb(0,0,0)";
-PRIMARY_COLOR.getContext("2d").clearRect(0,0,1,1);
-PRIMARY_COLOR.getContext("2d").fillRect(0,0,1,1);
-SECONDARY_COLOR.getContext("2d").fillStyle = "rgb(255,255,255)";
-SECONDARY_COLOR.getContext("2d").clearRect(0,0,1,1);
-SECONDARY_COLOR.getContext("2d").fillRect(0,0,1,1);
+PRIMARY_COLOR.getContext('2d', { willReadFrequently: true }).fillStyle = "rgb(0,0,0)";
+PRIMARY_COLOR.getContext('2d', { willReadFrequently: true }).clearRect(0,0,1,1);
+PRIMARY_COLOR.getContext('2d', { willReadFrequently: true }).fillRect(0,0,1,1);
+SECONDARY_COLOR.getContext('2d', { willReadFrequently: true }).fillStyle = "rgb(255,255,255)";
+SECONDARY_COLOR.getContext('2d', { willReadFrequently: true }).clearRect(0,0,1,1);
+SECONDARY_COLOR.getContext('2d', { willReadFrequently: true }).fillRect(0,0,1,1);
 SECONDARY_COLOR.addEventListener("click",function(e){
   colorpicker.style.visibility = "visible";
   ColorSelected = true;
@@ -951,8 +951,8 @@ SECONDARY_COLOR.addEventListener("click",function(e){
 const CurrentColor = document.getElementById("CurrentColor");
 CurrentColor.width = 1;
 CurrentColor.height = 1;
-CurrentColor.getContext("2d").fillStyle = "rgba(255,0,0,1)";
-CurrentColor.getContext("2d").fillRect(0,0,1,1);
+CurrentColor.getContext('2d', { willReadFrequently: true }).fillStyle = "rgba(255,0,0,1)";
+CurrentColor.getContext('2d', { willReadFrequently: true }).fillRect(0,0,1,1);
 const styleCPE = getComputedStyle(document.querySelector('#colorpicker'));
 const colorpicker = document.getElementById("colorpicker");
 const ColorButtonNew = document.getElementById("ColorButtonNew");
@@ -1485,7 +1485,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1511,7 +1511,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1536,7 +1536,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1565,7 +1565,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1591,7 +1591,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1617,7 +1617,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1643,7 +1643,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1670,7 +1670,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1695,7 +1695,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1720,7 +1720,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1745,7 +1745,7 @@ function JRPG(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -1783,7 +1783,7 @@ function JRPG(){
 		switch(e){
 			case "next":
 			character_index=(character_index+1);
-			console.log(character_index);
+			//console.log(character_index);
 			if(character_index<4){
 			while(character_index<4&&characters[character_index].hp<=0){character_index=(character_index+1);}
 				
@@ -1805,7 +1805,7 @@ function JRPG(){
 			}
 			break;
 			case "fight":
-			console.log("fight");
+			//console.log("fight");
 			if(enemies.length>0){
 				enemies[0].hp-=characters[character_index].attack;
 				if(enemies[0].hp<0){score+=enemies[0].maxHP;itemmaybe();enemies.splice(0,1);}
@@ -2097,11 +2097,11 @@ function JRPG(){
 	var key_space=false;
 	var key_enter=false;
 	document.addEventListener("keydown", function(event) {
-	console.log(event.keyCode)
+	//console.log(event.keyCode)
   switch(event.keyCode){
 	 
 	  case 27:
-	  console.log("exit");
+	  //console.log("exit");
 		clearInterval(mainLoop);
 	  break;
 	   case 13:
@@ -2351,7 +2351,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2377,7 +2377,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2402,7 +2402,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2431,7 +2431,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2457,7 +2457,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2483,7 +2483,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2509,7 +2509,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2536,7 +2536,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2561,7 +2561,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2586,7 +2586,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2611,7 +2611,7 @@ function PANO(){
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -2649,7 +2649,7 @@ function PANO(){
 		switch(e){
 			case "next":
 			character_index=(character_index+1);
-			console.log(character_index);
+			//console.log(character_index);
 			if(character_index<4){
 			while(character_index<4&&characters[character_index].hp<=0){character_index=(character_index+1);}
 				
@@ -2671,7 +2671,7 @@ function PANO(){
 			}
 			break;
 			case "fight":
-			console.log("fight");
+			//console.log("fight");
 			if(enemies.length>0){
 				enemies[0].hp-=characters[character_index].attack;
 				if(enemies[0].hp<0){score+=enemies[0].maxHP;itemmaybe();enemies.splice(0,1);}
@@ -2963,11 +2963,11 @@ function PANO(){
 	var key_space=false;
 	var key_enter=false;
 	document.addEventListener("keydown", function(event) {
-	console.log(event.keyCode)
+	//console.log(event.keyCode)
   switch(event.keyCode){
 	 
 	  case 27:
-	  console.log("exit");
+	  //console.log("exit");
 		clearInterval(mainLoop);
 	  break;
 	   case 13:
@@ -3458,7 +3458,7 @@ function YUUM(){
 
   switch(event.keyCode){
 	  case 27:
-	  console.log("eit");
+	  //console.log("eit");
 		clearInterval(mainLoop);
 	  break;
 	  case 87://w
@@ -4480,17 +4480,21 @@ if(Qindex[AnimFrames_ptr[curr_frame]] != -1){
   Qindex[AnimFrames_ptr[curr_frame]] = -1;  
   
   
-  console.log(StateQueue[AnimFrames_ptr[curr_frame]].length);
+  //console.log(StateQueue[AnimFrames_ptr[curr_frame]].length);
  // console.log(StateQueue.length);
 
  //frame save
  SaveFrame(AnimFrames_ptr[curr_frame]);
 }
+
+
+
+
 function SQ_UNDO(){
   DisableSelectPoints();
-  console.log(StateQueue);
-  console.log(StateQueue[AnimFrames_ptr[curr_frame]]);
-  console.log(StateQueue[AnimFrames_ptr[curr_frame]]);
+  //console.log(StateQueue);
+  //console.log(StateQueue[AnimFrames_ptr[curr_frame]]);
+  //console.log(StateQueue[AnimFrames_ptr[curr_frame]]);
   if(StateQueue[AnimFrames_ptr[curr_frame]].length<2){console.error("len low! :"+StateQueue[AnimFrames_ptr[curr_frame]].length);console.error("curr_f:"+curr_frame);return;}
 if(Qindex[AnimFrames_ptr[curr_frame]]==-1){
   Qindex[AnimFrames_ptr[curr_frame]]=StateQueue[AnimFrames_ptr[curr_frame]].length-2;
@@ -4500,20 +4504,31 @@ Qindex[AnimFrames_ptr[curr_frame]]--;
 
 var Cid = StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].id;
 var tx = document.getElementById(Cid);
-console.log(Cid+" "+ tx)
-document.getElementById(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].id).getContext("2d").putImageData(new ImageData(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].data,resolution.x),0,0);
+//console.log(Cid+" "+ tx)
+if(tx==null){
+	return;
+}
+document.getElementById(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].id).getContext('2d', { willReadFrequently: true }).putImageData(new ImageData(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].data,resolution.x),0,0);
 SaveFrame(AnimFrames_ptr[curr_frame]);
 }
+
+
 
 function SQ_REDO(){
   DisableSelectPoints();
   if(Qindex[curr_frame] == -1){return;}
   if(Qindex[curr_frame] == StateQueue[AnimFrames_ptr[curr_frame]].length-1){Qindex[AnimFrames_ptr[curr_frame]]=-1;return;}
   Qindex[AnimFrames_ptr[curr_frame]]++;
-
-  document.getElementById(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].id).getContext("2d").putImageData(new ImageData(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].data,resolution.x),0,0);
+var tx = document.getElementById(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].id);
+if(tx==null){
+	return;
+}
+  tx.getContext('2d', { willReadFrequently: true }).putImageData(new ImageData(StateQueue[AnimFrames_ptr[curr_frame]][Qindex[AnimFrames_ptr[curr_frame]]].data,resolution.x),0,0);
   SaveFrame(AnimFrames_ptr[curr_frame]);
 }
+
+
+
 //#endregion
 //#region keyhandling
 document.addEventListener('keydown', function(event) {
@@ -4581,7 +4596,7 @@ function OpenZip_Process(zip) {
   zip.forEach(function (relativePath, zipEntry) {
     //check if its png
     var namez=zipEntry.name+"";
-    console.log(namez)
+    //console.log(namez)
     if(namez.includes(".png")&&namez.includes("data/")){
         num++;
       /*
@@ -4624,7 +4639,7 @@ function OpenZip_Process(zip) {
         
         
         zipEntry.async("arraybuffer").then(function(content) {
-          console.log(content);
+          //console.log(content);
            // Create an Image object
         var img = new Image();
 
@@ -4646,17 +4661,17 @@ function OpenZip_Process(zip) {
         // Get the ImageData from the canvas
         var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-        console.log(AnimFrames);
-        console.log(imageData);
-        console.log(frame+" "+layer);
-        console.log(AnimFrames[frame][layer]);
+        //console.log(AnimFrames);
+        //console.log(imageData);
+        //console.log(frame+" "+layer);
+        //console.log(AnimFrames[frame][layer]);
         AnimFrames[frame][layer]=imageData;
           };
         
         });
 
         setTimeout(function(){
-          console.log(AnimFrames_ptr);
+          //console.log(AnimFrames_ptr);
           for(let i = 0;i<AnimFrames.length;i++){
             AnimFramesPreview.push(GetPreviewImage(i));
           }
@@ -4666,7 +4681,7 @@ function OpenZip_Process(zip) {
             SaveFrame(i);
           }
           UpdateFrame_UI();
-          console.log(AnimFrames_duration);
+          //console.log(AnimFrames_duration);
     
           },250);
          
@@ -4684,8 +4699,8 @@ function OpenZip(zip){
       if (zipEntry.name=="data/vars.txt"){
         zipEntry.async("string").then(function(content) {
             
-          console.log(zipEntry.name);
-          console.log(content);
+          //console.log(zipEntry.name);
+          //console.log(content);
           var lines = content.split("\n");
           resolution.x = Number(lines[0].split(";")[0].split(" ")[1]);
           resolution.y = Number(lines[0].split(";")[1]);
@@ -4743,8 +4758,8 @@ function OpenZip(zip){
       });
       }else if (zipEntry.name=="data/cp.txt"){
         zipEntry.async("string").then(function(content) {
-          console.log(zipEntry.name);
-          console.log(content);
+          //console.log(zipEntry.name);
+          //console.log(content);
           var lines = content.split("\n");
           var ins = false;
           var idx=0;
@@ -4758,7 +4773,7 @@ function OpenZip(zip){
             }else if(lines[i]!=""){
               cp.push(lines[i]);
             }else{
-              console.log(cp);
+              //console.log(cp);
               InitializeColorPaletteOR(cp,name);
               SavePalette(idx);
               idx++;
@@ -4771,7 +4786,7 @@ function OpenZip(zip){
           UpdatePaletteList();
           Palette_clear();
           LoadPalette(0);
-          console.log(colorpalettes);
+          //console.log(colorpalettes);
           metadonecntr++;
           if(metadonecntr>2){
             OpenZip_Process(zip);
@@ -4780,8 +4795,8 @@ function OpenZip(zip){
       }else if (zipEntry.name=="data/lr.txt"){
         zipEntry.async("string").then(function(content) {
        
-          console.log(zipEntry.name);
-          console.log(content);
+          //console.log(zipEntry.name);
+          //console.log(content);
           var ins = false;
           layers=[];
           layers_ptr=[];
@@ -4806,7 +4821,7 @@ function OpenZip(zip){
             }
             
           }
-          console.log(layers_ptr);
+          //console.log(layers_ptr);
           //sort based on zindex (chungusSort)
           var i, j, min_idx;
  
@@ -4825,7 +4840,7 @@ function OpenZip(zip){
               layers_ptr[i]=temp;
           } 
           
-          console.log(layers_ptr);
+          //console.log(layers_ptr);
           var cvs = document.createElement("canvas");
           cvs.id="canvasBackground";
           cvs.width=1;
@@ -4856,8 +4871,8 @@ function OpenZip(zip){
            }
 
           }
-          console.log(layers);
-          ctx = document.getElementById(layers[layers.length-1][3]).getContext("2d");
+          //console.log(layers);
+          ctx = document.getElementById(layers[layers.length-1][3]).getContext('2d', { willReadFrequently: true });
             
           metadonecntr++;
           if(metadonecntr>2){
@@ -4951,13 +4966,13 @@ var cvs = document.createElement("canvas");
 for(let i = 0;i<AnimFrames.length;i++){
   for(let j = 0;j<AnimFrames[i].length;j++){
     var name = AnimFrames_ptr.indexOf(i)+"_"+j+"_"+AnimFrames_ptr.indexOf(i)+"_"+(AnimFrames_duration[i]+"").replace(".", "-")+".png";
-    console.log(AnimFrames_ptr.indexOf(i));
-    console.log(name);
+    //console.log(AnimFrames_ptr.indexOf(i));
+    //console.log(name);
     //console.log(AnimFrames[i][j]);
    var imgdt=AnimFrames[i][j];
     cvs.width=imgdt.width;
     cvs.height=imgdt.height;
-    cvs.getContext("2d").putImageData(imgdt,0,0);
+    cvs.getContext('2d', { willReadFrequently: true }).putImageData(imgdt,0,0);
 
     var res = new Promise((resolve) => {
       cvs.toBlob(resolve); 
@@ -4971,10 +4986,10 @@ for(let i = 0;i<AnimFrames.length;i++){
 //export
 for(let i =0;i<AnimFramesFullRes.length;i++){
   var imgdt=AnimFramesFullRes[i];
-  console.log(AnimFramesFullRes[i]);
+  //console.log(AnimFramesFullRes[i]);
   cvs.width=imgdt.width;
   cvs.height=imgdt.height;
-  cvs.getContext("2d").putImageData(imgdt,0,0);
+  cvs.getContext('2d', { willReadFrequently: true }).putImageData(imgdt,0,0);
 
   var res = new Promise((resolve) => {
     cvs.toBlob(resolve); 
@@ -5003,10 +5018,10 @@ function download_merged(){
 var canvas = document.createElement("canvas");
 canvas.width=resolution.x;
 canvas.height=resolution.y;
-var Tctx = canvas.getContext("2d");
+var Tctx = canvas.getContext('2d', { willReadFrequently: true });
 for(let i = 0;i< layers.length;i++){
 	if(layers[i][2]){
-		 putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
+		 putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
 	}
  }
 
@@ -5043,7 +5058,7 @@ fetch(filePath)
 	
         var x = Number(data.substring(5,9));
 	var y = Number(data.substring(10,14));
-	console.log(x+" "+y)
+	//console.log(x+" "+y)
     var ex = [];
 	
 	for(let i = 15;i<data.length;i++){
@@ -5051,7 +5066,7 @@ fetch(filePath)
 	}
 	
 	image_tmp = {data:ex,res:{x:x,y:y}};
-	console.log(image_tmp);
+	//console.log(image_tmp);
 	
     })
     .catch(error => {
@@ -5062,7 +5077,7 @@ fetch(filePath)
 }
 function export_bitmap(){
 
-  var canvARRAY = canvas.getContext("2d").getImageData(0,0,resolution.x,resolution.y).data;
+  var canvARRAY = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y).data;
   var exportString = "BBMP%";
   exportString+=(resolution.x+"").padStart(4, '0')+";"+(resolution.y+"").padStart(4, '0')+"%";
   var len = resolution.x*resolution.y*4;
@@ -5992,7 +6007,7 @@ function InitializeColorPicker(secondary,color){
 function FindColorOnPicker(color){
   var ColorArray = color.split("rgba(")[1].split(")")[0].split(",");
   //console.log(ColorArray);
-  var pickerImage = colorpickerBackground.getContext("2d").getImageData(0,0,256,256);
+  var pickerImage = colorpickerBackground.getContext('2d', { willReadFrequently: true }).getImageData(0,0,256,256);
   for(let i = 0; i < 255; i++){
     for(let j = 0;j<255;j++){
       //each pixel
@@ -6083,9 +6098,9 @@ UpdateTransparent(Color); //e.log(Color);
 }
 function ChangeColor(value){//changes modified color at relevant places
 
-CurrentColor.getContext("2d").fillStyle = value;
-CurrentColor.getContext("2d").clearRect(0,0,1,1);
-CurrentColor.getContext("2d").fillRect(0,0,1,1);
+CurrentColor.getContext('2d', { willReadFrequently: true }).fillStyle = value;
+CurrentColor.getContext('2d', { willReadFrequently: true }).clearRect(0,0,1,1);
+CurrentColor.getContext('2d', { willReadFrequently: true }).fillRect(0,0,1,1);
    Color = value;
    //UpdateWholeColorPicker(Color);
 }
@@ -6093,13 +6108,13 @@ CurrentColor.getContext("2d").fillRect(0,0,1,1);
 function Color_set(bool,color){
   //console.log(bool + " "+ color);
 if(!bool){
-PRIMARY_COLOR.getContext("2d").fillStyle = color;
-PRIMARY_COLOR.getContext("2d").clearRect(0,0,1,1);
-PRIMARY_COLOR.getContext("2d").fillRect(0,0,1,1);
+PRIMARY_COLOR.getContext('2d', { willReadFrequently: true }).fillStyle = color;
+PRIMARY_COLOR.getContext('2d', { willReadFrequently: true }).clearRect(0,0,1,1);
+PRIMARY_COLOR.getContext('2d', { willReadFrequently: true }).fillRect(0,0,1,1);
 }else{
-  SECONDARY_COLOR.getContext("2d").fillStyle = color;
-  SECONDARY_COLOR.getContext("2d").clearRect(0,0,1,1);
-  SECONDARY_COLOR.getContext("2d").fillRect(0,0,1,1);
+  SECONDARY_COLOR.getContext('2d', { willReadFrequently: true }).fillStyle = color;
+  SECONDARY_COLOR.getContext('2d', { willReadFrequently: true }).clearRect(0,0,1,1);
+  SECONDARY_COLOR.getContext('2d', { willReadFrequently: true }).fillRect(0,0,1,1);
 }
 }
 function Color_edit(oldColor,newColor,bool){
@@ -6350,8 +6365,8 @@ UpdateFrame_UI();
  SQ_SAVE();
 }
 function DeleteFrame(index){
-  console.log(AnimFrames.length);
-  console.log(index);
+  //console.log(AnimFrames.length);
+  //console.log(index);
   AnimFrames.splice(index,1);
   AnimFramesPreview.splice(index,1);
   AnimFramesFullRes.splice(index,1);
@@ -6363,7 +6378,7 @@ function DeleteFrame(index){
       AnimFrames_ptr[i]--;
     }
   }
-  console.log(AnimFrames.length);
+  //console.log(AnimFrames.length);
   UpdateFrame_UI();
   if(curr_frame>0){
     curr_frame--;
@@ -6377,11 +6392,11 @@ function DeleteFrame(index){
   
 }
 function MoveFrame(oldidx,newidx){
-  console.log("mov")
+  //console.log("mov")
 if(oldidx==newidx||newidx<0||newidx>AnimFrames.length-1){
   return;
 }
-console.log("CONF")
+//console.log("CONF")
 //delete old ptr
 console.log(AnimFrames_ptr+" "+oldidx+" "+newidx);
 var temp = Number(AnimFrames_ptr[oldidx]);
@@ -6417,14 +6432,14 @@ function LoadFrame(index_abs){
   for(let i = 0;i< layers.length;i++){
     //console.log(document.getElementById(layers[layers_ptr[i]][3]));
     //console.log(arr[layers_ptr[i]].data);
-   //putImageData(document.getElementById(layers[layers_ptr[i]][3]).getContext("2d"),arr[layers_ptr[i]].data,0,0,resolution.x,resolution.y);
-   document.getElementById(layers[i][3]).getContext("2d").putImageData(arr[i],0,0);
+   //putImageData(document.getElementById(layers[layers_ptr[i]][3]).getContext('2d', { willReadFrequently: true }),arr[layers_ptr[i]].data,0,0,resolution.x,resolution.y);
+   document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(arr[i],0,0);
   }
   if(onion){
     var idx=index_abs-1;
     
     if(idx<0){  document.getElementById("onioncanvas").style.opacity = 0;}else{
-      document.getElementById("onioncanvas").getContext("2d").putImageData(AnimFramesFullRes[AnimFrames_ptr[idx]],0,0);
+      document.getElementById("onioncanvas").getContext('2d', { willReadFrequently: true }).putImageData(AnimFramesFullRes[AnimFrames_ptr[idx]],0,0);
    document.getElementById("onioncanvas").style.opacity = onion_opac;
     }
    
@@ -6440,12 +6455,12 @@ function SaveFrame(index){//when swapping occurs, index stays constant
   if(anim_interrupt!=null){
     return;
   }
-  console.log("SAVEFRAME");
+  //console.log("SAVEFRAME");
   var arr = [];
 for(let i = 0;i< layers.length;i++){
   arr.push();//fill up with empty first
 }
-console.log("filled em up");
+//console.log("filled em up");
 /*if(layers_ptr.length<layers.length){//fills up layers_ptr if empty
   //find lowest unreferenced layer
   for(let p = 0;p<layers.length;p++){
@@ -6457,7 +6472,7 @@ console.log("filled em up");
 
 }
 */
-console.log("layer ptrs solved");
+//console.log("layer ptrs solved");
 if(AnimFrames_ptr.length<AnimFrames.length){//fills up layers_ptr if empty
   //find lowest unreferenced frame
   for(let p = 0;p<AnimFrames.length;p++){
@@ -6467,19 +6482,19 @@ if(AnimFrames_ptr.length<AnimFrames.length){//fills up layers_ptr if empty
   }
   
 }
-console.log("frame ptrs solved");
+//console.log("frame ptrs solved");
 //ACTUAL SAVING
 for(let i = 0;i< layers.length;i++){
   arr[i]=(
-    document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y)
+    document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y)
     );//fill up with empty first
 }
-console.log("saved to array");
+//console.log("saved to array");
 while(AnimFrames.length<=index){
   AnimFrames.push("NODATA");
 }
 AnimFrames[index]=arr;
-console.log(AnimFrames);
+//console.log(AnimFrames);
 
 
 //UpdatePreview(index);
@@ -6494,15 +6509,15 @@ var origmerged;
 var canvas = document.createElement("canvas");
 canvas.width=resolution.x;
 canvas.height=resolution.y;
-var Tctx = canvas.getContext("2d");
+var Tctx = canvas.getContext('2d', { willReadFrequently: true });
 for(let i = 0;i< layers.length;i++){
-  putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext("2d").getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
+  putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
 }
 origmerged = Tctx.getImageData(0,0,resolution.x,resolution.y);
 AnimFramesFullRes[index] = origmerged;
 AnimFramesPreview[index] = TransformImageData(origmerged,128,96);
-console.log(AnimFrames_ptr);
-document.getElementById("preview_"+index).getContext("2d").putImageData(AnimFramesPreview[index],0,0);
+//console.log(AnimFrames_ptr);
+document.getElementById("preview_"+index).getContext('2d', { willReadFrequently: true }).putImageData(AnimFramesPreview[index],0,0);
  
 }
 
@@ -6513,9 +6528,9 @@ function GetPreviewImage(index){
   var canvas = document.createElement("canvas");
   canvas.width=resolution.x;
   canvas.height=resolution.y;
-  var Tctx = canvas.getContext("2d");
+  var Tctx = canvas.getContext('2d', { willReadFrequently: true });
   for(let i = 0;i< layers.length;i++){
-    console.log(AnimFrames[AnimFrames_ptr[index]][i]);
+    //console.log(AnimFrames[AnimFrames_ptr[index]][i]);
     putImageDataOptimized(Tctx,AnimFrames[AnimFrames_ptr[index]][i].data,0,0,resolution.x,resolution.y);
   }
   origmerged = Tctx.getImageData(0,0,resolution.x,resolution.y);
@@ -6524,7 +6539,7 @@ function GetPreviewImage(index){
 }
 function FrameScrollToEnd(){
   var div = document.querySelector('#frames');
-  console.log(div);
+  //console.log(div);
   div.scrollLeft= 1000000000;
 
 }
@@ -6545,7 +6560,7 @@ inhtml+=" <div class='frame' id='endframe' style='display:flex;align-items:cente
     {
       AnimFramesPreview[AnimFrames_ptr[i]] = GetPreviewImage(AnimFrames_ptr[i]);
     }
-    document.getElementById("preview_"+AnimFrames_ptr[i]).getContext("2d").putImageData(AnimFramesPreview[AnimFrames_ptr[i]],0,0);
+    document.getElementById("preview_"+AnimFrames_ptr[i]).getContext('2d', { willReadFrequently: true }).putImageData(AnimFramesPreview[AnimFrames_ptr[i]],0,0);
   }
   
 }
@@ -6658,7 +6673,7 @@ function MenuChHelper(variable){
     Menu_Tool.appendChild(CreateIcon("./icons/spread.png",(MODE.poly=="default")?"legacy":"default","poly"));
     br = document.createElement("br");
     Menu_Tool.appendChild(br);
-	console.log(MODE.poly);
+	//console.log(MODE.poly);
     document.getElementById("poly_num_of_sides").addEventListener("focusout",()=>{
 		let data = document.getElementById("poly_num_of_sides").value;
 		Poly_Number_Of_Sides=data;
@@ -6968,7 +6983,7 @@ function LoadLayersUI(){
       for(let i = 0;i<AnimFrames.length;i++){
         AnimFrames[i].push(new ImageData(resolution.x,resolution.y));
       }
-      ctx = document.getElementById("layer0").getContext("2d");
+      ctx = document.getElementById("layer0").getContext('2d', { willReadFrequently: true });
       layers.push(lr);
       layerselected=lr[3];
       document.getElementById("UI_"+layerselected+"_name").style.color="#FFFF00";
@@ -7006,10 +7021,10 @@ function LoadLayersUI(){
       
       if(num==0){
         var layer = [name,1,true,"layer"+num];
-        ctx = document.getElementById("layer"+num).getContext("2d");
+        ctx = document.getElementById("layer"+num).getContext('2d', { willReadFrequently: true });
       }else{
          var layer = [name,layers[layers.length-1][1]+1,true,"layer"+num];
-         ctx = document.getElementById(layer[3]).getContext("2d");
+         ctx = document.getElementById(layer[3]).getContext('2d', { willReadFrequently: true });
          
       }
      
@@ -7022,7 +7037,7 @@ function LoadLayersUI(){
       }
      layerselected=layer[3];
       LoadLayersUI();
-      
+      SQ_SAVE();
   }
 
 
@@ -7046,15 +7061,16 @@ function AddLayerUI(layer,index){
       document.getElementById(div.id+"_name").innerHTML=name;
       layer[0]=name;
       }else{
-        ctx = document.getElementById(layer[3]).getContext("2d");
-        console.log(layerselected);
+        ctx = document.getElementById(layer[3]).getContext('2d', { willReadFrequently: true });
+        //console.log(layerselected);
         document.getElementById("UI_"+layerselected+"_name").style.color="#00AA00";
          document.getElementById(div.id+"_name").style.color="#FFFF00";
     
         layerselected=layer[3];
-
+		
       }
      templr=true;
+	 SQ_SAVE();
      setTimeout(() => {
       templr=false;
      }, DoubleClickSpeed*2);
@@ -7089,10 +7105,10 @@ function AddLayerUI(layer,index){
       
       if(ll==0){
         var layer = [name,1,true,"layer"+ll];
-        ctx = document.getElementById("layer"+ll).getContext("2d");
+        ctx = document.getElementById("layer"+ll).getContext('2d', { willReadFrequently: true });
       }else{
          var layer = [name,layers[ll-1][2]+1,true,"layer"+ll];
-         ctx = document.getElementById(layer[3]).getContext("2d");
+         ctx = document.getElementById(layer[3]).getContext('2d', { willReadFrequently: true });
          
       }
      
@@ -7255,7 +7271,7 @@ function UpdatePos(){
           leftDouble = false;
          }
        
-         previewCanvas.getContext("2d").fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
+         previewCanvas.getContext('2d', { willReadFrequently: true }).fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
          if(hoveredON == "canvas"||hoveredON=="background"){
 
           if(SelectActive){
@@ -7483,7 +7499,7 @@ switch(MODE.poly){
          rightDouble = false;
         }
       
-        previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
+        previewCanvas.getContext('2d', { willReadFrequently: true }).fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
         if(hoveredON == "canvas"||hoveredON=="background"){
 
          if(SelectActive){
@@ -7844,7 +7860,7 @@ switch(MODE.poly){
 	
 	
     document.addEventListener("mouseup", function(e){
-    //previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);
+    //previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(0,0,resolution.x,resolution.y);
       //lastPos.x = pos.x;
       //lastPos.y = pos.y;
       upPos.x = pos.x;
@@ -7891,7 +7907,7 @@ switch(MODE.poly){
         SQchanged[curr_frame]=true;
         switch(MODE.pencil){
     case("4"):
-     previewCanvas.getContext("2d").clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
+     previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
  
     
        ctx.fillStyle = lineColor;
@@ -7910,7 +7926,7 @@ switch(MODE.poly){
      SQchanged[curr_frame]=true;
     switch(MODE.line){
 default:
-  Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
+  Line(false,previewCanvas.getContext('2d', { willReadFrequently: true }),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
   Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
   break;
     }
@@ -7929,7 +7945,7 @@ default:
 	 }
     //PolyDrawOld(lineColor);
     
-	previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
+	previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
      case("select"):
@@ -8070,7 +8086,7 @@ default:
         SQchanged[curr_frame]=true;
         switch(MODE.pencil){
     case("4"):
-     previewCanvas.getContext("2d").clearRect(intPos.x,intPos.y,lineWidthS,lineWidthS);
+     previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(intPos.x,intPos.y,lineWidthS,lineWidthS);
  
     
        ctx.fillStyle = lineColorS;
@@ -8089,7 +8105,7 @@ default:
      SQchanged[curr_frame]=true;
     switch(MODE.line){
 default:
-  Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
+  Line(false,previewCanvas.getContext('2d', { willReadFrequently: true }),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
   Line(true,ctx,downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
   break;
     }
@@ -8108,7 +8124,7 @@ default:
 	 }
     //PolyDrawOld(lineColorS);
 	//PolyDraw(draw,cnvs,clr,w,center,scale,angle){
-	iewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);//hotfix
+	iewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(0,0,resolution.x,resolution.y);//hotfix
     
      break;
      case("select"):
@@ -8137,9 +8153,9 @@ default:
     
     
      if(left&!right){
-        previewCanvas.getContext("2d").fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
+        previewCanvas.getContext('2d', { willReadFrequently: true }).fillStyle = lineColor;ctx.fillStyle = lineColor; ctx.strokeStyle = lineColor;  
       }else if(!left&right){
-        previewCanvas.getContext("2d").fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
+        previewCanvas.getContext('2d', { willReadFrequently: true }).fillStyle = lineColorS;ctx.fillStyle = lineColorS; ctx.strokeStyle = lineColorS;  
       }
     
     
@@ -8362,9 +8378,9 @@ function Draw(){
       
     Color = "rgba("+idk[0]+","+idk[1]+","+idk[2]+","+Transparency+")";
     
-      CurrentColor.getContext("2d").fillStyle = Color;
-      CurrentColor.getContext("2d").clearRect(0,0,1,1);
-       CurrentColor.getContext("2d").fillRect(0,0,1,1);
+      CurrentColor.getContext('2d', { willReadFrequently: true }).fillStyle = Color;
+      CurrentColor.getContext('2d', { willReadFrequently: true }).clearRect(0,0,1,1);
+       CurrentColor.getContext('2d', { willReadFrequently: true }).fillRect(0,0,1,1);
        UpdateTransparent(Color);
        UpdateColorCode(Color);
     }
@@ -8418,9 +8434,9 @@ function Draw(){
       let rgb = Color.split("rgba(")[1].split(",");
     Color = "rgba("+rgb[0]+","+rgb[1]+","+rgb[2]+","+Transparency+")";
     
-      CurrentColor.getContext("2d").fillStyle = Color;
-      CurrentColor.getContext("2d").clearRect(0,0,1,1);
-       CurrentColor.getContext("2d").fillRect(0,0,1,1);
+      CurrentColor.getContext('2d', { willReadFrequently: true }).fillStyle = Color;
+      CurrentColor.getContext('2d', { willReadFrequently: true }).clearRect(0,0,1,1);
+       CurrentColor.getContext('2d', { willReadFrequently: true }).fillRect(0,0,1,1);
        
        UpdateColorCode(Color);  
        }
@@ -8488,8 +8504,8 @@ break;
       case("line"):
       switch(MODE.line){
         default:
-           Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor);
-      Line(true,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
+           Line(false,previewCanvas.getContext('2d', { willReadFrequently: true }),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidth,lineColor);
+      Line(true,previewCanvas.getContext('2d', { willReadFrequently: true }),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidth,lineColor);
           break;
       }
       
@@ -8569,7 +8585,7 @@ case("4"):
 //PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
 ctx.fillStyle = lineColorS;
  PixelPerfectPencil(lineWidthS);
- console.log(lineColorS);
+ //console.log(lineColorS);
 break;
 
       }
@@ -8579,8 +8595,8 @@ break;
       case("line"):
       switch(MODE.line){
         default:
-           Line(false,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidthS,lineColorS);
-      Line(true,previewCanvas.getContext("2d"),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
+           Line(false,previewCanvas.getContext('2d', { willReadFrequently: true }),downIntPos.x,downIntPos.y,lastIntPos.x,lastIntPos.y,lineWidthS,lineColorS);
+      Line(true,previewCanvas.getContext('2d', { willReadFrequently: true }),downIntPos.x,downIntPos.y,intPos.x,intPos.y,lineWidthS,lineColorS);
           break;
       }
       
@@ -9544,11 +9560,11 @@ function PixelPerfectLinePencil(X,Y,x,y,width) {
     if((Math.abs(perfectPos.x- x) < 2) && (Math.abs(perfectPos.y- y) < 2)){
       
      if(x != lastIntPos.x || y != lastIntPos.y){
-      //previewCanvas.getContext("2d").clearRect(0,0,resolution.x,resolution.y);      //this is... something
-      previewCanvas.getContext("2d").clearRect(lastIntPos.x,lastIntPos.y,1,1); //less of a war crime than above
+      //previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(0,0,resolution.x,resolution.y);      //this is... something
+      previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(lastIntPos.x,lastIntPos.y,1,1); //less of a war crime than above
       lastIntPos.x = x;
       lastIntPos.y = y;
-      previewCanvas.getContext("2d").fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
+      previewCanvas.getContext('2d', { willReadFrequently: true }).fillRect(lastIntPos.x,lastIntPos.y,lineWidth,lineWidth);
       
       
       
@@ -9597,21 +9613,21 @@ offset = 1;
   
   switch(dist){
     case(0):
-    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
+    previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
     previewPos.x = perfectPos.x;
     previewPos.y = perfectPos.y;
     break;
     case(1):
 
-    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
-    previewCanvas.getContext("2d").fillRect(intPos.x,intPos.y,lineWidthV,lineWidthV);
+    previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
+    previewCanvas.getContext('2d', { willReadFrequently: true }).fillRect(intPos.x,intPos.y,lineWidthV,lineWidthV);
     previewPos.x = intPos.x;
     previewPos.y = intPos.y;
 
     break;
     default:
       
-    previewCanvas.getContext("2d").clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
+    previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(previewPos.x,previewPos.y,lineWidthV,lineWidthV);
       //Line code//
       let beforePos = LinePPP(true,ctx,previewPos.x,previewPos.y,intPos.x,intPos.y,lineWidthV,offset);
 
@@ -9622,7 +9638,7 @@ offset = 1;
       previewPos.y = intPos.y;
       perfectPos.x = beforePos.x;//inpos =>1px before intpos
       perfectPos.y = beforePos.y;
-      previewCanvas.getContext("2d").fillRect(intPos.x,intPos.y,lineWidthV,lineWidthV);
+      previewCanvas.getContext('2d', { willReadFrequently: true }).fillRect(intPos.x,intPos.y,lineWidthV,lineWidthV);
     break;
   }
   
