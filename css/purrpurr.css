@@ -1,21 +1,21 @@
 :root {
-  --color: #b5d97dff; /*basic text color*/
-  --main-primary-color: #3c9140ff; /*primary tool color*/
-  --main-primary-color-2: #214822ff; /*primary tool color*/
+  --color: #B59CFA; /*basic text color*/
+  --main-primary-color: #805AFA; /*primary tool color*/
+  --main-primary-color-2: #603ADA; /*primary tool color*/
   --main-secondary-color:  #EB6954;/*secondary tool color*/
    --main-secondary-color-2:  #B55141;/*secondary tool color*/
   --main-selected-color:  #EB6B98; /* combo tool color*/
   --main-selected-color-2:  #AB4B78;
   --background-color: #201020; /* canvas background */
 --menu-background-1: #101010; /* menu background */
---body-color: #ffab62ff; /* input field text color */
+--body-color: #E095FA; /* input field text color */
 --link-color: #f9f614;
   --menu-top-height: 35px;
   
   --main-highlight: #FFCC22;
   
-  --button-background-color: #E5F9E0;
-  --button-background-color-2: #BECFBA;
+  --button-background-color: #e4d7ebff;
+  --button-background-color-2: #c7b0bbff;
   
   --button-background-color-click: #BBBBBB;
   --button-background-color-click-2: #777777;

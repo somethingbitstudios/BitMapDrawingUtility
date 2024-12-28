@@ -72,7 +72,7 @@
 
           <div id="colorpicker" style="visibility: hidden;">
 <button id="cancel_colorpicker" class="cancel"></button>
-            <p id="labelColor"> PRIMARY Tool Color Picker</p>
+           
 <div id="colorCanvas">
   <img src="./icons/cursor1.png" id="gradientcursor" width="16" height="16" left="-8px" top="119px" >
 <canvas id="colorCanvasGradient" ></canvas>
@@ -137,14 +137,12 @@
              <p class="nospace">PRIMARY</p> 
              <canvas class="ColorSquare" id="PRIMARYCOLORcanvas"></canvas>
              
-             <button id="removeColorP"class="smallicon invicon"><img class="smallbuttonimg" src="./icons/bin.png" width="24" height="24"></button>
-             
+            
               </div>
           <div class="colorPick">
         <p class="nospace">SECONDARY</p>
         <canvas class="ColorSquare" id="SECONDARYCOLORcanvas"></canvas>
-        <button id="removeColorS"class="smallicon invicon"><img class="smallbuttonimg" src="./icons/bin.png" width="24" height="24"></button>
-             
+            
 
           </div>
         
@@ -176,7 +174,10 @@
             <button onclick="AnimPause()" style="width: 58px;">Pause</button>
             <button onclick="AnimPause();curr_frame=0;">Stop</button>
             <br/>
-            <label>Onion</label><input type="checkbox" onclick="onion=!onion;LoadFrame(curr_frame)"/>
+            <label style="margin:0;border:none;padding:0;">Onion</label>
+			<button style="width:70px;"id="onionrev" onclick="OnionRevolver()">Off</button>
+			
+			<br/>
             <label>Opacity %</label>
             <input onblur="onion_opac=(this.value/100);LoadFrame(curr_frame)" type="number" value="50"/>
             </div>

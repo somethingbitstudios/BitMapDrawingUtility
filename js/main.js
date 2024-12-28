@@ -601,7 +601,7 @@ var anim_interrupt=null;
 //#region frame
 
 var curr_frame = 0;
-var onion = false;
+var onion = 0;
 var onion_opac = 0.5;
 var AnimFrames_ptr = [];//index of frame in imgdata 
 var layers_ptr = [0,1];//at the start: [0,1,2,3] by the end: [2,0,3]
@@ -1007,9 +1007,25 @@ if(!ColorSelected){
   Color_set(true,Color);
 }
 });
+function OnionRevolver(){
+	//console.log("revolve for morale!");
+	onion = (onion+1)%3;
+	switch(onion){
+		case 0:
+			document.getElementById("onionrev").innerHTML="Off";
+			break;
+		case 1:
+			document.getElementById("onionrev").innerHTML="Bottom";
+			break;
+		case 2:
+			document.getElementById("onionrev").innerHTML="Top";
+			break;
+		}
+		LoadFrame(curr_frame);
+}
 
 
-
+/*
 document.getElementById("removeColorP").addEventListener("click",function(){
   let fix = true;
  if(colors.length==0){return;}
@@ -1136,7 +1152,7 @@ document.getElementById("removeColorS").addEventListener("click",function(){
   if(oncolorright > colors.length-1){oncolorright = colors.length-1; return;}
   if(oncolorleft > colors.length-1 && fix){oncolorleft = colors.length-1; return;}
   Update_Colors();
-});
+});*/
 let hex = document.getElementById("hex");
 hex.addEventListener("focusout",function(){
 //validate
@@ -1149,8 +1165,9 @@ UpdateColorCode(rgba);
       var huetemp = RGBAtoHSLA(rgba).split("hsla(")[1].split(")")[0].split(",")[0];
       var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
 //console.log(huetemp);
-      UpdateColorPicker(hue);
-      UpdateWholeColorPicker(rgba);
+      //UpdateColorPicker(hue);
+      //UpdateWholeColorPicker(rgba);
+	  InitializeColorPicker(false,rgba);
   }
 
 }
@@ -1167,9 +1184,10 @@ rgba.addEventListener("focusout",function(){
           var huetemp = RGBAtoHSLA(rgba.value).split("hsla(")[1].split(")")[0].split(",")[0];
           var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
     //console.log(huetemp);
-          UpdateColorPicker(hue);
-          UpdateWholeColorPicker(rgba.value);
+          //UpdateColorPicker(hue);
+          //UpdateWholeColorPicker(rgba.value);
     ChangeColor(rgba.value);
+	InitializeColorPicker(false,rgba.value);
   }
 });
 let hsla = document.getElementById("hsla");
@@ -1186,9 +1204,9 @@ hsla.addEventListener("focusout",function(){
           var huetemp = RGBAtoHSLA(rgba).split("hsla(")[1].split(")")[0].split(",")[0];
           var hue = HSLAtoRGBA("hsla("+huetemp+",100,50,1)");
     //console.log(huetemp);
-          UpdateColorPicker(hue);
-          UpdateWholeColorPicker(rgba);
-  
+          //UpdateColorPicker(hue);
+          //UpdateWholeColorPicker(rgba);
+			InitializeColorPicker(false,rgba);
   }
 
 
@@ -6002,10 +6020,10 @@ function ColorPickerUpdate(color){
 function InitializeColorPicker(secondary,color){
   EditedColor=color;
   if(secondary){
-    document.getElementById("labelColor").innerHTML = "SECONDARY";
+    //document.getElementById("labelColor").innerHTML = "SECONDARY";
     ColorPickerUpdate(color);
   }else{
-    document.getElementById("labelColor").innerHTML = "PRIMARY";
+    //document.getElementById("labelColor").innerHTML = "PRIMARY";
     ColorPickerUpdate(color);
   }
 }
@@ -6440,13 +6458,18 @@ function LoadFrame(index_abs){
    //putImageData(document.getElementById(layers[layers_ptr[i]][3]).getContext('2d', { willReadFrequently: true }),arr[layers_ptr[i]].data,0,0,resolution.x,resolution.y);
    document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(arr[i],0,0);
   }
-  if(onion){
+  if(onion>0){
     var idx=index_abs-1;
-    
-    if(idx<0){  document.getElementById("onioncanvas").style.opacity = 0;}else{
+    if(idx<0){idx+=AnimFrames.length;}
+    //if(idx<0){  document.getElementById("onioncanvas").style.opacity = 0;}else{
       document.getElementById("onioncanvas").getContext('2d', { willReadFrequently: true }).putImageData(AnimFramesFullRes[AnimFrames_ptr[idx]],0,0);
    document.getElementById("onioncanvas").style.opacity = onion_opac;
-    }
+   if(onion==1){
+	   document.getElementById("onioncanvas").style.zIndex = -997;
+   }else{
+	   document.getElementById("onioncanvas").style.zIndex = 997;
+   }
+    //}
    
   }else{
     document.getElementById("onioncanvas").style.opacity = 0;
@@ -10620,7 +10643,7 @@ function SetStyle(style){
 }
 
 function Init() {
-  SetStyle("default");
+  SetStyle("cactus");
   AddFrame();
   LoadFromCookies();
 SQ_SAVE();
