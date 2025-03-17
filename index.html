@@ -181,7 +181,16 @@
             <label>Opacity %</label>
             <input onblur="onion_opac=(this.value/100);LoadFrame(curr_frame)" type="number" value="50"/>
             </div>
-            
+            <br/>
+			<strong>Filters (._.)</strong>
+			<br/>
+		
+			<button onclick="Filter_SnapToPalette()" style="width: 76px;">ToPalette</button>
+			<button onclick="Filter_Error()" style="width: 76px;">[---]</button>
+			<br/>
+			<button onclick="Filter_BnW()" style="width: 76px;">B&W</button>
+			<button onclick="Filter_Sheer()" style="width: 76px;">Sheer</button>
+			<br/>
         </div>
 		
         <div id="UItop">

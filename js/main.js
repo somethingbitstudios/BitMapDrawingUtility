@@ -1381,6 +1381,15 @@ function HandleCheat(cheatcode){
 	PANO();
 	return;
 	}
+	if(cheatcode.includes("yuum")){
+		if(cheatcode.split(" ")[1] != ""){
+		
+		for(let i = 1;i< cheatcode.split(" ")[1];i++){
+			YUUM();
+		}
+	}
+	YUUM();
+	}
 	if(cheatcode.includes("interlace")){
 		Cheat_Interlace(Number(cheatcode.split(" ")[1]));
 		return;
