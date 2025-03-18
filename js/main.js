@@ -1365,9 +1365,131 @@ var lrtb = {left:1,right:-1,top:1,bottom:-1};
 
 var Filter_All = false;
 var Filter_All_btn = document.getElementById("filter_all");
+var tempImgData = new ImageData(resolution.x,resolution.y);
+var Filter_Sheer_Offset = 1;
 //#endregion
 //#region functions
 //#region filters
+function Filter_Copy_Single(imgData){//resolution.x,resolution
+	
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		var inPos = (i*resolution.x+j)*4;
+		var outPos = (i*resolution.x+j)*4;
+		tempImgData.data[outPos]=imgData.data[inPos];
+		tempImgData.data[outPos+1]=imgData.data[inPos+1];
+		tempImgData.data[outPos+2]=imgData.data[inPos+2];
+		tempImgData.data[outPos+3]=imgData.data[inPos+3];
+		
+		}
+	}
+	
+	return tempImgData;
+}
+
+function Filter_SnapToPalette(){
+	if(Filter_All){
+		for(let i = 0;i< layers.length;i++){
+			var imgData = Filter_SnapToPalette_Single(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+			document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+		}
+	}else{
+		ctx.putImageData(Filter_SnapToPalette_Single(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+	}
+}
+function Filter_SnapToPalette_Single(imgData){//resolution.x,resolution
+	var colorpal = ColorsToPureArray();
+	console.log(colorpal);
+	//[[0,255,0,0.5],...]
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		var inPos = (i*resolution.x+j)*4;
+		var outPos = (i*resolution.x+j)*4;
+		var color = [imgData.data[inPos],imgData.data[inPos+1],imgData.data[inPos+2],imgData.data[inPos+3]];
+		
+		var outColor = [0,0,0,0];//make it closest color
+		
+			//pick closest color
+		var difference = 1025;
+		for(let i = 0;i<colorpal.length;i++){
+			var dif = Math.abs(colorpal[0]-color[0])+Math.abs(colorpal[1]-color[1])+Math.abs(colorpal[2]-color[2])+Math.abs(colorpal[3]-color[3]);
+			if(dif<difference){
+				difference=dif;
+				outColor=color[i];
+			}
+		}
+		
+		
+		tempImgData.data[outPos]=outColor[0];
+		tempImgData.data[outPos+1]=outColor[1];
+		tempImgData.data[outPos+2]=outColor[2];
+		tempImgData.data[outPos+3]=outColor[3];
+		
+		}
+	}
+	
+	return tempImgData;
+}
+function Filter_BnW(){
+	if(Filter_All){
+		for(let i = 0;i< layers.length;i++){
+			var imgData = Filter_BnW_Single(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+			document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+		}
+	}else{
+		ctx.putImageData(Filter_BnW_Single(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+	}
+}
+function Filter_BnW_Single(imgData){//resolution.x,resolution
+
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		var inPos = (i*resolution.x+j)*4;
+		var outPos = (i*resolution.x+j)*4;
+		var value = Math.round((imgData.data[inPos]+imgData.data[inPos+1]+imgData.data[inPos+2])/3);
+		tempImgData.data[outPos]=value;
+		tempImgData.data[outPos+1]=value;
+		tempImgData.data[outPos+2]=value;
+		tempImgData.data[outPos+3]=imgData.data[inPos+3];
+		
+		}
+	}
+
+	return tempImgData;
+}
+
+function Filter_Sheer(){
+	if(Filter_All){
+		for(let i = 0;i< layers.length;i++){
+			var imgData = Filter_Sheer_Single(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+			document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+		}
+	}else{
+		var img = Filter_Sheer_Single(ctx.getImageData(0,0,resolution.x,resolution.y));
+		ctx.putImageData(img,0,0);
+	}
+}
+function Filter_Sheer_Single(imgData){//resolution.x,resolution
+	
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		var inPos = (i*resolution.x+j)*4;
+		var outPos = (i*resolution.x+(((j+(i*Filter_Sheer_Offset))%resolution.x)+resolution.x)%resolution.x)*4;
+		tempImgData.data[outPos]=imgData.data[inPos];
+		tempImgData.data[outPos+1]=imgData.data[inPos+1];
+		tempImgData.data[outPos+2]=imgData.data[inPos+2];
+		tempImgData.data[outPos+3]=imgData.data[inPos+3];
+		
+		}
+	}
+	
+	return tempImgData;
+}
+
 //#endregion
 //#region cheats
 function HandleCheat(cheatcode){
@@ -4443,6 +4565,18 @@ function ColorsToArray(){
   }
   return arr;
 }
+function ColorsToPureArray(){
+  var arr = [];
+  for(let i = 0;i< colors.length;i++){
+    arr.push(colors[i].getAttribute("style").split("(")[1].split(")")[0].split(","));
+	for(let j = 0;j<3;j++){
+		arr[i][j]=Number(arr[i][j]);
+	}
+	arr[i][3]=Math.round(Number(arr[i][3])*255);
+  }
+  return arr;
+}
+
 //#endregion
 //#region linear algebra and stuff
 function TransformImageDataOld(imagedata,neww,newh){
@@ -4689,7 +4823,7 @@ function OpenZip_Process(zip) {
         canvas.width=resolution.x;
         canvas.height=resolution.y;
         
-        var ctx = canvas.getContext('2d');
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
           img.onload = ()=>{
 // Draw the Image onto the canvas
         ctx.drawImage(img, 0, 0);
