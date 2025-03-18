@@ -182,14 +182,24 @@
             <input onblur="onion_opac=(this.value/100);LoadFrame(curr_frame)" type="number" value="50"/>
             </div>
             <br/>
-			<strong>Filters (._.) </strong><button style="width: 160px;" id="filter_all" onclick="Filter_All=!Filter_All;console.log(Filter_All);if(Filter_All){ Filter_All_btn.innerHTML='All layers'; }else{ Filter_All_btn.innerHTML='Single layer';  }">Single layer</button>
+			<label>Layer scope: </label>
+			<button style="width: 80px;" id="filter_all" onclick="Filter_All=!Filter_All;console.log(Filter_All);if(Filter_All){ Filter_All_btn.innerHTML='All lrs.'; }else{ Filter_All_btn.innerHTML='Sngl.lr.';  }">Sngl.lr.</button>
 			<br/>
 		
 			<button onclick="Filter_SnapToPalette()" style="width: 76px;">ToPalette</button>
 			<button onclick="Filter_BnW()" style="width: 76px;">B&W</button>
 			<br/>
 			<button onclick="Filter_Sheer()" style="width: 76px;">Sheer</button>
-			<input type="number" style="width:76px;" onchange="Filter_Sheer_Offset=this.value;" value="1"/>
+			<input type="number" style="width:76px;" onchange="Filter_Sheer_Offset=this.value;" value="1"/><br/>
+			<button onclick="Filter_PxlBlr()" style="width: 60px;">PxBlur</button>
+			<label>size:</label>
+			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_size=this.value;" value="3"/><br/>
+			<label>smpls</label>
+			<input type="number" style="width:32px;" onchange="Filter_PxlBlr_samples=this.value;" value="1"/>
+			<label>opct</label>
+			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_opacity=this.value;" value="1.0"/>
+			
+			
 			<br/>
         </div>
 		

@@ -1388,6 +1388,37 @@ function Filter_Copy_Single(imgData){//resolution.x,resolution
 	return tempImgData;
 }
 
+function Filter_PxlBlr(){
+	if(Filter_All){
+		for(let i = 0;i< layers.length;i++){
+			var imgData = Filter_BnW_Single(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+			document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+		}
+	}else{
+		ctx.putImageData(Filter_PxlBlr_Single(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+	}
+}
+function Filter_PxlBlr_Single(imgData){//resolution.x,resolution
+
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		var inPos = (i*resolution.x+j)*4;
+		var outPos = (i*resolution.x+j)*4;
+		var value = Math.round((imgData.data[inPos]+imgData.data[inPos+1]+imgData.data[inPos+2])/3);
+		tempImgData.data[outPos]=value;
+		tempImgData.data[outPos+1]=value;
+		tempImgData.data[outPos+2]=value;
+		tempImgData.data[outPos+3]=imgData.data[inPos+3];
+		
+		}
+	}
+
+	return tempImgData;
+}
+
+
+
 function Filter_SnapToPalette(){
 	if(Filter_All){
 		for(let i = 0;i< layers.length;i++){
