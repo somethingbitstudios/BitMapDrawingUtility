@@ -182,7 +182,7 @@
             <input onblur="onion_opac=(this.value/100);LoadFrame(curr_frame)" type="number" value="50"/>
             </div>
             <br/>
-			<strong>Filters (._.)</strong>
+			<strong>Filters (._.) </strong><button style="width: 160px;" id="filter_all" onclick="Filter_All=!Filter_All;console.log(Filter_All);if(Filter_All){ Filter_All_btn.innerHTML='All layers'; }else{ Filter_All_btn.innerHTML='Single layer';  }">Single layer</button>
 			<br/>
 		
 			<button onclick="Filter_SnapToPalette()" style="width: 76px;">ToPalette</button>

@@ -1362,9 +1362,13 @@ var AbsLastPos = {x:0,y:0}
 //#region select
 var lrtb = {left:1,right:-1,top:1,bottom:-1};
 //#endregion
-//#endregion
 
+var Filter_All = false;
+var Filter_All_btn = document.getElementById("filter_all");
+//#endregion
 //#region functions
+//#region filters
+//#endregion
 //#region cheats
 function HandleCheat(cheatcode){
 	switch(cheatcode){
