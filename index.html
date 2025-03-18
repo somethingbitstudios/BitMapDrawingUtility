@@ -198,8 +198,13 @@
 			<input type="number" style="width:32px;" onchange="Filter_PxlBlr_samples=this.value;" value="1"/>
 			<label>opct</label>
 			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_opacity=this.value;" value="1.0"/>
-			
-			
+			<button onclick="Toggle_Blr();if(PxlBlrInterval==null){this.innerHTML='Start';}else{this.innerHTML='Stop';}" style="width: 76px;">Start</button>
+			<label>intrvl</label>
+			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_interval=this.value;if(PxlBlrInterval!=null){Toggle_Blr();Toggle_Blr();}" value="100.0"/>
+			<label>offset</label>
+			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_off_x=Number(this.value);if(PxlBlrInterval!=null){Toggle_Blr();Toggle_Blr();}" value="0.0"/>
+			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_off_y=Number(this.value);if(PxlBlrInterval!=null){Toggle_Blr();Toggle_Blr();}" value="0.0"/>
+			<button onclick="Toggle_Blr();if(PxlBlrInterval==null){this.innerHTML='Start';}else{this.innerHTML='Stop';}" style="width: 76px;">Relative</button>
 			<br/>
         </div>
 		

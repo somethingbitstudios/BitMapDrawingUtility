@@ -1387,7 +1387,28 @@ function Filter_Copy_Single(imgData){//resolution.x,resolution
 	
 	return tempImgData;
 }
+var Filter_PxlBlr_size=3;
+var Filter_PxlBlr_samples=1;
+var Filter_PxlBlr_opacity=1;
+var Filter_PxlBlr_interval=1;
+var Filter_PxlBlr_off_x=0;
+var Filter_PxlBlr_off_y=0;
 
+var PxlBlrInterval = null;
+function Toggle_Blr(){
+	console.log("x"+Filter_PxlBlr_off_x);
+	console.log("y"+Filter_PxlBlr_off_y);
+	if(PxlBlrInterval==null){
+		
+		PxlBlrInterval=setInterval(()=>{
+			Filter_PxlBlr();
+		},Filter_PxlBlr_interval);
+	}else{
+		clearInterval(PxlBlrInterval);
+		PxlBlrInterval=null;
+	}
+	
+}
 function Filter_PxlBlr(){
 	if(Filter_All){
 		for(let i = 0;i< layers.length;i++){
@@ -1403,13 +1424,25 @@ function Filter_PxlBlr_Single(imgData){//resolution.x,resolution
 	tempImgData = new ImageData(resolution.x,resolution.y);
 	for(let i = 0;i<resolution.y;i++){
 		for(let j = 0;j<resolution.x;j++){
-		var inPos = (i*resolution.x+j)*4;
+		var value = [0,0,0,0];
 		var outPos = (i*resolution.x+j)*4;
-		var value = Math.round((imgData.data[inPos]+imgData.data[inPos+1]+imgData.data[inPos+2])/3);
-		tempImgData.data[outPos]=value;
-		tempImgData.data[outPos+1]=value;
-		tempImgData.data[outPos+2]=value;
-		tempImgData.data[outPos+3]=imgData.data[inPos+3];
+		for(let k = 0;k< Filter_PxlBlr_samples;k++){
+			var inPos = ((  ((i+Math.round((Math.random()-0.5)*Filter_PxlBlr_size)+Filter_PxlBlr_off_y+resolution.y)%resolution.y  )*resolution.x+ ((j+Math.round((Math.random()-0.5)*Filter_PxlBlr_size)+Filter_PxlBlr_off_x+resolution.x)%resolution.x ))*4);
+			//console.log(inPos);
+			
+		value[0] += (imgData.data[inPos])*Filter_PxlBlr_opacity+imgData.data[outPos]*(1-Filter_PxlBlr_opacity);
+		value[1] += (imgData.data[inPos+1])*Filter_PxlBlr_opacity+imgData.data[outPos+1]*(1-Filter_PxlBlr_opacity);
+		value[2] += (imgData.data[inPos+2])*Filter_PxlBlr_opacity+imgData.data[outPos+2]*(1-Filter_PxlBlr_opacity);
+		value[3] += (imgData.data[inPos+3])*Filter_PxlBlr_opacity+imgData.data[outPos+3]*(1-Filter_PxlBlr_opacity);
+		}
+		value[0]/=Filter_PxlBlr_samples;
+		value[1]/=Filter_PxlBlr_samples;
+		value[2]/=Filter_PxlBlr_samples;
+		value[3]/=Filter_PxlBlr_samples;
+		tempImgData.data[outPos]=value[0];
+		tempImgData.data[outPos+1]=value[1];
+		tempImgData.data[outPos+2]=value[2];
+		tempImgData.data[outPos+3]=value[3];
 		
 		}
 	}
