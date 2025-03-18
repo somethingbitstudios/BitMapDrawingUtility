@@ -1398,9 +1398,19 @@ function Filter_SnapToPalette(){
 		ctx.putImageData(Filter_SnapToPalette_Single(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
 	}
 }
+function RgbaArrayToHslaArray(pal){
+	let h = [];
+	for(let i = 0;i<pal.length;i++){
+		h.push(RGBAtoHSLAArray(pal[i]));
+		
+	}
+	return h;
+}
 function Filter_SnapToPalette_Single(imgData){//resolution.x,resolution
 	var colorpal = ColorsToPureArray();
-	console.log(colorpal);
+	var hslpal = RgbaArrayToHslaArray(colorpal);
+	
+	console.log(hslpal);
 	//[[0,255,0,0.5],...]
 	tempImgData = new ImageData(resolution.x,resolution.y);
 	for(let i = 0;i<resolution.y;i++){
@@ -1408,19 +1418,82 @@ function Filter_SnapToPalette_Single(imgData){//resolution.x,resolution
 		var inPos = (i*resolution.x+j)*4;
 		var outPos = (i*resolution.x+j)*4;
 		var color = [imgData.data[inPos],imgData.data[inPos+1],imgData.data[inPos+2],imgData.data[inPos+3]];
-		
+		var hslcolor = RGBAtoHSLAArray(color);
 		var outColor = [0,0,0,0];//make it closest color
 		
 			//pick closest color
-		var difference = 1025;
+		var difference = 40000;
 		for(let i = 0;i<colorpal.length;i++){
-			var dif = Math.abs(colorpal[0]-color[0])+Math.abs(colorpal[1]-color[1])+Math.abs(colorpal[2]-color[2])+Math.abs(colorpal[3]-color[3]);
+			var dif = 0; 
+			dif += Math.abs(colorpal[i][0]-color[0])+Math.abs(colorpal[i][1]-color[1])+Math.abs(colorpal[i][2]-color[2])+Math.abs(colorpal[i][3]-color[3]);
+			//let hueDifference = Math.abs(hslpal[i][0] - hslcolor[0]);
+			//let satDifference = Math.abs(hslpal[i][1] - hslcolor[1]);
+			//dif += satDifference*0.75;
+			//if (hueDifference > 180) {
+			//	hueDifference = 360 - hueDifference;
+			//}
+			//dif += hueDifference*(satDifference/100.0);
+			//console.log(dif);
 			if(dif<difference){
+				//console.log(dif);
 				difference=dif;
-				outColor=color[i];
+				outColor=colorpal[i];
+				//outColor = [(1-(j/resolution.x))*satDifference,0,((j/resolution.x))*satDifference,255];
+				//outColor=[Math.abs(colorpal[i][0]-color[0])+Math.abs(colorpal[i][1]-color[1])+Math.abs(colorpal[i][2]-color[2])+Math.abs(colorpal[i][3]-color[3]),hueDifference,satDifference*2.55,255];
 			}
 		}
+		//console.log(outColor);
 		
+		tempImgData.data[outPos]=outColor[0];
+		tempImgData.data[outPos+1]=outColor[1];
+		tempImgData.data[outPos+2]=outColor[2];
+		tempImgData.data[outPos+3]=outColor[3];
+		
+		}
+	}
+	
+	return tempImgData;
+}
+
+function Filter_Outline_Single(imgData){//resolution.x,resolution
+	var colorpal = ColorsToPureArray();
+	var hslpal = RgbaArrayToHslaArray(colorpal);
+	
+	console.log(hslpal);
+	//[[0,255,0,0.5],...]
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		var inPos = (i*resolution.x+j)*4;
+		var outPos = (i*resolution.x+j)*4;
+		var color = [imgData.data[inPos],imgData.data[inPos+1],imgData.data[inPos+2],imgData.data[inPos+3]];
+		var hslcolor = RGBAtoHSLAArray(color);
+		var outColor = [0,0,0,255];//make it closest color
+		
+			//pick closest color
+		var difference = 40000;
+		for(let i = 0;i<colorpal.length;i++){
+			var dif = 0; 
+			dif += Math.abs(colorpal[i][0]-color[0])+Math.abs(colorpal[i][1]-color[1])+Math.abs(colorpal[i][2]-color[2])+Math.abs(colorpal[i][3]-color[3]);
+			let hueDifference = Math.abs(hslpal[i][0] - hslcolor[0]);
+			let satDifference = Math.abs(hslpal[i][1] - hslcolor[1]);
+			if (hueDifference > 180) {
+				hueDifference = 360 - hueDifference;
+			}
+			dif += hueDifference;
+			//console.log(dif);
+			if(dif<difference){
+				//console.log(dif);
+				difference=dif;
+				//outColor=colorpal[i];
+				if(satDifference>60){
+					outColor = [satDifference*2.55,satDifference*2.55,satDifference*2.55,255];
+				}
+				
+				//outColor=[Math.abs(colorpal[i][0]-color[0])+Math.abs(colorpal[i][1]-color[1])+Math.abs(colorpal[i][2]-color[2])+Math.abs(colorpal[i][3]-color[3]),hueDifference,satDifference*2.55,255];
+			}
+		}
+		//console.log(outColor);
 		
 		tempImgData.data[outPos]=outColor[0];
 		tempImgData.data[outPos+1]=outColor[1];
@@ -4429,6 +4502,54 @@ let hexa = 0;
 
   return ("rgba("+hex1+","+hex2+","+hex3+","+hexa+")");
 }
+
+function RGBAtoHSLAArray(rgba){
+  let r = rgba[0]/255.0;
+  let g = rgba[1]/255.0;
+  let b = rgba[2]/255.0;
+  let a = rgba[3];
+  let cmax = Math.max(r,Math.max(g,b));
+  let cmin = Math.min(r,Math.min(g,b));
+  let diff = cmax - cmin;
+  var hue = 0;
+ if(r==g&&g==b){
+  hue=0;
+ }else{
+   switch(cmax){
+    case(0):break;
+    case(r): hue = (60 * ((g - b) / diff) + 360) % 360;break;
+    case(g): hue = (60 * ((b - r) / diff) + 120) % 360;break;
+    case(b): hue = (60 * ((r - g) / diff) + 240) % 360;break;
+
+  }
+ }
+ var sat;
+   var value = (cmax+cmin);
+   if(cmax==cmin){
+      sat = 0;
+   }
+   else{
+    
+    sat = diff/(1-Math.abs(value-1))*100;
+  
+   }
+
+  
+  value*=50;
+
+  
+
+  
+
+
+  hue = (""+hue).split(".")[0];
+  sat = (""+sat).split(".")[0];
+  value = (""+value).split(".")[0];
+  
+return [hue,sat,value,a];
+
+}
+
 function RGBAtoHSLA(rgba){
   let r = Number(rgba.split("rgba(")[1].split(",")[0])/255;
   let g = Number(rgba.split("rgba(")[1].split(",")[1])/255;
