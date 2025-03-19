@@ -1432,8 +1432,8 @@ function PxlBlr_Relative_Field_Build(){//generates offset array
 	}
 	
 }
-function PxlBlr_Relative_Field_get(x,y){//gives offset
-	
+function PxlBlr_Relative_Field_get(x,y){//gives offset, FIXFIXFIX
+		return [Math.round(PxlBlr_Relative_Field[(y*resolution.x+x)*2]*2),Math.round(PxlBlr_Relative_Field[(y*resolution.x+x)*2+1]*2)];
 	
 }
 function PxlBlr_Relative_Field_Debug(){
@@ -1664,12 +1664,12 @@ function Filter_PxlBlr_Single_Light(imgData){//resolution.x,resolution
 	return tempImgData;
 }
 function Filter_PxlBlr_Single_Light_Abs(imgData){//resolution.x,resolution
-
+	console.log(":3");
 	tempImgData = new ImageData(resolution.x,resolution.y);
 	for(let i = 0;i<resolution.y;i++){
 		for(let j = 0;j<resolution.x;j++){
 		//calc offset based on abs offset and scaling	
-		var offset_ = [Math.round((j-Filter_PxlBlr_off_x)/Filter_PxlBlr_off_absolute_scale),Math.round((i-Filter_PxlBlr_off_y)/Filter_PxlBlr_off_absolute_scale)];
+		var offset_ = PxlBlr_Relative_Field_get(j,i);//[Math.round((j-Filter_PxlBlr_off_x)/Filter_PxlBlr_off_absolute_scale),Math.round((i-Filter_PxlBlr_off_y)/Filter_PxlBlr_off_absolute_scale)];
 		var value = [0,0,0,0];
 		var outPos = (i*resolution.x+j)*4;
 		var outColor = [imgData.data[outPos],imgData.data[outPos+1],imgData.data[outPos+2],imgData.data[outPos+3]];
