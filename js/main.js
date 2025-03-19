@@ -1397,14 +1397,62 @@ var Filter_PxlBlr_size=3;
 var Filter_PxlBlr_samples=1;
 var Filter_PxlBlr_opacity=1;
 var Filter_PxlBlr_interval=1;
-var Filter_PxlBlr_off_x=0;
+var Filter_PxlBlr_off_x=0;//input
+var Filter_PxlBlr_off_x_floor=0; // floored input
+var Filter_PxlBlr_off_x_r=0;//remainder of floor
+var Filter_PxlBlr_off_x_i=0;//_r * ? until |_i|>1
+var Filter_PxlBlr_off_x_get=0;//_r * ? until |_i|>1
+
+var Filter_PxlBlr_off_y_floor=0;
+var Filter_PxlBlr_off_y_r=0;
+var Filter_PxlBlr_off_y_i=0;
 var Filter_PxlBlr_off_y=0;
+var Filter_PxlBlr_off_y_get=0;
+
 var Filter_PxlBlr_mode=0;
 
 var PxlBlrInterval = null;
+
+function PxlBlr_Off_X_Change(){
+	Filter_PxlBlr_off_x_floor = Math.floor(Filter_PxlBlr_off_x);
+	Filter_PxlBlr_off_x_r = Filter_PxlBlr_off_x-Filter_PxlBlr_off_x_floor;
+}
+function PxlBlr_Next(){
+	Filter_PxlBlr_off_x_get=PxlBlr_Off_X();
+	Filter_PxlBlr_off_y_get=PxlBlr_Off_Y();
+}
+function PxlBlr_Off_X(){
+	Filter_PxlBlr_off_x_i += Filter_PxlBlr_off_x_r;
+	
+	if(Filter_PxlBlr_off_x_i>=1.0){
+		Filter_PxlBlr_off_x_i--;
+		return Filter_PxlBlr_off_x_floor+1; 
+	}else if (Filter_PxlBlr_off_x_i<=-1.0){
+		Filter_PxlBlr_off_x_i++;
+		return Filter_PxlBlr_off_x_floor-1;
+	}
+	return Filter_PxlBlr_off_x_floor;
+}
+
+function PxlBlr_Off_Y_Change(){
+	Filter_PxlBlr_off_y_floor = Math.floor(Filter_PxlBlr_off_y);
+	Filter_PxlBlr_off_y_r = Filter_PxlBlr_off_y-Filter_PxlBlr_off_y_floor;
+}
+
+function PxlBlr_Off_Y(){
+	Filter_PxlBlr_off_y_i += Filter_PxlBlr_off_y_r;
+	
+	if(Filter_PxlBlr_off_y_i>=1.0){
+		Filter_PxlBlr_off_y_i--;
+		return Filter_PxlBlr_off_y_floor+1; 
+	}else if (Filter_PxlBlr_off_y_i<=-1.0){
+		Filter_PxlBlr_off_y_i++;
+		return Filter_PxlBlr_off_y_floor-1;
+	}
+	return Filter_PxlBlr_off_y_floor;
+}
 function Toggle_Blr(){
-	console.log("x"+Filter_PxlBlr_off_x);
-	console.log("y"+Filter_PxlBlr_off_y);
+	
 	if(PxlBlrInterval==null){
 		
 		PxlBlrInterval=setInterval(()=>{
@@ -1417,6 +1465,7 @@ function Toggle_Blr(){
 	
 }
 function Filter_PxlBlr(){
+	PxlBlr_Next();
 	switch(Filter_PxlBlr_mode){
 		case 1:
 			if(Filter_All){
@@ -1442,14 +1491,14 @@ function Filter_PxlBlr(){
 	
 }
 function Filter_PxlBlr_Single(imgData){//resolution.x,resolution
-
+	
 	tempImgData = new ImageData(resolution.x,resolution.y);
 	for(let i = 0;i<resolution.y;i++){
 		for(let j = 0;j<resolution.x;j++){
 		var value = [0,0,0,0];
 		var outPos = (i*resolution.x+j)*4;
 		for(let k = 0;k< Filter_PxlBlr_samples;k++){
-			var inPos = ((  ((i+Math.round((Math.random()-0.5)*Filter_PxlBlr_size)+Filter_PxlBlr_off_y+resolution.y)%resolution.y  )*resolution.x+ ((j+Math.round((Math.random()-0.5)*Filter_PxlBlr_size)+Filter_PxlBlr_off_x+resolution.x)%resolution.x ))*4);
+			var inPos = ((  ((i+Math.round((Math.random()-0.5)*Filter_PxlBlr_size)+Filter_PxlBlr_off_y_get+resolution.y)%resolution.y  )*resolution.x+ ((j+Math.round((Math.random()-0.5)*Filter_PxlBlr_size)+Filter_PxlBlr_off_x_get+resolution.x)%resolution.x ))*4);
 			//console.log(inPos);
 			
 		value[0] += (imgData.data[inPos])*Filter_PxlBlr_opacity+imgData.data[outPos]*(1-Filter_PxlBlr_opacity);
