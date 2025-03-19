@@ -1,5 +1,11 @@
 //#region vars
-
+//random
+for (var i=1024, lookupTable=[]; i--;) {
+  lookupTable.push(Math.random());
+}
+function random() {
+  return ++i >= lookupTable.length ? lookupTable[i=0] : lookupTable[i];
+}
 //#region global
 var ProjectName="MyProject";
 var Description="I made this...";
@@ -1393,6 +1399,7 @@ var Filter_PxlBlr_opacity=1;
 var Filter_PxlBlr_interval=1;
 var Filter_PxlBlr_off_x=0;
 var Filter_PxlBlr_off_y=0;
+var Filter_PxlBlr_mode=0;
 
 var PxlBlrInterval = null;
 function Toggle_Blr(){
@@ -1410,14 +1417,29 @@ function Toggle_Blr(){
 	
 }
 function Filter_PxlBlr(){
-	if(Filter_All){
-		for(let i = 0;i< layers.length;i++){
-			var imgData = Filter_BnW_Single(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
-			document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
-		}
-	}else{
-		ctx.putImageData(Filter_PxlBlr_Single(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+	switch(Filter_PxlBlr_mode){
+		case 1:
+			if(Filter_All){
+				for(let i = 0;i< layers.length;i++){
+					var imgData = Filter_PxlBlr_Single_Light(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+					document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+				}
+			}else{
+				ctx.putImageData(Filter_PxlBlr_Single_Light(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+			}
+		break;
+		default:
+			if(Filter_All){
+				for(let i = 0;i< layers.length;i++){
+					var imgData = Filter_PxlBlr_Single(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+					document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+				}
+			}else{
+				ctx.putImageData(Filter_PxlBlr_Single(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+			}
+		break;
 	}
+	
 }
 function Filter_PxlBlr_Single(imgData){//resolution.x,resolution
 
@@ -1443,6 +1465,52 @@ function Filter_PxlBlr_Single(imgData){//resolution.x,resolution
 		tempImgData.data[outPos+1]=value[1];
 		tempImgData.data[outPos+2]=value[2];
 		tempImgData.data[outPos+3]=value[3];
+		
+		}
+	}
+
+	return tempImgData;
+}
+function Filter_PxlBlr_Single_Light(imgData){//resolution.x,resolution
+
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		var value = [0,0,0,0];
+		var outPos = (i*resolution.x+j)*4;
+		var outColor = [imgData.data[outPos],imgData.data[outPos+1],imgData.data[outPos+2],imgData.data[outPos+3]];
+		var outColorHsv = RGBAtoHSLAArray(outColor);
+		var fpx = 0;
+		for(let k = 0;k< Filter_PxlBlr_samples;k++){
+			var inPos = ((  ((i+Filter_PxlBlr_off_y+resolution.y)%resolution.y  )*resolution.x+ ((j+Filter_PxlBlr_off_x+resolution.x)%resolution.x ))*4);
+			//console.log(inPos);
+		var clr  = [imgData.data[inPos],imgData.data[inPos+1],imgData.data[inPos+2],imgData.data[inPos+3]];
+		var hsvcl = RGBAtoHSLAArray(clr);
+		if(hsvcl[2]>outColorHsv[2]+0.05){
+			fpx++;
+		value[0] += (clr[0])*Filter_PxlBlr_opacity+outColor[0]*(1-Filter_PxlBlr_opacity);
+		value[1] += (clr[1])*Filter_PxlBlr_opacity+outColor[1]*(1-Filter_PxlBlr_opacity);
+		value[2] += (clr[2])*Filter_PxlBlr_opacity+outColor[2]*(1-Filter_PxlBlr_opacity);
+		value[3] += (clr[3])*Filter_PxlBlr_opacity+outColor[3]*(1-Filter_PxlBlr_opacity);	
+		}
+		}
+		if(fpx>0){
+			value[0]/=fpx;
+		value[1]/=fpx;
+		value[2]/=fpx;
+		value[3]/=fpx;
+		tempImgData.data[outPos]=value[0];
+		tempImgData.data[outPos+1]=value[1];
+		tempImgData.data[outPos+2]=value[2];
+		tempImgData.data[outPos+3]=value[3];
+		}else{
+		tempImgData.data[outPos]=outColor[0];
+		tempImgData.data[outPos+1]=outColor[1];
+		tempImgData.data[outPos+2]=outColor[2];
+		tempImgData.data[outPos+3]=outColor[3];
+			
+		}
+		
 		
 		}
 	}

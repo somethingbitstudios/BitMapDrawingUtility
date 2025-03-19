@@ -205,6 +205,7 @@
 			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_off_x=Number(this.value);if(PxlBlrInterval!=null){Toggle_Blr();Toggle_Blr();}" value="0.0"/>
 			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_off_y=Number(this.value);if(PxlBlrInterval!=null){Toggle_Blr();Toggle_Blr();}" value="0.0"/>
 			<button onclick="Toggle_Blr();if(PxlBlrInterval==null){this.innerHTML='Start';}else{this.innerHTML='Stop';}" style="width: 76px;">Relative</button>
+			<button onclick="Filter_PxlBlr_mode++;Filter_PxlBlr_mode %= 3;switch(Filter_PxlBlr_mode){case 0: this.innerHTML='Classic'; break;case 1: this.innerHTML='Light'; break;default: this.innerHTML='???'; break;}" style="width: 76px;">Classic</button>
 			<br/>
         </div>
 		
