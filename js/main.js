@@ -1479,14 +1479,14 @@ function Filter_PxlBlr_Single_Light(imgData){//resolution.x,resolution
 		var value = [0,0,0,0];
 		var outPos = (i*resolution.x+j)*4;
 		var outColor = [imgData.data[outPos],imgData.data[outPos+1],imgData.data[outPos+2],imgData.data[outPos+3]];
-		var outColorHsv = RGBAtoHSLAArray(outColor);
+		//var outColorHsv = RGBAtoHSLAArray(outColor);
 		var fpx = 0;
 		for(let k = 0;k< Filter_PxlBlr_samples;k++){
 			var inPos = ((  ((i+Filter_PxlBlr_off_y+resolution.y)%resolution.y  )*resolution.x+ ((j+Filter_PxlBlr_off_x+resolution.x)%resolution.x ))*4);
 			//console.log(inPos);
 		var clr  = [imgData.data[inPos],imgData.data[inPos+1],imgData.data[inPos+2],imgData.data[inPos+3]];
-		var hsvcl = RGBAtoHSLAArray(clr);
-		if(hsvcl[2]>outColorHsv[2]+0.05){
+		//var hsvcl = RGBAtoHSLAArray(clr);
+		if(clr[3]>outColor[3]+0.05){
 			fpx++;
 		value[0] += (clr[0])*Filter_PxlBlr_opacity+outColor[0]*(1-Filter_PxlBlr_opacity);
 		value[1] += (clr[1])*Filter_PxlBlr_opacity+outColor[1]*(1-Filter_PxlBlr_opacity);
