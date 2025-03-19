@@ -1410,8 +1410,45 @@ var Filter_PxlBlr_off_y=0;
 var Filter_PxlBlr_off_y_get=0;
 
 var Filter_PxlBlr_mode=0;
-
+var Filter_PxlBlr_off_mode=0;
+var Filter_PxlBlr_off_absolute_scale=256;//outward
 var PxlBlrInterval = null;
+
+var PxlBlr_Relative_Field = [];
+function PxlBlr_Relative_Field_Build(){//generates offset array
+	PxlBlr_Relative_Field=[resolution.x*resolution.y*2];
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+			var vX = (j-Filter_PxlBlr_off_x+0.000001)/(Filter_PxlBlr_off_absolute_scale);
+			vX = Math.min(1,Math.max(-1,vX));
+			var vY = (i-Filter_PxlBlr_off_y+0.000001)/(Filter_PxlBlr_off_absolute_scale);
+			vY = Math.min(1,Math.max(-1,vY));
+			PxlBlr_Relative_Field[(i*resolution.x+j)*2]=vX;
+			PxlBlr_Relative_Field[(i*resolution.x+j)*2+1]=vY;
+			
+			//PxlBlr_Relative_Field[(i*resolution.x+j)*2]=((j+0.0001)/(resolution.x));
+			//PxlBlr_Relative_Field[(i*resolution.x+j)*2+1]=((i+0.0001)/(resolution.y));
+		}	
+	}
+	
+}
+function PxlBlr_Relative_Field_get(x,y){//gives offset
+	
+	
+}
+function PxlBlr_Relative_Field_Debug(){
+	//console.log(PxlBlr_Relative_Field);
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+			tempImgData.data[(i*resolution.x+j)*4]=Math.abs(Math.round(PxlBlr_Relative_Field[(i*resolution.x+j)*2]*255));
+			tempImgData.data[(i*resolution.x+j)*4+1]=Math.abs(Math.round(PxlBlr_Relative_Field[(i*resolution.x+j)*2+1]*255));
+			tempImgData.data[(i*resolution.x+j)*4+2]=0;
+			tempImgData.data[(i*resolution.x+j)*4+3]=255;
+		}	
+	}
+	ctx.putImageData(tempImgData,0,0);
+}
 
 function PxlBlr_Off_X_Change(){
 	Filter_PxlBlr_off_x_floor = Math.floor(Filter_PxlBlr_off_x);
@@ -1466,7 +1503,7 @@ function Toggle_Blr(){
 }
 function Filter_PxlBlr(){
 	PxlBlr_Next();
-	switch(Filter_PxlBlr_mode){
+	switch(Filter_PxlBlr_mode+Filter_PxlBlr_off_mode){//0...9+0...90
 		case 1:
 			if(Filter_All){
 				for(let i = 0;i< layers.length;i++){
@@ -1475,6 +1512,36 @@ function Filter_PxlBlr(){
 				}
 			}else{
 				ctx.putImageData(Filter_PxlBlr_Single_Light(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+			}
+		break;
+		case 11:
+			if(Filter_All){
+				for(let i = 0;i< layers.length;i++){
+					var imgData = Filter_PxlBlr_Single_Light_Abs(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+					document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+				}
+			}else{
+				ctx.putImageData(Filter_PxlBlr_Single_Light_Abs(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+			}
+		break;
+		case 0:
+			if(Filter_All){
+				for(let i = 0;i< layers.length;i++){
+					var imgData = Filter_PxlBlr_Single(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+					document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+				}
+			}else{
+				ctx.putImageData(Filter_PxlBlr_Single(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
+			}
+		break;
+		case 10:
+			if(Filter_All){
+				for(let i = 0;i< layers.length;i++){
+					var imgData = Filter_PxlBlr_Single_Abs(document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y));
+					document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).putImageData(imgData,0,0);
+				}
+			}else{
+				ctx.putImageData(Filter_PxlBlr_Single_Abs(ctx.getImageData(0,0,resolution.x,resolution.y)),0,0);
 			}
 		break;
 		default:
@@ -1520,6 +1587,36 @@ function Filter_PxlBlr_Single(imgData){//resolution.x,resolution
 
 	return tempImgData;
 }
+function Filter_PxlBlr_Single_Abs(imgData){//resolution.x,resolution
+	
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		var value = [0,0,0,0];
+		var outPos = (i*resolution.x+j)*4;
+		for(let k = 0;k< Filter_PxlBlr_samples;k++){
+			var inPos = ((  ((i+Math.round((Math.random()-0.5)*Filter_PxlBlr_size)+Filter_PxlBlr_off_y_get+resolution.y)%resolution.y  )*resolution.x+ ((j+Math.round((Math.random()-0.5)*Filter_PxlBlr_size)+Filter_PxlBlr_off_x_get+resolution.x)%resolution.x ))*4);
+			//console.log(inPos);
+			
+		value[0] += (imgData.data[inPos])*Filter_PxlBlr_opacity+imgData.data[outPos]*(1-Filter_PxlBlr_opacity);
+		value[1] += (imgData.data[inPos+1])*Filter_PxlBlr_opacity+imgData.data[outPos+1]*(1-Filter_PxlBlr_opacity);
+		value[2] += (imgData.data[inPos+2])*Filter_PxlBlr_opacity+imgData.data[outPos+2]*(1-Filter_PxlBlr_opacity);
+		value[3] += (imgData.data[inPos+3])*Filter_PxlBlr_opacity+imgData.data[outPos+3]*(1-Filter_PxlBlr_opacity);
+		}
+		value[0]/=Filter_PxlBlr_samples;
+		value[1]/=Filter_PxlBlr_samples;
+		value[2]/=Filter_PxlBlr_samples;
+		value[3]/=Filter_PxlBlr_samples;
+		tempImgData.data[outPos]=value[0];
+		tempImgData.data[outPos+1]=value[1];
+		tempImgData.data[outPos+2]=value[2];
+		tempImgData.data[outPos+3]=value[3];
+		
+		}
+	}
+
+	return tempImgData;
+}
 function Filter_PxlBlr_Single_Light(imgData){//resolution.x,resolution
 
 	tempImgData = new ImageData(resolution.x,resolution.y);
@@ -1532,6 +1629,54 @@ function Filter_PxlBlr_Single_Light(imgData){//resolution.x,resolution
 		var fpx = 0;
 		for(let k = 0;k< Filter_PxlBlr_samples;k++){
 			var inPos = ((  ((i+Filter_PxlBlr_off_y+resolution.y)%resolution.y  )*resolution.x+ ((j+Filter_PxlBlr_off_x+resolution.x)%resolution.x ))*4);
+			//console.log(inPos);
+		var clr  = [imgData.data[inPos],imgData.data[inPos+1],imgData.data[inPos+2],imgData.data[inPos+3]];
+		//var hsvcl = RGBAtoHSLAArray(clr);
+		if(clr[3]>outColor[3]+0.05){
+			fpx++;
+		value[0] += (clr[0])*Filter_PxlBlr_opacity+outColor[0]*(1-Filter_PxlBlr_opacity);
+		value[1] += (clr[1])*Filter_PxlBlr_opacity+outColor[1]*(1-Filter_PxlBlr_opacity);
+		value[2] += (clr[2])*Filter_PxlBlr_opacity+outColor[2]*(1-Filter_PxlBlr_opacity);
+		value[3] += (clr[3])*Filter_PxlBlr_opacity+outColor[3]*(1-Filter_PxlBlr_opacity);	
+		}
+		}
+		if(fpx>0){
+			value[0]/=fpx;
+		value[1]/=fpx;
+		value[2]/=fpx;
+		value[3]/=fpx;
+		tempImgData.data[outPos]=value[0];
+		tempImgData.data[outPos+1]=value[1];
+		tempImgData.data[outPos+2]=value[2];
+		tempImgData.data[outPos+3]=value[3];
+		}else{
+		tempImgData.data[outPos]=outColor[0];
+		tempImgData.data[outPos+1]=outColor[1];
+		tempImgData.data[outPos+2]=outColor[2];
+		tempImgData.data[outPos+3]=outColor[3];
+			
+		}
+		
+		
+		}
+	}
+
+	return tempImgData;
+}
+function Filter_PxlBlr_Single_Light_Abs(imgData){//resolution.x,resolution
+
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+		//calc offset based on abs offset and scaling	
+		var offset_ = [Math.round((j-Filter_PxlBlr_off_x)/Filter_PxlBlr_off_absolute_scale),Math.round((i-Filter_PxlBlr_off_y)/Filter_PxlBlr_off_absolute_scale)];
+		var value = [0,0,0,0];
+		var outPos = (i*resolution.x+j)*4;
+		var outColor = [imgData.data[outPos],imgData.data[outPos+1],imgData.data[outPos+2],imgData.data[outPos+3]];
+		//var outColorHsv = RGBAtoHSLAArray(outColor);
+		var fpx = 0;
+		for(let k = 0;k< Filter_PxlBlr_samples;k++){
+			var inPos = ((  ((i-offset_[1]+resolution.y)%resolution.y  )*resolution.x+ ((j-offset_[0]+resolution.x)%resolution.x ))*4);
 			//console.log(inPos);
 		var clr  = [imgData.data[inPos],imgData.data[inPos+1],imgData.data[inPos+2],imgData.data[inPos+3]];
 		//var hsvcl = RGBAtoHSLAArray(clr);

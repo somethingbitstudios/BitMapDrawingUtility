@@ -204,8 +204,10 @@
 			<label>offset</label>
 			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_off_x=Number(this.value);PxlBlr_Off_X_Change();" value="0.0"/>
 			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_off_y=Number(this.value);PxlBlr_Off_Y_Change();" value="0.0"/>
-			<button onclick="Toggle_Blr();if(PxlBlrInterval==null){this.innerHTML='Start';}else{this.innerHTML='Stop';}" style="width: 76px;">Relative</button>
+			<button onclick="Filter_PxlBlr_off_mode+=10;Filter_PxlBlr_off_mode %= 20;switch(Filter_PxlBlr_off_mode){case 0: this.innerHTML='Absolute'; break;case 10: this.innerHTML='Relative'; break;default: this.innerHTML='???'; break;}" style="width: 76px;">Absolute</button>
 			<button onclick="Filter_PxlBlr_mode++;Filter_PxlBlr_mode %= 3;switch(Filter_PxlBlr_mode){case 0: this.innerHTML='Classic'; break;case 1: this.innerHTML='Light'; break;default: this.innerHTML='???'; break;}" style="width: 76px;">Classic</button>
+			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_off_absolute_scale=Number(this.value);" value="0.0"/>
+			<button onclick="PxlBlr_Relative_Field_Build();PxlBlr_Relative_Field_Debug();" style="width: 76px;">Debug</button>
 			<br/>
         </div>
 		
