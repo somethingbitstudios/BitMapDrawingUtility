@@ -1415,8 +1415,11 @@ var Filter_PxlBlr_off_absolute_scale=256;//outward
 var PxlBlrInterval = null;
 
 var PxlBlr_Relative_Field = [];
+var PxlBlr_Relative_Field_r = [];
+
 function PxlBlr_Relative_Field_Build(){//generates offset array
 	PxlBlr_Relative_Field=[resolution.x*resolution.y*2];
+	PxlBlr_Relative_Field_r=[resolution.x*resolution.y*2];
 	for(let i = 0;i<resolution.y;i++){
 		for(let j = 0;j<resolution.x;j++){
 			var vX = (j-Filter_PxlBlr_off_x+0.000001)/(Filter_PxlBlr_off_absolute_scale);
@@ -1425,7 +1428,8 @@ function PxlBlr_Relative_Field_Build(){//generates offset array
 			vY = Math.min(1,Math.max(-1,vY));
 			PxlBlr_Relative_Field[(i*resolution.x+j)*2]=vX;
 			PxlBlr_Relative_Field[(i*resolution.x+j)*2+1]=vY;
-			
+			PxlBlr_Relative_Field_r[(i*resolution.x+j)*2]=0;
+			PxlBlr_Relative_Field_r[(i*resolution.x+j)*2+1]=0;
 			//PxlBlr_Relative_Field[(i*resolution.x+j)*2]=((j+0.0001)/(resolution.x));
 			//PxlBlr_Relative_Field[(i*resolution.x+j)*2+1]=((i+0.0001)/(resolution.y));
 		}	
@@ -1433,7 +1437,25 @@ function PxlBlr_Relative_Field_Build(){//generates offset array
 	
 }
 function PxlBlr_Relative_Field_get(x,y){//gives offset, FIXFIXFIX
-		return [Math.round(PxlBlr_Relative_Field[(y*resolution.x+x)*2]*2),Math.round(PxlBlr_Relative_Field[(y*resolution.x+x)*2+1]*2)];
+		var roundfix = [0,0];
+		PxlBlr_Relative_Field_r[(y*resolution.x+x)*2]+=PxlBlr_Relative_Field[(y*resolution.x+x)*2];
+		if(PxlBlr_Relative_Field_r[(y*resolution.x+x)*2]>1){
+			roundfix[0]=1;
+			PxlBlr_Relative_Field_r[(y*resolution.x+x)*2]--;
+		}else if(PxlBlr_Relative_Field_r[(y*resolution.x+x)*2]<-1){
+			roundfix[0]=-1;
+			PxlBlr_Relative_Field_r[(y*resolution.x+x)*2]++;
+		}
+		
+		PxlBlr_Relative_Field_r[(y*resolution.x+x)*2+1]+=PxlBlr_Relative_Field[(y*resolution.x+x)*2+1];
+		if(PxlBlr_Relative_Field_r[(y*resolution.x+x)*2+1]>1){
+			roundfix[1]=1;
+			PxlBlr_Relative_Field_r[(y*resolution.x+x)*2+1]--;
+		}else if(PxlBlr_Relative_Field_r[(y*resolution.x+x)*2+1]<-1){
+			roundfix[1]=-1;
+			PxlBlr_Relative_Field_r[(y*resolution.x+x)*2+1]++;
+		}
+		return [roundfix[0],roundfix[1]];
 	
 }
 function PxlBlr_Relative_Field_Debug(){
