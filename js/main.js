@@ -1415,11 +1415,12 @@ var Filter_PxlBlr_off_absolute_scale=256;//outward
 var PxlBlrInterval = null;
 
 var PxlBlr_Relative_Field = [];
-var PxlBlr_Relative_Field_r = [];
-
+var PxlBlr_Relative_Field_init_ImgData;
+var PxlBlr_Relative_Field_step = 0;
 function PxlBlr_Relative_Field_Build(){//generates offset array
 	PxlBlr_Relative_Field=[resolution.x*resolution.y*2];
-	PxlBlr_Relative_Field_r=[resolution.x*resolution.y*2];
+	PxlBlr_Relative_Field_init_ImgData=ctx.getImageData(0,0,resolution.x,resolution.y);
+	console.log(PxlBlr_Relative_Field_init_ImgData);
 	for(let i = 0;i<resolution.y;i++){
 		for(let j = 0;j<resolution.x;j++){
 			var vX = (j-Filter_PxlBlr_off_x+0.000001)/(Filter_PxlBlr_off_absolute_scale);
@@ -1428,8 +1429,8 @@ function PxlBlr_Relative_Field_Build(){//generates offset array
 			vY = Math.min(1,Math.max(-1,vY));
 			PxlBlr_Relative_Field[(i*resolution.x+j)*2]=vX;
 			PxlBlr_Relative_Field[(i*resolution.x+j)*2+1]=vY;
-			PxlBlr_Relative_Field_r[(i*resolution.x+j)*2]=0;
-			PxlBlr_Relative_Field_r[(i*resolution.x+j)*2+1]=0;
+			//PxlBlr_Relative_Field_r[(i*resolution.x+j)*2]=0;
+			//PxlBlr_Relative_Field_r[(i*resolution.x+j)*2+1]=0;
 			//PxlBlr_Relative_Field[(i*resolution.x+j)*2]=((j+0.0001)/(resolution.x));
 			//PxlBlr_Relative_Field[(i*resolution.x+j)*2+1]=((i+0.0001)/(resolution.y));
 		}	
@@ -1437,7 +1438,7 @@ function PxlBlr_Relative_Field_Build(){//generates offset array
 	
 }
 function PxlBlr_Relative_Field_get(x,y){//gives offset, FIXFIXFIX
-		var roundfix = [0,0];
+		/*var roundfix = [0,0];
 		PxlBlr_Relative_Field_r[(y*resolution.x+x)*2]+=PxlBlr_Relative_Field[(y*resolution.x+x)*2];
 		if(PxlBlr_Relative_Field_r[(y*resolution.x+x)*2]>1){
 			roundfix[0]=1;
@@ -1456,7 +1457,9 @@ function PxlBlr_Relative_Field_get(x,y){//gives offset, FIXFIXFIX
 			PxlBlr_Relative_Field_r[(y*resolution.x+x)*2+1]++;
 		}
 		return [roundfix[0],roundfix[1]];
-	
+	*/
+	PxlBlr_Relative_Field_step++;
+	return [Math.floor(x+PxlBlr_Relative_Field[(y*resolution.x+x)*2]*PxlBlr_Relative_Field_step),Math.floor(y+PxlBlr_Relative_Field[(y*resolution.x+x)*2+1]*PxlBlr_Relative_Field_step)];
 }
 function PxlBlr_Relative_Field_Debug(){
 	//console.log(PxlBlr_Relative_Field);
@@ -1700,7 +1703,7 @@ function Filter_PxlBlr_Single_Light_Abs(imgData){//resolution.x,resolution
 		for(let k = 0;k< Filter_PxlBlr_samples;k++){
 			var inPos = ((  ((i-offset_[1]+resolution.y)%resolution.y  )*resolution.x+ ((j-offset_[0]+resolution.x)%resolution.x ))*4);
 			//console.log(inPos);
-		var clr  = [imgData.data[inPos],imgData.data[inPos+1],imgData.data[inPos+2],imgData.data[inPos+3]];
+		var clr  = [PxlBlr_Relative_Field_init_ImgData.data[inPos],PxlBlr_Relative_Field_init_ImgData.data[inPos+1],PxlBlr_Relative_Field_init_ImgData.data[inPos+2],PxlBlr_Relative_Field_init_ImgData.data[inPos+3]];
 		//var hsvcl = RGBAtoHSLAArray(clr);
 		if(clr[3]>outColor[3]+0.05){
 			fpx++;
