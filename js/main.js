@@ -1435,7 +1435,7 @@ function PxlBlr_Relative_Field_Build(){//generates offset array
 			//PxlBlr_Relative_Field[(i*resolution.x+j)*2+1]=((i+0.0001)/(resolution.y));
 		}	
 	}
-	
+	PxlBlr_Relative_Field_step=0;
 }
 function PxlBlr_Relative_Field_get(x,y){//gives offset, FIXFIXFIX
 		/*var roundfix = [0,0];
