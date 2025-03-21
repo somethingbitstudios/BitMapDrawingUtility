@@ -1397,6 +1397,7 @@ var Filter_PxlBlr_size=3;
 var Filter_PxlBlr_samples=1;
 var Filter_PxlBlr_opacity=1;
 var Filter_PxlBlr_interval=1;
+var Filter_PxlBlr_falloff=0;
 var Filter_PxlBlr_off_x=0;//input
 var Filter_PxlBlr_off_x_floor=0; // floored input
 var Filter_PxlBlr_off_x_r=0;//remainder of floor
@@ -1458,8 +1459,8 @@ function PxlBlr_Relative_Field_get(x,y){//gives offset, FIXFIXFIX
 		}
 		return [roundfix[0],roundfix[1]];
 	*/
-	PxlBlr_Relative_Field_step++;
-	return [Math.floor(x+PxlBlr_Relative_Field[(y*resolution.x+x)*2]*PxlBlr_Relative_Field_step),Math.floor(y+PxlBlr_Relative_Field[(y*resolution.x+x)*2+1]*PxlBlr_Relative_Field_step)];
+	
+	return [Math.floor(-PxlBlr_Relative_Field[(y*resolution.x+x)*2]*PxlBlr_Relative_Field_step),Math.floor(-PxlBlr_Relative_Field[(y*resolution.x+x)*2+1]*PxlBlr_Relative_Field_step)];
 }
 function PxlBlr_Relative_Field_Debug(){
 	//console.log(PxlBlr_Relative_Field);
@@ -1474,7 +1475,20 @@ function PxlBlr_Relative_Field_Debug(){
 	}
 	ctx.putImageData(tempImgData,0,0);
 }
-
+function PxlBlr_Relative_Field_Debug_2(){
+	//console.log(PxlBlr_Relative_Field);
+	tempImgData = new ImageData(resolution.x,resolution.y);
+	for(let i = 0;i<resolution.y;i++){
+		for(let j = 0;j<resolution.x;j++){
+			var offset = PxlBlr_Relative_Field_get(j,i);
+			tempImgData.data[(i*resolution.x+j)*4]=Math.abs(Math.round(PxlBlr_Relative_Field[((i+offset[1])*resolution.x+j+offset[0])*2]*255));
+			tempImgData.data[(i*resolution.x+j)*4+1]=Math.abs(Math.round(PxlBlr_Relative_Field[((i+offset[1])*resolution.x+j+offset[0])*2+1]*255));
+			tempImgData.data[(i*resolution.x+j)*4+2]=0;
+			tempImgData.data[(i*resolution.x+j)*4+3]=255;
+		}	
+	}
+	ctx.putImageData(tempImgData,0,0);
+}
 function PxlBlr_Off_X_Change(){
 	Filter_PxlBlr_off_x_floor = Math.floor(Filter_PxlBlr_off_x);
 	Filter_PxlBlr_off_x_r = Filter_PxlBlr_off_x-Filter_PxlBlr_off_x_floor;
@@ -1689,21 +1703,32 @@ function Filter_PxlBlr_Single_Light(imgData){//resolution.x,resolution
 	return tempImgData;
 }
 function Filter_PxlBlr_Single_Light_Abs(imgData){//resolution.x,resolution
+	console.log(PxlBlr_Relative_Field_step);
+	//PxlBlr_Relative_Field_Debug_2();
+	//return;
+	//return PxlBlr_Relative_Field_init_ImgData;
 	console.log(":3");
 	tempImgData = new ImageData(resolution.x,resolution.y);
+	if(PxlBlr_Relative_Field_step>=255)return imgData;
+	
+	PxlBlr_Relative_Field_step++;
+	
 	for(let i = 0;i<resolution.y;i++){
 		for(let j = 0;j<resolution.x;j++){
 		//calc offset based on abs offset and scaling	
 		var offset_ = PxlBlr_Relative_Field_get(j,i);//[Math.round((j-Filter_PxlBlr_off_x)/Filter_PxlBlr_off_absolute_scale),Math.round((i-Filter_PxlBlr_off_y)/Filter_PxlBlr_off_absolute_scale)];
 		var value = [0,0,0,0];
 		var outPos = (i*resolution.x+j)*4;
+		if(i+offset_[1]>-1&&i+offset_[1]<resolution.y&&j+offset_[0]>-1&&j+offset_[0]<resolution.x){
+		var inPos = ((  ((i+offset_[1]+resolution.y)%resolution.y  )*resolution.x+ ((j+offset_[0]+resolution.x)%resolution.x ))*4);
+			
 		var outColor = [imgData.data[outPos],imgData.data[outPos+1],imgData.data[outPos+2],imgData.data[outPos+3]];
+		
 		//var outColorHsv = RGBAtoHSLAArray(outColor);
 		var fpx = 0;
 		for(let k = 0;k< Filter_PxlBlr_samples;k++){
-			var inPos = ((  ((i-offset_[1]+resolution.y)%resolution.y  )*resolution.x+ ((j-offset_[0]+resolution.x)%resolution.x ))*4);
 			//console.log(inPos);
-		var clr  = [PxlBlr_Relative_Field_init_ImgData.data[inPos],PxlBlr_Relative_Field_init_ImgData.data[inPos+1],PxlBlr_Relative_Field_init_ImgData.data[inPos+2],PxlBlr_Relative_Field_init_ImgData.data[inPos+3]];
+		var clr  = [PxlBlr_Relative_Field_init_ImgData.data[inPos],PxlBlr_Relative_Field_init_ImgData.data[inPos+1],PxlBlr_Relative_Field_init_ImgData.data[inPos+2],PxlBlr_Relative_Field_init_ImgData.data[inPos+3]-Filter_PxlBlr_falloff*PxlBlr_Relative_Field_step];
 		//var hsvcl = RGBAtoHSLAArray(clr);
 		if(clr[3]>outColor[3]+0.05){
 			fpx++;
@@ -1728,6 +1753,8 @@ function Filter_PxlBlr_Single_Light_Abs(imgData){//resolution.x,resolution
 		tempImgData.data[outPos+2]=outColor[2];
 		tempImgData.data[outPos+3]=outColor[3];
 			
+		}
+		
 		}
 		
 		
