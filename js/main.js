@@ -144,6 +144,7 @@ Resize.addEventListener("click",function(e){
 let Options = document.getElementById("options");
 let UIOptions = document.getElementById("UIopt");
 Options.addEventListener("click",function(e){
+	
   UIResize.style.visibility = "hidden";
   if(UIOptions.style.visibility == "hidden"){
     UIOptions.style.visibility = "visible";
@@ -202,6 +203,18 @@ Save.addEventListener("click",download_all);
 document.getElementById("save_merged").addEventListener("click",download_merged);
 document.getElementById("save_layers").addEventListener("click",download_layers);
 document.getElementById("export_bitmap").addEventListener("click",export_bitmap);
+
+
+document.getElementById("save_merged_s").addEventListener("click",download_merged_s);
+document.getElementById("save_layers_s").addEventListener("click",download_layers_s);
+
+
+
+
+var upscale_scale = 2;
+function ChangeUpscale(){
+	document.getElementById("upscale_disp").innerHTML="(will export to "+resolution.x*upscale_scale+"x"+resolution.y*upscale_scale+")";
+}
 OpenButton.addEventListener("click",function(e){
 Open.click();
 });
@@ -1413,6 +1426,7 @@ var Filter_PxlBlr_off_y_get=0;
 var Filter_PxlBlr_mode=0;
 var Filter_PxlBlr_off_mode=0;
 var Filter_PxlBlr_off_absolute_scale=256;//outward
+var Filter_PxlBlr_iter_lmt=255;
 var PxlBlrInterval = null;
 
 var PxlBlr_Relative_Field = [];
@@ -1710,7 +1724,7 @@ function Filter_PxlBlr_Single_Light_Abs(imgData){//resolution.x,resolution
 	//return PxlBlr_Relative_Field_init_ImgData;
 	console.log(":3");
 	tempImgData = new ImageData(resolution.x,resolution.y);
-	if(PxlBlr_Relative_Field_step>=255)return imgData;
+	if(PxlBlr_Relative_Field_step>=Filter_PxlBlr_iter_lmt)return imgData;
 	
 	PxlBlr_Relative_Field_step++;
 	
@@ -5705,6 +5719,14 @@ function download_layer(id){
   link.click();
   link.remove();
 }
+function download_layer_s(id){
+  var link = document.createElement('a');
+  link.download = 'image'+id+'.png';
+ 
+  link.href = document.getElementById(id).toDataURL();
+  link.click();
+  link.remove();
+}
 function download_merged(){
   //make temporary canvas to merge layers
 var canvas = document.createElement("canvas");
@@ -5727,11 +5749,62 @@ var link = document.createElement('a');
   link.remove();
 
 }
+function download_merged_s(){
+  //make temporary canvas to merge layers
+var canvas = document.createElement("canvas");
+canvas.width=resolution.x;
+canvas.height=resolution.y;
+var Tctx = canvas.getContext('2d', { willReadFrequently: true });
+for(let i = 0;i< layers.length;i++){
+	if(layers[i][2]){
+		 putImageDataOptimized(Tctx,document.getElementById(layers[i][3]).getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y).data,0,0,resolution.x,resolution.y);
+	}
+ }
+
+//upscale part
+var canvas_s = document.createElement("canvas");
+canvas_s.width=resolution.x*upscale_scale;
+canvas_s.height=resolution.y*upscale_scale;
+var datain = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x,resolution.y).data;
+var dataout = canvas_s.getContext('2d', { willReadFrequently: true }).getImageData(0,0,resolution.x*upscale_scale,resolution.y*upscale_scale);
+for(let i = 0;i<resolution.y;i++){
+	for(let j = 0;j<resolution.x;j++){
+		var pos = (i*resolution.x+j)*4;
+		var pos2 = (i*resolution.x*upscale_scale+j)*4*upscale_scale;
+		for(let k = 0;k< upscale_scale;k++){
+			for(let l = 0;l< upscale_scale;l++){
+				dataout.data[pos2+(k*resolution.x*upscale_scale+l)*4]=datain[pos];
+				dataout.data[pos2+(k*resolution.x*upscale_scale+l)*4+1]=datain[pos+1];
+				dataout.data[pos2+(k*resolution.x*upscale_scale+l)*4+2]=datain[pos+2];
+				dataout.data[pos2+(k*resolution.x*upscale_scale+l)*4+3]=datain[pos+3];
+			}	
+		}
+	}
+}
+canvas_s.getContext('2d').putImageData(dataout,0,0);
+//download canvas
+var link = document.createElement('a');
+  link.download = 'image.png';
+ 
+  link.href = canvas_s.toDataURL();
+  link.click();
+  link.remove();
+
+}
 function download_layers(){
 
     for(let i =0;i<layers.length;i++){
       setTimeout(() => {
           download_layer(layers[i][3]);
+      }, 10*i);
+    
+    }
+    }
+	function download_layers_s(){
+
+    for(let i =0;i<layers.length;i++){
+      setTimeout(() => {
+          download_layer_s(layers[i][3]);
       }, 10*i);
     
     }
@@ -7611,18 +7684,18 @@ function ChangeRes(){
     resScale =  resolution.y / canvasSize.y; 
   }
 canvasBackground.style.backgroundSize = 200/resolution.x  + "%";
+ChangeUpscale();
 }
 function ScrollUpdate(){
  
 var rect = canvas.getBoundingClientRect();
+
  canvasOffset.x = rect.left;
  canvasOffset.y = rect.top;
 }
 
 function MoveCanvas(){
-
- 
-
+	//console.log(canvasOffset);
   div.style.left = canvasOffset.x + ((AbsPos.x-AbsLastPos.x))+"px";
   div.style.top = canvasOffset.y +((AbsPos.y-AbsLastPos.y))+"px";
   
@@ -8965,7 +9038,7 @@ default:
         
         
       }else{
-    
+		
         if(canvasSize.x > resolution.x*2){
         
           var before = {x:0,y:0}
@@ -11328,9 +11401,11 @@ left=false;
   
 //CANVAS//
 UpdateCanvas();
-ChangeRes();
-ScrollUpdate();
 
+ChangeRes();
+//ScrollUpdate();
+canvasOffset.x = 119;//hard-coded fix!
+canvasOffset.y = 40;
   //FRAME//
   
   
@@ -11367,10 +11442,11 @@ for(let i = 8; i<re.height-2;i++){
 
 //autosave of config
 setInterval(function(){
-  //console.log("autosaving...");
+  
   SaveToCookies();
-  //console.log("autosave complete");
-  },15000);
+	//console.log(UIOptions.style.visibility);
+  //console.log(canvasOffset)
+  },5000);
   
 /*
 setInterval(function(){

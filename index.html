@@ -130,8 +130,10 @@
   <button style="margin-left: 16px;" id="getPalette" class="tinyicon"><img class="smallbuttonimg" src="./icons/savepal.png" width="16" height="16"></button>
  </div>
 </div>
+		<!--
           <br/><br/>
-          <div class="colorPick" >
+		  -->
+          <div class="colorPick" style="position:fixed;top:-100%;" >
            
            
              <p class="nospace">PRIMARY</p> 
@@ -139,18 +141,19 @@
              
             
               </div>
-          <div class="colorPick">
+			  
+          <div class="colorPick" style="position:fixed;top:-100%;">
         <p class="nospace">SECONDARY</p>
         <canvas class="ColorSquare" id="SECONDARYCOLORcanvas"></canvas>
             
 
           </div>
-        
-          <br/>
+       
+	   
 
           <div class="layerMenu">
             <p>Layers:</p>
-            <div id="layersui" style="max-height:450px;overflow-y:scroll">
+            <div id="layersui" style="max-height:250px;overflow-y:scroll">
               <div class="layer" id="test0" >
                 <p id="frame0_0_name" style="cursor:text;max-width: 64px;overflow:hidden;">layetext</p>
                 <div style="display:flex;flex-direction:column;">
@@ -181,7 +184,7 @@
             <label>Opacity %</label>
             <input onblur="onion_opac=(this.value/100);LoadFrame(curr_frame)" type="number" value="50"/>
             </div>
-            <br/>
+			<br/>
 			<label>Layer scope: </label>
 			<button style="width: 80px;" id="filter_all" onclick="Filter_All=!Filter_All;console.log(Filter_All);if(Filter_All){ Filter_All_btn.innerHTML='All lrs.'; }else{ Filter_All_btn.innerHTML='Sngl.lr.';  }">Sngl.lr.</button>
 			<br/>
@@ -211,7 +214,8 @@
 			<br/>
 			<label>falloff</label>
 			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_falloff=Number(this.value);" value="0.0"/>
-			
+			<label>iter.lmt</label>
+			<input type="number" style="width:40px;" onchange="Filter_PxlBlr_iter_lmt=Number(this.value);" value="255"/>
 			<br/>
         </div>
 		
@@ -251,15 +255,22 @@
       <input id="resY" type="number" value="0">
       <button id="resizeconfirm">Ok</button>
       </div>
-      <div id="UIopt" style="visibility:hidden;">
-        <p>Options</p>
+      <div id="UIopt" style="width:512px;height:512px;visibility:hidden;" >
+        <p style="text-align:center;position:relative;left:-14px;" >Options</p>
     
 
-        <p>Download:</p>
-        <button id="save_merged">Merged</button>
-        <button id="save_layers">Separate layers</button>
-	¨	<button id="export_bitmap">Bitmap</button>
-      <button id="UIoptSave">Save</button>
+        <p>Download: (Original size)</p>
+        <button id="save_merged" style="width:80px;">Merged</button>
+        <button id="save_layers" style="width:80px;">Separate</button>
+		<button id="export_bitmap" style="width:80px;">BitTxt</button>
+		<br/>
+		<p>Download: (Upscaled size)</p>
+        <button id="save_merged_s" style="width:80px;">Merged</button>
+        <button id="save_layers_s" style="width:80px;">Separate</button>
+		
+		<br/>
+		<input type="number" onchange="upscale_scale=Math.max(1,Math.abs(Math.floor(Number(this.value))));ChangeUpscale();" placeholder="2"/>
+		<pre id="upscale_disp"></pre>
 	  <p>cheats</p>
 	  <input id="cheats"  >
       </div>
