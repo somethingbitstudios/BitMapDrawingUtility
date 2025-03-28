@@ -296,8 +296,58 @@ Import.addEventListener("change",function(e){
  this.value = '';
  
 });
+var StampImageData = new ImageData(16,16);//ctx.getImageData(0,0,1,1);
+function LoadStamp(){
+	
+	
+	
+	document.getElementById("loadstamp").addEventListener("change",function(e){
+	var image = new Image();
+  image.onload = function(){
+    
+  //make image selected
+  const canv = document.createElement("canvas");
+  canv.width = image.width;
+  canv.height = image.height;
+
+  const Actx = canv.getContext('2d', { willReadFrequently: true });  Actx.drawImage(image, 0, 0);
+  StampImageData = Actx.getImageData(0,0,image.width,image.height);
+  /*SelectArea = Actx.getImageData(0,0,image.width,image.height);
+  SelectAreaT=SelectArea;
+
+   SelectActive = true;
+  SelectPos.x = 0;
+  SelectPos.y = 0;
+  SelectPos.w = image.width;
+  SelectPos.h = image.height;
+  lrtb.left = 0;  //not the same as pos
+  lrtb.top = 0;
+  lrtb.right = image.width;  //0+width
+  lrtb.bottom = image.height;//0+height
 
 
+  pctx.putImageData(SelectAreaT,0,0);
+  uictx.fillStyle = selectFill;
+  uictx.fillRect(0,0,image.width,image.height);
+  EnableSelectPoints();
+
+  SaveFrame(AnimFrames_ptr[curr_frame]);
+  MoveSelectedPr(0,0);
+  */
+  }
+  image.src = URL.createObjectURL(this.files[0]);
+  
+  this.value = '';
+  //Menu_Tool.removeChild(input);
+		
+	});
+	
+	document.getElementById("loadstamp").click();
+	
+	
+	
+	
+}
 
 
 let select = false; //false=PRIMARY,true=SECONDARY
@@ -318,6 +368,7 @@ Button_primary.addEventListener("click",function(e) {
     });
 */
 let Button_pencil = document.getElementById("pencil");
+let Button_plustool = document.getElementById("plustool");
 let Button_line = document.getElementById("line");
 let Button_poly = document.getElementById("poly");
 let Button_fill = document.getElementById("fill");
@@ -328,6 +379,7 @@ PRIMARYtoolSELECT = Button_pencil;
 SECONDARYtoolSELECT = Button_eraser;
 
 let Menu_Tool = document.getElementById("toolmenu");
+
       //FUNC//
 function CreateIcon(img,id,tool){
   let temp = document.createElement("button");
@@ -352,7 +404,7 @@ function CreateIcon(img,id,tool){
     temp.style.borderRight="solid 2px #444444";
   }
   temp.onmousedown = function(e){
-  
+ 
   temp.style.borderTop="solid 2px #444444";
   temp.style.borderLeft="solid 2px #444444";
   temp.style.borderBottom="solid 2px #FFFFFF";
@@ -373,8 +425,12 @@ function CreateIcon(img,id,tool){
     },200);
       switch(tool){
         case("pencil"):
-     
+		
         MODE.pencil = id;
+        break;
+		case("plustool"):
+		
+        MODE.plustool = id;
         break;
         case("line"):
         MODE.line = id;
@@ -460,7 +516,35 @@ if(!select){
   return temp;
 }
 
+function CreateIconCustom(img,id,html){
+	 let temp = document.createElement("button");
+  let imgobj = document.createElement("img");
+  imgobj.src = img;
+  imgobj.width = 48;
+  imgobj.height = 48;
+  temp.appendChild(imgobj);
+  temp.classList.add("icon");
+  
+  temp.id = id;
+  temp.onmouseup=function(e){
+    temp.style.borderTop="solid 2px #FFFFFF";
+    temp.style.borderLeft="solid 2px #FFFFFF";
+    temp.style.borderBottom="solid 2px #444444";
+    temp.style.borderRight="solid 2px #444444";
+  }
+  temp.onmouseout=function(e){
+    temp.style.borderTop="solid 2px #FFFFFF";
+    temp.style.borderLeft="solid 2px #FFFFFF";
+    temp.style.borderBottom="solid 2px #444444";
+    temp.style.borderRight="solid 2px #444444";
+  }
+  temp.onclick = html;
+     
+      
+  
 
+  return temp;
+}
 
 
 document.getElementById("cancel_colorpicker").addEventListener("click",function(e){
@@ -472,6 +556,13 @@ Button_pencil.onmouseover = function(){
   hoveringON = "ToolButton";UIbtnObj=Button_pencil;
   }
 Button_pencil.onmouseout = function(){
+    hoveringON = "none";
+    //oncolor = -1;
+    }
+Button_plustool.onmouseover = function(){
+  hoveringON = "ToolButton";UIbtnObj=Button_plustool;
+  }
+Button_plustool.onmouseout = function(){
     hoveringON = "none";
     //oncolor = -1;
     }
@@ -4622,6 +4713,7 @@ function LoadFromCookies(){
   
   SECONDARY=myVariables.SECONDARY;
   Button_pencil.classList.remove("selectP");
+  Button_plustool.classList.remove("selectP");
   Button_line.classList.remove("selectP");
   Button_poly.classList.remove("selectP");
   Button_fill.classList.remove("selectP");
@@ -4629,6 +4721,7 @@ function LoadFromCookies(){
   Button_select.classList.remove("selectP");
   Button_eraser.classList.remove("selectP");
   Button_pencil.classList.remove("selectP");
+  Button_plustool.classList.remove("selectP");
   Button_line.classList.remove("selectS");
   Button_poly.classList.remove("selectS");
   Button_fill.classList.remove("selectS");
@@ -4636,6 +4729,7 @@ function LoadFromCookies(){
   Button_select.classList.remove("selectS");
   Button_eraser.classList.remove("selectS");
   Button_pencil.classList.remove("select");
+  Button_plustool.classList.remove("select");
   Button_line.classList.remove("select");
   Button_poly.classList.remove("select");
   Button_fill.classList.remove("select");
@@ -4647,6 +4741,10 @@ function LoadFromCookies(){
     case("pencil"):
     Button_pencil.classList.add("selectP");
     PRIMARYtoolSELECT=Button_pencil;
+    break;
+	case("plustool"):
+    Button_plustool.classList.add("selectP");
+    PRIMARYtoolSELECT=Button_plustool;
     break;
     case("line"):
     Button_line.classList.add("selectP");
@@ -4678,6 +4776,10 @@ function LoadFromCookies(){
     Button_pencil.classList.add("selectS");
     SECONDARYtoolSELECT=Button_pencil;
     break;
+	case("plustool"):
+    Button_plustool.classList.add("selectS");
+    SECONDARYtoolSELECT=Button_plustool;
+    break;
     case("line"):
     Button_line.classList.add("selectS");
     SECONDARYtoolSELECT=Button_line;
@@ -4707,6 +4809,9 @@ function LoadFromCookies(){
     switch(PRIMARY){
       case("pencil"):
       Button_pencil.classList.add("select");
+      break;
+	  case("plustool"):
+      Button_plustool.classList.add("select");
       break;
       case("line"):
       Button_line.classList.add("select");
@@ -6401,7 +6506,24 @@ function putImageDataOptimized(ctx, arrayOrig, x, y, w, h) {
 
     ctx.putImageData(new ImageData(new Uint8ClampedArray(array), w, h), x, y);
 }
+function overlayColor(topColor,bottomColor){
+	var a0 = bottomColor[3] / 255.0;
+        var a1 = topColor[3] / 255.0;
+        var a2 = a1 + a0 * (1 - a1);
 
+        if (a2 > 0) {
+            topColor[0] = (topColor[0] * a1 + bottomColor[0] * a0 * (1 - a1)) / a2;
+            topColor[1] = (topColor[1] * a1 + bottomColor[1] * a0 * (1 - a1)) / a2;
+            topColor[2] = (topColor[2] * a1 + bottomColor[2] * a0 * (1 - a1)) / a2;
+        } else {
+            topColor[0] = 0;
+            topColor[1] = 0;
+            topColor[2] = 0;
+        }
+
+        topColor[3] = ~~(a2 * 255);
+		return topColor;
+}
 
 //#endregion
 //#region palette
@@ -7365,7 +7487,26 @@ function MenuChHelper(variable){
     Menu_Tool.appendChild(br);
     Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3","pencil"));
     Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4","pencil"));
-      /*
+	br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+	Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-circle.png","5","pencil"));
+	Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-circle-blur.png","6","pencil"));
+	br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-stamp.png","7","pencil"));
+	name = document.createElement("button");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
+	name.innerHTML = "<button class='icon' style=''><img src='./icons/toolmodes/pencil_stamp_upload.png' width='48' height='48' onclick='LoadStamp()' style='padding-left:0px;'/></button>";
+	Menu_Tool.appendChild(name);
+	var input11 = document.createElement("div");
+	input11.innerHTML=" <input type='file' id='loadstamp' style='visibility: hidden;position:fixed;'></input>";
+	Menu_Tool.appendChild(input11);
+	name = document.createElement("div");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
+	name.innerHTML = "<input type='number' value='1' onchange='StampOpacity = this.value;'/>";
+	Menu_Tool.appendChild(name);
+	
+	/*
     br = document.createElement("br");
     Menu_Tool.appendChild(br); 
    
@@ -7399,7 +7540,77 @@ function MenuChHelper(variable){
 
 
     break;
+ case("plustool"): 
+    Menu_Tool.textContent = "";
+    name = document.createElement("h2"); 
+     br = document.createElement("br");
+    name.innerHTML = "Pencil Plus";
+    Menu_Tool.appendChild(name);
+    name = document.createElement("p"); 
+ 
+    name.innerHTML = "Mode:";
+    Menu_Tool.appendChild(name);
 
+      /*
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1","pencil"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2","pencil"));
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3","pencil"));
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4","pencil"));
+	br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+	Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-circle.png","5","pencil"));
+	Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-circle-blur.png","6","pencil"));
+	br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-stamp.png","7","pencil"));
+	name = document.createElement("button");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
+	name.innerHTML = "<button class='icon' style=''><img src='./icons/toolmodes/pencil_stamp_upload.png' width='48' height='48' onclick='LoadStamp()' style='padding-left:0px;'/></button>";
+	Menu_Tool.appendChild(name);
+	var input11 = document.createElement("div");
+	input11.innerHTML=" <input type='file' id='loadstamp' style='visibility: hidden;position:fixed;'></input>";
+	Menu_Tool.appendChild(input11);
+	name = document.createElement("div");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
+	name.innerHTML = "<input type='number' value='1' onchange='StampOpacity = this.value;'/>";
+	Menu_Tool.appendChild(name);
+	
+	/*
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br); 
+   
+    label = document.createElement("label");
+    label.setAttribute("for","size");
+    label.innerHTML = "Size:";
+    Menu_Tool.appendChild(label);
+    br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+  
+    input = document.createElement("input");
+    input.id = "size";
+    input.setAttribute("type","number");
+    input.setAttribute("name","size");
+    input.value = 1;
+    input.addEventListener("change", function(e){
+    if(input.value > 0){
+      if(!select){
+        lineWidth = input.value;
+      }else{
+        lineWidthS = input.value;
+      }
+
+    }
+    });
+		
+    Menu_Tool.appendChild(input);
+
+		*/
+
+
+
+    break;
     case("line"): 
     Menu_Tool.textContent = "";
     name = document.createElement("h2"); 
@@ -7600,6 +7811,14 @@ PRIMARYtoolSELECT = obj;
       PRIMARY = "pencil";
       }else if(right){
       SECONDARY = "pencil";
+      }
+  }
+  else if(obj == Button_plustool)
+  {
+    if(left){
+      PRIMARY = "plustool";
+      }else if(right){
+      SECONDARY = "plustool";
       }
   }
   else  if(obj == Button_line)
@@ -9266,7 +9485,15 @@ case("4"):
 //PixelPerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
  PixelPerfectPencil(lineWidth);
 break;
-
+case("5"):
+PerfectLineCircle(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth+1);
+break;
+case("6"):
+PerfectLineCircleBlur(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+break;
+case("7"):
+PerfectLineStamp(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+break;
       }
 
      
@@ -10319,7 +10546,411 @@ function PerfectLinePencil(X,Y,x,y,width) {
    }
   //sleep(100);
   }
+  
+  function PerfectLineStamp(X,Y,x,y,width) {
+ console.log("grr")
+   if(X > x){//DONE
+    if(Y > y){ //DONE
+      
+      let diffX = (X-x);
+      let diffY = (Y-y);
+     if(diffX >=diffY){
+       for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~(y+(i/diffX)*diffY),width,width);
+   DrawStamp(~~(x+i),~~(y+(i/diffX)*diffY),width,width);
+   }
+     } else{
+      for(let i = 0; i < diffY;i++){
+        //ctx.fillRect(~~(x+(i/diffY)*diffX),~~(y+i),width,width);
+        DrawStamp(~~(x+(i/diffY)*diffX),~~(y+i),width,width);
+		}  
+     }
+    
+    }
+    else if (Y<y){//D
+      let diffX = X-x;
+      let diffY = y-Y;
+      if(diffX >=diffY){
+        for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~(y-(i/diffX)*diffY),width,width);
+   DrawStamp(~~(x+i),~~(y-(i/diffX)*diffY),width,width);
+   }
+      }else{
+        for(let i = 0; i < diffY;i++){
+          //ctx.fillRect(~~(x+(i/diffY)*diffX),~~(y-i),width,width);
+          DrawStamp(~~(x+(i/diffY)*diffX),~~(y-i),width,width);
+		  }
+      }
+     
+    }
+    else{ // DONE
+      let diffX = X-x;
+     for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~y,width,width);
+   DrawStamp(~~(x+i),~~y,width,width);
+   }
+    }
+    
+   }
+   else if(X<x){
+    if(Y > y){ //
+      
+      let diffX = (x-X);
+      let diffY = (Y-y);
+     
+     if(diffX >=diffY){
+  
+       for(let i = 0; i < diffX;i++){
+   DrawStamp(~~(x-i),~~(y+(i/diffX)*diffY),width,width);//ctx.fillRect(~~(x-i),~~(y+(i/diffX)*diffY),width,width);
+   }
+     } else{
+     
+      for(let i = 0; i < diffY;i++){
+        DrawStamp(~~(x-(i/diffY)*diffX),~~(y+i),width,width);//ctx.fillRect(~~(x-(i/diffY)*diffX),~~(y+i),width,width);
+        }  
+     }
+    
+    }
+    else if (Y<y){//
+      let diffX = x-X;
+      let diffY = y-Y;
+      if(diffX >=diffY){
+        for(let i = 0; i < diffX;i++){
+   DrawStamp(~~(x-i),~~(y-(i/diffX)*diffY),width,width);//ctx.fillRect(~~(x-i),~~(y-(i/diffX)*diffY),width,width);
+   }
+      }else{
+        for(let i = 0; i < diffY;i++){
+          DrawStamp(~~(x-(i/diffY)*diffX),~~(y-i),width,width);//ctx.fillRect(~~(x-(i/diffY)*diffX),~~(y-i),width,width);
+          }
+      }
+     
+    }
+    else{ // 
+     
+      let diffX = x-X;
+     for(let i = 0; i < diffX;i++){
+   DrawStamp(~~(x-i),~~y,width,width);//ctx.fillRect(~~(x-i),~~y,width,width);
+   }
+    }
+    
+   }
+   else{
+    
+    if(Y > y){
+      
+      let diffY = Y-y;
+     
+     for(let i = 0; i < diffY;i++){
+   DrawStamp(~~X,~~(y+i),width,width);//ctx.fillRect(~~X,~~(y+i),width,width);
+   }
+    }
+    else if (Y<y){
+    
+      let diffY = y-Y;
+     for(let i = 0; i < diffY;i++){
+   DrawStamp(~~X,~~(y-i),width,width);//ctx.fillRect(~~X,~~(y-i),width,width);
+   }
+    }
+    else{
+     
+   DrawStamp(~~X,~~Y,width,width);//ctx.fillRect(~~X,~~Y,width,width);
+   
+    }
+    
+   }
+   if(TICK > 0){
+   sleep(TICK);
+   }
+  //sleep(100);
+  }
+var StampOpacity = 1;
+function DrawStamp(x,y,w,h){
+	
+	w = StampImageData.width;
+	h = StampImageData.height;
+	var halfw = ~~(StampImageData.width/2);
+	var halfh = ~~(StampImageData.height/2);
+	var edge = [x-(halfw),y-(halfw)];
+	
+	//color = lineColor.split("rgba(")[1].split(")")[0].split(",");
+	//color = [Number(color[0]),Number(color[1]),Number(color[2]),Math.round(Number(color[3])*255)];
 
+	var imgdata = ctx.getImageData(edge[0],edge[1],StampImageData.width,StampImageData.height);
+	for(let i = 0;i<StampImageData.height;i++){
+		for(let j = 0;j<StampImageData.width;j++){
+				var color = [StampImageData.data[(i*w+j)*4],StampImageData.data[(i*w+j)*4+1],StampImageData.data[(i*w+j)*4+2],Math.round(StampImageData.data[(i*w+j)*4+3]*StampOpacity)];
+			
+				var origcolor = [imgdata.data[(i*w+j)*4],imgdata.data[(i*w+j)*4+1],imgdata.data[(i*w+j)*4+2],imgdata.data[(i*w+j)*4+3]];
+				origcolor = overlayColor(color,origcolor);
+				
+				imgdata.data[(i*w+j)*4]=origcolor[0]; 
+				imgdata.data[(i*w+j)*4+1]=origcolor[1];
+				imgdata.data[(i*w+j)*4+2]=origcolor[2];
+				imgdata.data[(i*w+j)*4+3]=origcolor[3];
+			
+		}
+	}
+	ctx.putImageData(imgdata,edge[0],edge[1]);
+}
+function PerfectLineCircle(X,Y,x,y,width) {
+ 
+   if(X > x){//DONE
+    if(Y > y){ //DONE
+      
+      let diffX = (X-x);
+      let diffY = (Y-y);
+     if(diffX >=diffY){
+       for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~(y+(i/diffX)*diffY),width,width);
+   DrawCircle(~~(x+i),~~(y+(i/diffX)*diffY),width,width);
+   }
+     } else{
+      for(let i = 0; i < diffY;i++){
+        //ctx.fillRect(~~(x+(i/diffY)*diffX),~~(y+i),width,width);
+        DrawCircle(~~(x+(i/diffY)*diffX),~~(y+i),width,width);
+		}  
+     }
+    
+    }
+    else if (Y<y){//D
+      let diffX = X-x;
+      let diffY = y-Y;
+      if(diffX >=diffY){
+        for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~(y-(i/diffX)*diffY),width,width);
+   DrawCircle(~~(x+i),~~(y-(i/diffX)*diffY),width,width);
+   }
+      }else{
+        for(let i = 0; i < diffY;i++){
+          //ctx.fillRect(~~(x+(i/diffY)*diffX),~~(y-i),width,width);
+          DrawCircle(~~(x+(i/diffY)*diffX),~~(y-i),width,width);
+		  }
+      }
+     
+    }
+    else{ // DONE
+      let diffX = X-x;
+     for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~y,width,width);
+   DrawCircle(~~(x+i),~~y,width,width);
+   }
+    }
+    
+   }
+   else if(X<x){
+    if(Y > y){ //
+      
+      let diffX = (x-X);
+      let diffY = (Y-y);
+     
+     if(diffX >=diffY){
+  
+       for(let i = 0; i < diffX;i++){
+   DrawCircle(~~(x-i),~~(y+(i/diffX)*diffY),width,width);//ctx.fillRect(~~(x-i),~~(y+(i/diffX)*diffY),width,width);
+   }
+     } else{
+     
+      for(let i = 0; i < diffY;i++){
+        DrawCircle(~~(x-(i/diffY)*diffX),~~(y+i),width,width);//ctx.fillRect(~~(x-(i/diffY)*diffX),~~(y+i),width,width);
+        }  
+     }
+    
+    }
+    else if (Y<y){//
+      let diffX = x-X;
+      let diffY = y-Y;
+      if(diffX >=diffY){
+        for(let i = 0; i < diffX;i++){
+   DrawCircle(~~(x-i),~~(y-(i/diffX)*diffY),width,width);//ctx.fillRect(~~(x-i),~~(y-(i/diffX)*diffY),width,width);
+   }
+      }else{
+        for(let i = 0; i < diffY;i++){
+          DrawCircle(~~(x-(i/diffY)*diffX),~~(y-i),width,width);//ctx.fillRect(~~(x-(i/diffY)*diffX),~~(y-i),width,width);
+          }
+      }
+     
+    }
+    else{ // 
+     
+      let diffX = x-X;
+     for(let i = 0; i < diffX;i++){
+   DrawCircle(~~(x-i),~~y,width,width);//ctx.fillRect(~~(x-i),~~y,width,width);
+   }
+    }
+    
+   }
+   else{
+    
+    if(Y > y){
+      
+      let diffY = Y-y;
+     
+     for(let i = 0; i < diffY;i++){
+   DrawCircle(~~X,~~(y+i),width,width);//ctx.fillRect(~~X,~~(y+i),width,width);
+   }
+    }
+    else if (Y<y){
+    
+      let diffY = y-Y;
+     for(let i = 0; i < diffY;i++){
+   DrawCircle(~~X,~~(y-i),width,width);//ctx.fillRect(~~X,~~(y-i),width,width);
+   }
+    }
+    else{
+     
+   DrawCircle(~~X,~~Y,width,width);//ctx.fillRect(~~X,~~Y,width,width);
+   
+    }
+    
+   }
+   if(TICK > 0){
+   sleep(TICK);
+   }
+  //sleep(100);
+  }
+function DrawCircle(x,y,w,h){
+	var halfw = ~~(w/2);
+	var edge = [x-(halfw),y-(halfw)];
+	var color;
+	color = lineColor.split("rgba(")[1].split(")")[0].split(",");
+	color = [Number(color[0]),Number(color[1]),Number(color[2]),Math.round(Number(color[3])*255)];
+
+	var imgdata = ctx.getImageData(edge[0],edge[1],w,w);
+	for(let i = 0;i<w;i++){
+		for(let j = 0;j<w;j++){
+			if(  ((j-halfw)**2+(i-halfw)**2)<(halfw**2)  ){
+				var origcolor = [imgdata.data[(i*w+j)*4],imgdata.data[(i*w+j)*4+1],imgdata.data[(i*w+j)*4+2],imgdata.data[(i*w+j)*4+3]];
+				origcolor = overlayColor(color,origcolor);
+				
+				imgdata.data[(i*w+j)*4]=origcolor[0]; 
+				imgdata.data[(i*w+j)*4+1]=origcolor[1];
+				imgdata.data[(i*w+j)*4+2]=origcolor[2];
+				imgdata.data[(i*w+j)*4+3]=origcolor[3];
+			}
+		}
+	}
+	ctx.putImageData(imgdata,edge[0],edge[1]);
+}
+function PerfectLineCircleBlur(X,Y,x,y,width) {
+ 
+   if(X > x){//DONE
+    if(Y > y){ //DONE
+      
+      let diffX = (X-x);
+      let diffY = (Y-y);
+     if(diffX >=diffY){
+       for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~(y+(i/diffX)*diffY),width,width);
+   DrawCircleBlur(~~(x+i),~~(y+(i/diffX)*diffY),width,width);
+   }
+     } else{
+      for(let i = 0; i < diffY;i++){
+        //ctx.fillRect(~~(x+(i/diffY)*diffX),~~(y+i),width,width);
+        DrawCircleBlur(~~(x+(i/diffY)*diffX),~~(y+i),width,width);
+		}  
+     }
+    
+    }
+    else if (Y<y){//D
+      let diffX = X-x;
+      let diffY = y-Y;
+      if(diffX >=diffY){
+        for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~(y-(i/diffX)*diffY),width,width);
+   DrawCircleBlur(~~(x+i),~~(y-(i/diffX)*diffY),width,width);
+   }
+      }else{
+        for(let i = 0; i < diffY;i++){
+          //ctx.fillRect(~~(x+(i/diffY)*diffX),~~(y-i),width,width);
+          DrawCircleBlur(~~(x+(i/diffY)*diffX),~~(y-i),width,width);
+		  }
+      }
+     
+    }
+    else{ // DONE
+      let diffX = X-x;
+     for(let i = 0; i < diffX;i++){
+   //ctx.fillRect(~~(x+i),~~y,width,width);
+   DrawCircleBlur(~~(x+i),~~y,width,width);
+   }
+    }
+    
+   }
+   else if(X<x){
+    if(Y > y){ //
+      
+      let diffX = (x-X);
+      let diffY = (Y-y);
+     
+     if(diffX >=diffY){
+  
+       for(let i = 0; i < diffX;i++){
+   DrawCircleBlur(~~(x-i),~~(y+(i/diffX)*diffY),width,width);//ctx.fillRect(~~(x-i),~~(y+(i/diffX)*diffY),width,width);
+   }
+     } else{
+     
+      for(let i = 0; i < diffY;i++){
+        DrawCircleBlur(~~(x-(i/diffY)*diffX),~~(y+i),width,width);//ctx.fillRect(~~(x-(i/diffY)*diffX),~~(y+i),width,width);
+        }  
+     }
+    
+    }
+    else if (Y<y){//
+      let diffX = x-X;
+      let diffY = y-Y;
+      if(diffX >=diffY){
+        for(let i = 0; i < diffX;i++){
+   DrawCircleBlur(~~(x-i),~~(y-(i/diffX)*diffY),width,width);//ctx.fillRect(~~(x-i),~~(y-(i/diffX)*diffY),width,width);
+   }
+      }else{
+        for(let i = 0; i < diffY;i++){
+          DrawCircleBlur(~~(x-(i/diffY)*diffX),~~(y-i),width,width);//ctx.fillRect(~~(x-(i/diffY)*diffX),~~(y-i),width,width);
+          }
+      }
+     
+    }
+    else{ // 
+     
+      let diffX = x-X;
+     for(let i = 0; i < diffX;i++){
+   DrawCircleBlur(~~(x-i),~~y,width,width);//ctx.fillRect(~~(x-i),~~y,width,width);
+   }
+    }
+    
+   }
+   else{
+    
+    if(Y > y){
+      
+      let diffY = Y-y;
+     
+     for(let i = 0; i < diffY;i++){
+   DrawCircleBlur(~~X,~~(y+i),width,width);//ctx.fillRect(~~X,~~(y+i),width,width);
+   }
+    }
+    else if (Y<y){
+    
+      let diffY = y-Y;
+     for(let i = 0; i < diffY;i++){
+   DrawCircleBlur(~~X,~~(y-i),width,width);//ctx.fillRect(~~X,~~(y-i),width,width);
+   }
+    }
+    else{
+     
+   DrawCircleBlur(~~X,~~Y,width,width);//ctx.fillRect(~~X,~~Y,width,width);
+   
+    }
+    
+   }
+   if(TICK > 0){
+   sleep(TICK);
+   }
+  //sleep(100);
+  }
+function DrawCircleBlur(x,y,w,h){
+	ctx.arc(x,y,w,0,Math.PI*2,0);
+	ctx.fill();
+}
 function PixelPerfectLinePencil(X,Y,x,y,width) {
   X = ~~X;
   Y = ~~Y;
@@ -11442,11 +12073,11 @@ for(let i = 8; i<re.height-2;i++){
 
 //autosave of config
 setInterval(function(){
-  
-  SaveToCookies();
+  console.log(MODE.pencil);
+  //SaveToCookies();
 	//console.log(UIOptions.style.visibility);
   //console.log(canvasOffset)
-  },5000);
+  },500);
   
 /*
 setInterval(function(){
@@ -11460,3 +12091,6 @@ setInterval(function(){
 },1000);
 
 */
+
+
+MODE.poly="legacy";
