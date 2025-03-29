@@ -10818,7 +10818,7 @@ function DrawCircle(x,y,w,h){
 	var imgdata = ctx.getImageData(edge[0],edge[1],w,w);
 	for(let i = 0;i<w;i++){
 		for(let j = 0;j<w;j++){
-			if(  ((j-halfw)**2+(i-halfw)**2)<(halfw**2)  ){
+			if(  ((j-halfw)**2+(i-halfw)**2)<(halfw)  ){
 				var origcolor = [imgdata.data[(i*w+j)*4],imgdata.data[(i*w+j)*4+1],imgdata.data[(i*w+j)*4+2],imgdata.data[(i*w+j)*4+3]];
 				origcolor = overlayColor(color,origcolor);
 				
