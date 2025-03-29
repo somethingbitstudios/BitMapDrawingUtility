@@ -457,65 +457,88 @@ function CreateIcon(img,id,tool){
 
 
 
-/*
-  //BUTTONCLICK
-  temp.addEventListener("click", function(e) {
-console.log(id);
-if(!select){
-  switch(PRIMARY){
-    case("pencil"):
-    MODE.pencil = id;
-    break;
-    case("line"):
-    MODE.line = id;
-    break;
-    case("poly"):
-    MODE.poly = id;
-    break;
-    case("fill"):
-    MODE.fill = id;
-    break;
-    case("picker"):
-    MODE.picker = id;
-    break;
-    case("select"):
-    MODE.select = id;
-    break;
-    case("eraser"):
-    MODE.eraser = id;
-    break;
-  }
- 
-}else{
-  switch(SECONDARY){
-    case("pencil"):
-    MODE.pencil = id;
-    break;
-    case("line"):
-    MODE.line = id;
-    break;
-    case("poly"):
-    MODE.poly = id;
-    break;
-    case("fill"):
-    MODE.fill = id;
-    break;
-    case("picker"):
-    MODE.picker = id;
-    break;
-    case("select"):
-    MODE.select = id;
-    break;
-    case("eraser"):
-    MODE.eraser = id;
-    break;
-  }
-}
 
-  });*/
   return temp;
 }
+function CreateIconSub(img,id,tool){
+  let temp = document.createElement("button");
+  let imgobj = document.createElement("img");
+  imgobj.src = img;
+  imgobj.width = 48;
+  imgobj.height = 48;
+  temp.appendChild(imgobj);
+  temp.classList.add("icon");
+  
+  temp.id = id;
+  temp.onmouseup=function(e){
+    temp.style.borderTop="solid 2px #FFFFFF";
+    temp.style.borderLeft="solid 2px #FFFFFF";
+    temp.style.borderBottom="solid 2px #444444";
+    temp.style.borderRight="solid 2px #444444";
+  }
+  temp.onmouseout=function(e){
+    temp.style.borderTop="solid 2px #FFFFFF";
+    temp.style.borderLeft="solid 2px #FFFFFF";
+    temp.style.borderBottom="solid 2px #444444";
+    temp.style.borderRight="solid 2px #444444";
+  }
+  temp.onmousedown = function(e){
+ 
+  temp.style.borderTop="solid 2px #444444";
+  temp.style.borderLeft="solid 2px #444444";
+  temp.style.borderBottom="solid 2px #FFFFFF";
+  temp.style.borderRight="solid 2px #FFFFFF";
+  temp.style.backgroundColor="rgb(127,127,127)";
+  setTimeout(function(){
+  temp.style.backgroundColor="rgb(140,140,140)";
+  },50);
+  setTimeout(function(){
+    temp.style.backgroundColor="rgb(150,150,150)";
+    },100);
+  setTimeout(function(){
+      temp.style.backgroundColor="rgb(160,160,160)";
+      },150);
+  setTimeout(function(){
+   
+    temp.style.backgroundColor="rgb(180,180,180)";
+    },200);
+      switch(tool){
+        case("pencil"):
+		
+        MODE.pencil = id;
+        break;
+		case("plustool"):
+		
+        MODE.plustool = id;
+        break;
+        case("line"):
+        MODE.line = id;
+        break;
+        case("poly"):
+        MODE.poly = id;
+        break;
+        case("fill"):
+        MODE.fill = id;
+        break;
+        case("picker"):
+        MODE.picker = id;
+        break;
+        case("select"):
+        MODE.select = id;
+        break;
+        case("eraser"):
+        MODE.eraser = id;
+        break;
+      }
+     
+   //MenuChHelper(tool);   
+  }
 
+
+
+
+  return temp;
+}
 function CreateIconCustom(img,id,html){
 	 let temp = document.createElement("button");
   let imgobj = document.createElement("img");
@@ -737,7 +760,7 @@ LoadPalette(palettelist.value);
 
   var selected = false; //false = primary,true = secondary
 var PRIMARY = "pencil";
-var MODE = {pencil:"3",line:"1",poly:"1",fill:"FILL_MODE_INST",picker:"1",eraser:"1"};
+var MODE = {pencil:"3",plustool:"1",line:"1",poly:"1",fill:"FILL_MODE_INST",picker:"1",eraser:"1"};
 var lineWidth = 1;
 var lineCap = 'butt';
 var lineColor = "rgba(0,0,0,1)";
@@ -5070,6 +5093,53 @@ return [hue,sat,value,a];
 
 }
 
+function RGBAtoHSLAArrayFloat(rgba){
+  let r = rgba[0]/255.0;
+  let g = rgba[1]/255.0;
+  let b = rgba[2]/255.0;
+  let a = rgba[3];
+  let cmax = Math.max(r,Math.max(g,b));
+  let cmin = Math.min(r,Math.min(g,b));
+  let diff = cmax - cmin;
+  var hue = 0;
+ if(r==g&&g==b){
+  hue=0;
+ }else{
+   switch(cmax){
+    case(0):break;
+    case(r): hue = (60 * ((g - b) / diff) + 360) % 360;break;
+    case(g): hue = (60 * ((b - r) / diff) + 120) % 360;break;
+    case(b): hue = (60 * ((r - g) / diff) + 240) % 360;break;
+
+  }
+ }
+ var sat;
+   var value = (cmax+cmin);
+   if(cmax==cmin){
+      sat = 0;
+   }
+   else{
+    
+    sat = diff/(1-Math.abs(value-1))*100;
+  
+   }
+
+  
+  value*=50;
+
+  
+
+  
+
+
+ // hue = (""+hue).split(".")[0];
+  //sat = (""+sat).split(".")[0];
+  //value = (""+value).split(".")[0];
+  
+return [hue,sat,value,a];
+
+}
+
 function RGBAtoHSLA(rgba){
   let r = Number(rgba.split("rgba(")[1].split(",")[0])/255;
   let g = Number(rgba.split("rgba(")[1].split(",")[1])/255;
@@ -5179,6 +5249,73 @@ return "rgba("+Math.round(rgb.r)+","+Math.round(rgb.g)+","+Math.round(rgb.b)+","
 
 */
 }
+
+function HslaToRgbaArray(hsla) {
+	var h = hsla[0];
+	var s = hsla[1];
+	var l = hsla[2];
+	
+	  s /= 100.0;
+    l /= 100.0;
+    
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60.0) % 2 - 1));
+    const m = l - c / 2;
+    
+    let r = 0, g = 0, b = 0;
+    
+    if (h >= 0 && h < 60) {
+        r = c; g = x; b = 0;
+    } else if (h >= 60 && h < 120) {
+        r = x; g = c; b = 0;
+    } else if (h >= 120 && h < 180) {
+        r = 0; g = c; b = x;
+    } else if (h >= 180 && h < 240) {
+        r = 0; g = x; b = c;
+    } else if (h >= 240 && h < 300) {
+        r = x; g = 0; b = c;
+    } else if (h >= 300 && h < 360) {
+        r = c; g = 0; b = x;
+    }
+    
+    return [Math.round((r + m) * 255.0), Math.round((g + m) * 255.0), Math.round((b + m) * 255.0),hsla[3]];
+}
+	/*
+    let h = hsla[0] / 360; // Normalize hue to [0,1]
+    let s = hsla[1] / 100; // Normalize saturation to [0,1]
+    let l = hsla[2] / 200; // Normalize lightness to [0,1]
+    let a = hsla[3]; // Alpha remains as is
+
+    let r, g, b;
+
+    if (s === 0) {
+        r = g = b = l; // Achromatic (grayscale)
+    } else {
+        let hue2rgb = function (p, q, t) {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+        };
+
+        let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        let p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1 / 3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1 / 3);
+    }
+
+    return [
+        Math.round(r * 255), // Scale to 0-255
+        Math.round(g * 255),
+        Math.round(b * 255),
+        a// Keep alpha as 0-1 with 2 decimal precision
+    ];
+}
+
+*/
 function ALLToRGBA(value){
   if(value.includes("rgba(")){
     return value;
@@ -7542,41 +7679,54 @@ function MenuChHelper(variable){
     break;
  case("plustool"): 
     Menu_Tool.textContent = "";
+	
     name = document.createElement("h2"); 
      br = document.createElement("br");
     name.innerHTML = "Pencil Plus";
     Menu_Tool.appendChild(name);
-    name = document.createElement("p"); 
- 
-    name.innerHTML = "Mode:";
+	
+	 name = document.createElement("p"); 
+    name.innerHTML = "Lighten/Darken:";
     Menu_Tool.appendChild(name);
-
-      /*
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-13.png","1","pencil"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2.png","2","pencil"));
-    br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-2-2.png","3","pencil"));
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-14.png","4","pencil"));
-	br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-	Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-circle.png","5","pencil"));
-	Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-circle-blur.png","6","pencil"));
-	br = document.createElement("br");
-    Menu_Tool.appendChild(br);
-    Menu_Tool.appendChild(CreateIcon("./icons/toolmodes/pencil_mode-stamp.png","7","pencil"));
-	name = document.createElement("button");
-	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
-	name.innerHTML = "<button class='icon' style=''><img src='./icons/toolmodes/pencil_stamp_upload.png' width='48' height='48' onclick='LoadStamp()' style='padding-left:0px;'/></button>";
-	Menu_Tool.appendChild(name);
-	var input11 = document.createElement("div");
-	input11.innerHTML=" <input type='file' id='loadstamp' style='visibility: hidden;position:fixed;'></input>";
-	Menu_Tool.appendChild(input11);
+	
 	name = document.createElement("div");
 	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
-	name.innerHTML = "<input type='number' value='1' onchange='StampOpacity = this.value;'/>";
+	name.innerHTML = "<input type='number' value='1' onchange='PlusTool_Light_addition = this.value;' />";
+	Menu_Tool.appendChild(name);
+	 Menu_Tool.appendChild(CreateIconSub("./icons/toolmodes/plustool_light_direct.png","0","plustool"));
+    Menu_Tool.appendChild(CreateIconSub("./icons/toolmodes/plustool_light.png","1","plustool"));
+	br = document.createElement("br");
+    Menu_Tool.appendChild(br);
+	 
+	 
+
+      
+     Menu_Tool.appendChild(CreateIconSub("./icons/toolmodes/plustool_palette.png","2","plustool"));
+     name = document.createElement("button");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;";
+
+	name.innerHTML = "<button id='PlusTool_Circle_UI' class='icon' style='' onclick='PlusTool_Circle_Toggle();'><img src='./icons/toolmodes/plustool_type_square.png' width='48' height='48' style='padding-left:0px;'/></button>";
+	Menu_Tool.appendChild(name);
+	name = document.createElement("div");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
+	name.innerHTML = "<label>PAL offset:</label><input type='number' value='1' onchange='PlusToolPalette_Offset = this.value;' />";
 	Menu_Tool.appendChild(name);
 	
+	name = document.createElement("div");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
+	name.innerHTML = "<label>PAL size: (%MOD)</label><input type='number' value='8' onchange='PlusToolPalette_Size = this.value;' />";
+	Menu_Tool.appendChild(name);
+	
+	name = document.createElement("button");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;";
+	name.id = 'PlusTool_Con_UI';
+	name.innerHTML = "<button class='icon' style='' onclick='PlusTool_Con_Toggle();'><img src='./icons/toolmodes/plustool_con_good.png' width='48' height='48' style='padding-left:0px;'/></button>";
+	Menu_Tool.appendChild(name);
+	name = document.createElement("button");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;";
+	name.id = 'PlusTool_Apply_UI';
+	name.innerHTML = "<button class='icon' style='' onclick='PlusTool_Apply_Toggle();'><img src='./icons/toolmodes/plustool_apply_auto.png' width='48' height='48' style='padding-left:0px;'/></button>";
+	Menu_Tool.appendChild(name);
 	/*
     br = document.createElement("br");
     Menu_Tool.appendChild(br); 
@@ -8908,7 +9058,20 @@ switch(MODE.poly){
    
     break;
     
-        
+        case("plustool"):
+        SQchanged[curr_frame]=true;
+        switch(MODE.plustool){
+    case("1"):
+     //previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
+	  if(PlusTool_Apply){
+		  PlusTool_Apply_func();
+	  }
+    
+      break;
+    }
+   
+    break;
+    
     
    
      case("line"):
@@ -9498,6 +9661,45 @@ break;
 
      
       break;
+	  case("plustool"):
+
+
+
+
+          //ctx.lineWidth = lineWidth;
+      //ctx.beginPath();
+      switch(MODE.plustool){
+case("0"):
+	PlusTool_Lighten_Basic(~~pos.x,~~pos.y,lineWidth);
+  //ctx.fillRect(~~pos.x,~~pos.y,lineWidth,lineWidth);
+break;
+case("1"):
+	PlusTool_Lighten_Off(~~pos.x,~~pos.y,lineWidth);
+//PerfectLinePencil(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+ 
+break;
+
+case("2"):
+	PlusTool_PalShift_Square(~~pos.x,~~pos.y,lineWidth);
+break;
+case("3"):
+PlusTool_PalShift_Circle(~~pos.x,~~pos.y,lineWidth);
+
+break;
+case("5"):
+//PerfectLineCircle(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth+1);
+break;
+case("6"):
+//PerfectLineCircleBlur(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+break;
+case("7"):
+//PerfectLineStamp(lastPos.x,lastPos.y,pos.x,pos.y,lineWidth);
+break;
+      }
+
+     
+      break;
+	  
       case("line"):
       switch(MODE.line){
         default:
@@ -9584,7 +9786,15 @@ ctx.fillStyle = lineColorS;
  PixelPerfectPencil(lineWidthS);
  //console.log(lineColorS);
 break;
-
+case("5"):
+PerfectLineCircle(lastPos.x,lastPos.y,pos.x,pos.y,lineWidthS+1);
+break;
+case("6"):
+PerfectLineCircleBlur(lastPos.x,lastPos.y,pos.x,pos.y,lineWidthS);
+break;
+case("7"):
+PerfectLineStamp(lastPos.x,lastPos.y,pos.x,pos.y,lineWidthS);
+break;
       }
 
      
@@ -11044,6 +11254,227 @@ offset = 1;
   }
   
    }
+  var PlusTool_Circle = false;
+  var PlusTool_Circle_UI = document.getElementById("PlusTool_Circle_UI");
+  var PlusTool_Light_addition = 1;
+  var PlusTool_Apply = true;
+  var PlusTool_Con = true;
+  function PlusTool_Circle_Toggle(){
+	  PlusTool_Circle_UI = document.getElementById("PlusTool_Circle_UI");
+	  PlusTool_Circle=!PlusTool_Circle;
+	  if(PlusTool_Circle){
+		  PlusTool_Circle_UI.innerHTML = "<img src='./icons/toolmodes/plustool_type_circle.png' width='48' height='48' style='padding-left:0px;'/>";
+	  }else{
+		  PlusTool_Circle_UI.innerHTML = "<img src='./icons/toolmodes/plustool_type_square.png' width='48' height='48' style='padding-left:0px;'/>";
+	  }
+	  
+  }
+  function PlusTool_Apply_func(){
+	  
+	//replace all ctx pixels with pctx if pctx is not trans
+	var pdata = pctx.getImageData(0,0,resolution.x,resolution.y);
+	var cdata = ctx.getImageData(0,0,resolution.x,resolution.y);
+	
+	for(let i = 0;i< resolution.y;i++){
+		for(let j = 0;j< resolution.x;j++){
+			if(pdata.data[(i*resolution.x+j)*4+3]!=0){
+			//console.log(pdata.data[(i*resolution.x+j)*4+3]);
+			cdata.data[(i*resolution.x+j)*4]=pdata.data[(i*resolution.x+j)*4];
+			cdata.data[(i*resolution.x+j)*4+1]=pdata.data[(i*resolution.x+j)*4+1];
+			cdata.data[(i*resolution.x+j)*4+2]=pdata.data[(i*resolution.x+j)*4+2];
+			cdata.data[(i*resolution.x+j)*4+3]=pdata.data[(i*resolution.x+j)*4+3];
+			
+			}
+			
+		}
+	}
+	ctx.putImageData(cdata,0,0);
+	pctx.putImageData(new ImageData(resolution.x,resolution.y),0,0);
+	SQ_SAVE();
+	//console.log("wenseldale")
+  }
+   function PlusTool_Apply_Toggle(){
+	  PlusTool_Circle_UI = document.getElementById("PlusTool_Apply_UI");
+	  PlusTool_Apply=!PlusTool_Apply;
+	  if(PlusTool_Apply){
+		  PlusTool_Apply_UI.innerHTML = "<button class='icon' style='' onclick='PlusTool_Apply_Toggle();'><img src='./icons/toolmodes/plustool_apply_auto.png' width='48' height='48' style='padding-left:0px;'/></button>";
+	  }else{
+		  PlusTool_Apply_UI.innerHTML = "<button class='icon' style='' onclick='PlusTool_Apply_Toggle();'><img src='./icons/toolmodes/plustool_apply_manual.png' width='48' height='48' style='padding-left:0px;'/></button><button id='brokenwhywhy' class='icon' style='' onclick='PlusTool_Apply_func();'><img src='./icons/toolmodes/plustool_apply.png' width='48' height='48' style='padding-left:0px;'/></button>";
+	  /*document.getElementById("brokenwhywhy").addEventListener("click",()=>{
+		  PlusTool_Apply_func();
+	  });*/
+	  }
+	  
+  }
+  var PlusTool_Con_UI;
+  function PlusTool_Con_Toggle(){
+	  PlusTool_Con_UI = document.getElementById("PlusTool_Con_UI");
+	  PlusTool_Con=!PlusTool_Con;
+	  if(PlusTool_Con){
+		  PlusTool_Con_UI.innerHTML = "<button class='icon' style='' onclick='PlusTool_Con_Toggle();'><img src='./icons/toolmodes/plustool_con_good.png' width='48' height='48' style='padding-left:0px;'/></button>";
+	  }else{
+		  PlusTool_Con_UI.innerHTML = "<button class='icon' style='' onclick='PlusTool_Con_Toggle();'><img src='./icons/toolmodes/plustool_con_fast.png' width='48' height='48' style='padding-left:0px;'/>";
+	  /*document.getElementById("brokenwhywhy").addEventListener("click",()=>{
+		  PlusTool_Apply_func();
+	  });*/
+	  }
+	  
+  }
+  function PlusTool_Lighten_Basic(x,y,w){
+	  if(PlusTool_Circle){
+		PlusTool_Lighten_Basic_Circle(x,y,w);
+	  }else{
+		PlusTool_Lighten_Basic_Square(x,y,w);	  
+	  }
+	   }
+  function PlusTool_Lighten_Basic_Square(x,y,w){//very basic
+	  console.log("frog")
+	var halfw = ~~(w/2);
+	var edge = [x-(halfw),y-(halfw)];
+	//var color;
+	//color = lineColor.split("rgba(")[1].split(")")[0].split(",");
+	//color = [Number(color[0]),Number(color[1]),Number(color[2]),Math.round(Number(color[3])*255)];
+
+	var imgdata = ctx.getImageData(edge[0],edge[1],w,w);
+	for(let i = 0;i<w;i++){
+		for(let j = 0;j<w;j++){
+			//if(  ((j-halfw)**2+(i-halfw)**2)<(halfw)  ){
+				var origcolor = [imgdata.data[(i*w+j)*4],imgdata.data[(i*w+j)*4+1],imgdata.data[(i*w+j)*4+2],imgdata.data[(i*w+j)*4+3]];
+				//origcolor = overlayColor(color,origcolor);
+				var hsvcolor = RGBAtoHSLAArrayFloat(origcolor);
+				//console.log(hsvcolor);
+				hsvcolor[2]+=(PlusTool_Light_addition)*2.55;
+				//console.log(hsvcolor);
+				origcolor=HslaToRgbaArray(hsvcolor);
+				//console.log(origcolor);
+				imgdata.data[(i*w+j)*4]=origcolor[0]; 
+				imgdata.data[(i*w+j)*4+1]=origcolor[1];
+				imgdata.data[(i*w+j)*4+2]=origcolor[2];
+				//imgdata.data[(i*w+j)*4+3]=origcolor[3];
+			//}
+		}
+	}
+	ctx.putImageData(imgdata,edge[0],edge[1]);
+  }
+   function PlusTool_Lighten_Basic_Circle(x,y,w){//very basic
+   //var ow = (v+1)/2.0;
+   //var w = Math.ceil(ow);
+   //var halfow = ow/2.0;
+   //var distW = ~~((v+1)/2)
+	var halfw = ~~(w/2);
+	var edge = [x-(halfw),y-(halfw)];
+	//var color;
+	//color = lineColor.split("rgba(")[1].split(")")[0].split(",");
+	//color = [Number(color[0]),Number(color[1]),Number(color[2]),Math.round(Number(color[3])*255)];
+
+	var imgdata = ctx.getImageData(edge[0],edge[1],w,w);
+	for(let i = 0;i<w;i++){
+		for(let j = 0;j<w;j++){
+			if(  ((j-halfw)**2+(i-halfw)**2)<(halfw)**2  ){
+				var origcolor = [imgdata.data[(i*w+j)*4],imgdata.data[(i*w+j)*4+1],imgdata.data[(i*w+j)*4+2],imgdata.data[(i*w+j)*4+3]];
+				//origcolor = overlayColor(color,origcolor);
+				var hsvcolor = RGBAtoHSLAArrayFloat(origcolor);
+				//console.log(hsvcolor);
+				hsvcolor[2]+=(PlusTool_Light_addition)*2.55;
+				//console.log(hsvcolor);
+				origcolor=HslaToRgbaArray(hsvcolor);
+				console.log(origcolor);
+				imgdata.data[(i*w+j)*4]=origcolor[0]; 
+				imgdata.data[(i*w+j)*4+1]=origcolor[1];
+				imgdata.data[(i*w+j)*4+2]=origcolor[2];
+				//imgdata.data[(i*w+j)*4+3]=origcolor[3];
+			}/*else{
+				imgdata.data[(i*w+j)*4]=255; 
+				imgdata.data[(i*w+j)*4+1]=0;
+				imgdata.data[(i*w+j)*4+2]=255;
+				imgdata.data[(i*w+j)*4+3]=255;
+			}*/
+		}
+	}
+	ctx.putImageData(imgdata,edge[0],edge[1]);
+  }
+  
+  function PlusTool_Lighten_Off(x,y,w){
+	  if(PlusTool_Circle){
+		  PlusTool_Lighten_Off_Circle(x,y,w);
+	  }else{
+		  PlusTool_Lighten_Off_Square(x,y,w);
+	  }
+  }
+  function PlusTool_Lighten_Off_Circle(x,y,w){
+	  var halfw = ~~(w/2);
+	var edge = [x-(halfw),y-(halfw)];
+	
+	var imgdata = ctx.getImageData(edge[0],edge[1],w,w);
+	var pdata = pctx.getImageData(edge[0],edge[1],w,w);
+	for(let i = 0;i<w;i++){
+		for(let j = 0;j<w;j++){
+			if(  ((j-halfw)**2+(i-halfw)**2)<(halfw)**2  ){
+				var origcolor = [imgdata.data[(i*w+j)*4],imgdata.data[(i*w+j)*4+1],imgdata.data[(i*w+j)*4+2],0];
+				var a = imgdata.data[(i*w+j)*4+3];
+				var hsvcolor = RGBAtoHSLAArrayFloat(origcolor);
+				
+				hsvcolor[2]+=(PlusTool_Light_addition)*2.55;
+				
+				origcolor=HslaToRgbaArray(hsvcolor);
+				//console.log(origcolor);
+				pdata.data[(i*w+j)*4]=origcolor[0]; 
+				pdata.data[(i*w+j)*4+1]=origcolor[1];
+				pdata.data[(i*w+j)*4+2]=origcolor[2];
+				pdata.data[(i*w+j)*4+3]=a;
+			}
+		}
+	}
+	pctx.putImageData(pdata,edge[0],edge[1]);
+	
+  }
+    function PlusTool_Lighten_Off_Square(x,y,w){
+	  var halfw = ~~(w/2);
+	var edge = [x-(halfw),y-(halfw)];
+	
+	var imgdata = ctx.getImageData(edge[0],edge[1],w,w);
+	var pdata = pctx.getImageData(edge[0],edge[1],w,w);
+	for(let i = 0;i<w;i++){
+		for(let j = 0;j<w;j++){
+			//if(  ((j-halfw)**2+(i-halfw)**2)<(halfw)**2  ){
+				var origcolor = [imgdata.data[(i*w+j)*4],imgdata.data[(i*w+j)*4+1],imgdata.data[(i*w+j)*4+2],0];
+				var a = imgdata.data[(i*w+j)*4+3];
+				var hsvcolor = RGBAtoHSLAArrayFloat(origcolor);
+				
+				hsvcolor[2]+=(PlusTool_Light_addition)*2.55;
+				
+				origcolor=HslaToRgbaArray(hsvcolor);
+				//console.log(origcolor);
+				pdata.data[(i*w+j)*4]=origcolor[0]; 
+				pdata.data[(i*w+j)*4+1]=origcolor[1];
+				pdata.data[(i*w+j)*4+2]=origcolor[2];
+				pdata.data[(i*w+j)*4+3]=a;
+			/*}else{
+				
+			}*/
+		}
+	}
+	pctx.putImageData(pdata,edge[0],edge[1]);
+	
+  }
+  
+  
+  function PlusTool_PalShift(x,y,w){
+	  if(PlusTool_Circle){
+		  PlusTool_PalShift_Circle(x,y,w);
+	  }else{
+		  PlusTool_PalShift_Square(x,y,w);
+	  }
+  }
+  function PlusTool_PalShift_Square(x,y,w){
+	  alert("PlusTool_PalShift_Square not implemented");
+  }
+  function PlusTool_PalShift_Circle(x,y,w){
+	  alert("PlusTool_PalShift_Circle not implemented");
+  }
+  
+  
+  
   function Line(fill,Vctx,X,Y,x,y,lineWidth,color){
     
 
@@ -12073,7 +12504,9 @@ for(let i = 8; i<re.height-2;i++){
 
 //autosave of config
 setInterval(function(){
-  console.log(MODE.pencil);
+  //console.log(HslaToRgbaArray([0,100,0,1]));
+   //console.log(HslaToRgbaArray([0,0,100,1]));
+   
   //SaveToCookies();
 	//console.log(UIOptions.style.visibility);
   //console.log(canvasOffset)
