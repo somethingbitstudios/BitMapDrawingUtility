@@ -913,6 +913,13 @@ NewPalette.onmousedown = function(){
  
   InitializeColorPaletteOR(pal,name);
 }
+const CpyPalette = document.getElementById("cpyPalette");
+CpyPalette.onmousedown = function(){
+  var name = prompt("Palette name",colorpalettes[colorpaletteindex][colorpalettes[colorpaletteindex].length-1]+palettelist.length);
+  if(name==null || name==""){return;}
+ 
+  AddPaletteToList([],name);
+}
 const DeletePalette = document.getElementById("delPalette");
 DeletePalette.onmousedown = function(){
   if(colorpalettes.length > 0){
@@ -7711,12 +7718,12 @@ function MenuChHelper(variable){
 	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
 	name.innerHTML = "<label>PAL offset:</label><input type='number' value='1' onchange='PlusToolPalette_Offset = this.value;' />";
 	Menu_Tool.appendChild(name);
-	
+	/*
 	name = document.createElement("div");
 	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;"
 	name.innerHTML = "<label>PAL size: (%MOD)</label><input type='number' value='8' onchange='PlusToolPalette_Size = this.value;' />";
 	Menu_Tool.appendChild(name);
-	
+	*/
 	name = document.createElement("button");
 	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;";
 	name.id = 'PlusTool_Con_UI';
@@ -9068,6 +9075,13 @@ switch(MODE.poly){
 	  }
     
       break;
+	   case("2"):
+     //previewCanvas.getContext('2d', { willReadFrequently: true }).clearRect(intPos.x,intPos.y,lineWidth,lineWidth);
+	  if(PlusTool_Apply){
+		  PlusTool_Apply_func();
+	  }
+    
+      break;
     }
    
     break;
@@ -9680,10 +9694,10 @@ case("1"):
 break;
 
 case("2"):
-	PlusTool_PalShift_Square(~~pos.x,~~pos.y,lineWidth);
+	PlusTool_PalShift(~~pos.x,~~pos.y,lineWidth);
 break;
 case("3"):
-PlusTool_PalShift_Circle(~~pos.x,~~pos.y,lineWidth);
+//PlusTool_PalShift_Circle(~~pos.x,~~pos.y,lineWidth);
 
 break;
 case("5"):
@@ -11259,6 +11273,7 @@ offset = 1;
   var PlusTool_Light_addition = 1;
   var PlusTool_Apply = true;
   var PlusTool_Con = true;
+  var PlusToolPalette_Offset=1;
   function PlusTool_Circle_Toggle(){
 	  PlusTool_Circle_UI = document.getElementById("PlusTool_Circle_UI");
 	  PlusTool_Circle=!PlusTool_Circle;
@@ -11460,6 +11475,7 @@ offset = 1;
   
   
   function PlusTool_PalShift(x,y,w){
+	  console.log(PlusTool_Circle);
 	  if(PlusTool_Circle){
 		  PlusTool_PalShift_Circle(x,y,w);
 	  }else{
@@ -11470,10 +11486,49 @@ offset = 1;
 	  alert("PlusTool_PalShift_Square not implemented");
   }
   function PlusTool_PalShift_Circle(x,y,w){
-	  alert("PlusTool_PalShift_Circle not implemented");
+	  PlusTool_PalShift_Circle_Dot(x,y,w);
   }
-  
-  
+  function ColorArrayEqual(a1,a2){
+	  return (a1[0]==a2[0])&(a1[1]==a2[1])&(a1[2]==a2[2])&(a1[3]==a2[3]);
+  }
+  function PlusTool_PalShift_Circle_Dot(x,y,w){
+	    var halfw = ~~(w/2);
+	var edge = [x-(halfw),y-(halfw)];
+	
+	var imgdata = ctx.getImageData(edge[0],edge[1],w,w);
+	var pdata = pctx.getImageData(edge[0],edge[1],w,w);
+	//var palettestrings = colorpalettes[colorpaletteindex];
+	var paldata = ColorsToPureArray();
+	var indexes = [];
+	for(let i = 0;i<paldata.length;i++){
+		indexes.push(Math.max(0,Math.min(paldata.length-1,i+Number(PlusToolPalette_Offset)))); 
+	}
+	console.log(indexes);
+	//console.log(paldata);
+	for(let i = 0;i<w;i++){
+		for(let j = 0;j<w;j++){
+			if(  ((j-halfw)**2+(i-halfw)**2)<(halfw)**2  ){
+				var origcolor = [imgdata.data[(i*w+j)*4],imgdata.data[(i*w+j)*4+1],imgdata.data[(i*w+j)*4+2],imgdata.data[(i*w+j)*4+3]];
+				for(let k = 0;k<paldata.length;k++){
+					if(ColorArrayEqual(origcolor,paldata[k])){
+						pdata.data[(i*w+j)*4]=paldata[indexes[k]][0]; 
+						pdata.data[(i*w+j)*4+1]=paldata[indexes[k]][1];
+						pdata.data[(i*w+j)*4+2]=paldata[indexes[k]][2];
+						pdata.data[(i*w+j)*4+3]=paldata[indexes[k]][3];
+						break;
+					}
+				}
+				
+				
+			}
+		}
+	}
+	pctx.putImageData(pdata,edge[0],edge[1]);
+	
+  }
+  function PlusTool_PalShift_Circle_Line(x,y,w){
+	  
+  }
   
   function Line(fill,Vctx,X,Y,x,y,lineWidth,color){
     
@@ -12480,7 +12535,7 @@ canvasOffset.y = 40;
  }
  InitializeColorPicker(false,lineColor);
  
-InitializeColorPaletteOR(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Default");
+InitializeColorPaletteOR(["rgba(0,0,0,1)","rgba(255,255,255,1)","rgba(31,31,31,1)","rgba(63,63,63,1)","rgba(95,95,95,1)","rgba(127,127,127,1)","rgba(159,159,159,1)","rgba(191,191,191,1)",          "rgba(255,0,0,1)","rgba(255,127,0,1)","rgba(255,255,0,1)","rgba(127,255,0,1)","rgba(0,255,0,1)","rgba(0,255,255,1)","rgba(0,0,255,1)","rgba(255,0,255,1)"],"Main");
 }
 Init();
 document.getElementById("cheats").addEventListener("focusout",()=>{
@@ -12506,7 +12561,7 @@ for(let i = 8; i<re.height-2;i++){
 setInterval(function(){
   //console.log(HslaToRgbaArray([0,100,0,1]));
    //console.log(HslaToRgbaArray([0,0,100,1]));
-   
+   //console.log(colorpalettes);
   //SaveToCookies();
 	//console.log(UIOptions.style.visibility);
   //console.log(canvasOffset)
