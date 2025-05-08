@@ -6494,6 +6494,28 @@ for(let i = 0; i < rY;i++){
 }
 
 }
+
+
+function CropCanvas(){
+	//resize to
+	canvasSize.x = SelectPos.w;
+  canvasSize.y = SelectPos.h;
+  resolution.x = SelectPos.w;
+  resolution.y = SelectPos.h;
+  SelectPos.x=0;
+  SelectPos.y=0;
+  
+  div.style.height = ""+canvasSize.y+"px";
+  div.style.width = ""+canvasSize.x+"px";
+  UpdateCanvas();
+  div.style.left = "119px";
+  div.style.top = "40px";
+  ChangeRes();
+ScrollUpdate();
+ConfirmSelect();
+
+}
+
 function CenteredCrop(image){
   var pos = {x:0,y:0,w:image.width,h:image.height};
   var croppable = {left:0,right:0,top:0,bottom:0};
@@ -7885,6 +7907,14 @@ function MenuChHelper(variable){
 		let data = document.getElementById("select_as").value;
 		SelectAntialiasing=data;
 	});
+	
+	
+	
+	name = document.createElement("button");
+	name.style = "margin:0;padding:0;padding:0; color:#00000000;background-color:#00000000;border:none;";
+
+	name.innerHTML = "<button class='icon' style='' onclick='CropCanvas();'><img src='./icons/toolmodes/crop.png' width='48' height='48' style='padding-left:0px;'/></button>";
+	Menu_Tool.appendChild(name);
 
 	/*
     Menu_Tool.appendChild(CreateIcon("./icons/copy.png","COPY","select"));
