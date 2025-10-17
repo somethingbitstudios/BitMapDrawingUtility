@@ -3981,8 +3981,8 @@ mainLoop = setInterval(function(){
 
 
 //LATEST
-var screen_X = 1280;//256;
-var screen_Y = 720;//192;
+var screen_X = 256;//256;
+var screen_Y = 192;//192;
 var tex_X = 256;
 var tex_Y = 256;
 var textures = null; //srgb array [r,g,b,a,...]
@@ -4197,7 +4197,7 @@ document.addEventListener("keyup", function(event) {
 		}
 	bkgCtx.putImageData(OS_CANVAS_BG,0,0);
 	
-	},30);
+	},10);
 	var sss2 = [screen_X/2,screen_Y/2];
 	let ttt = 0;
 	setInterval(function(){
@@ -4259,7 +4259,7 @@ document.addEventListener("keyup", function(event) {
 	//cameraRot[2]+=0.2;
 	//cameraRot[3]+=0.2;
 
-	},200);
+	},20);
 
 	
 	
