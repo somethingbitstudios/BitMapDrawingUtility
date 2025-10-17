@@ -701,8 +701,8 @@ Button_line.addEventListener("click",function(e) {
 //#endregion
 //#region canvas
     //VARS//
-var canvasSize = {x: 960,y: 600}
-var resolution = {x:240,y:150}
+var canvasSize = {x: 1280,y: 800}
+var resolution = {x:640,y:400}
 var resScale = 0.25; //for mouse
 
 
@@ -2108,6 +2108,9 @@ function HandleCheat(cheatcode){
 	return;
 	case "yuum":
 	YUUM();
+	return;
+	case "3":
+	RENDERER();
 	return;
 	case "jrpg":
 	JRPG();
@@ -3973,6 +3976,404 @@ mainLoop = setInterval(function(){
 	tempo+=deltaTime*2;
   },TICK);
 }
+
+
+
+
+//LATEST
+var screen_X = 1280;//256;
+var screen_Y = 720;//192;
+var tex_X = 256;
+var tex_Y = 256;
+var textures = null; //srgb array [r,g,b,a,...]
+var bkgCtx;
+var mainCtx;
+var rUICtx;
+var OUTDATA;
+
+var cameraPos = [0.0,0,-2];
+var cameraRot = [0,0,0,1];//QUATERNIONS
+var cameraSpeed = 0.2;
+var cameraRotSpeed = 0.05;
+const cameraLimit = Math.PI / 2 - 0.01;
+var objects = [{type:"plane",pos:[0.0,0.0,0.0], rot:[0.7071068,0,0,0.7071068],scale:[5.0,5.0,5.0],texIdx:0}
+
+];
+var mainLoop;
+var tempoorar = [9999,9999];
+function RENDERER(){
+	textures = ctx.getImageData(0,0,tex_X,tex_Y).data;
+	console.log("3D RENDERER INIT");
+	console.log("SETTING RESOLUTION");
+	SetResolution(screen_X,screen_Y);
+	
+	bkgCtx = AddLayerCanvas("tmp1").getContext('2d');//background
+	AddLayerUI(["TMP_Background",0,true,"tmp1"]);
+	mainCtx = AddLayerCanvas("tmp2").getContext('2d');//rendering
+	AddLayerUI(["TMP_RENDERER",0,true,"tmp2"]);
+	rUICtx = AddLayerCanvas("tmp3").getContext('2d');//in ui
+	AddLayerUI(["TMP_UI",0,true,"tmp3"]);
+	let z = 0;
+	var OS_CANVAS_BG = new ImageData(screen_X,screen_Y);
+	var OUTDATA_BG = OS_CANVAS_BG.data;
+	
+	OS_CANVAS_OUT =  new ImageData(screen_X,screen_Y);
+	OUTDATA=OS_CANVAS_OUT.data;
+	
+	var key_w=false;
+	var key_a=false;
+	var key_s=false;
+	var key_d=false;
+	var key_j=false;
+	var key_l=false;
+	var key_shift=false;
+	var key_c=false;
+	var key_space=false;
+
+	document.addEventListener("keydown", function(event) {
+
+  switch(event.keyCode){
+	  case 27:
+	  //console.log("eit");
+		clearInterval(mainLoop);
+	  break;
+	  case 87://w
+	  key_w=true;
+	  break;
+	  case 65://a
+	  key_a=true;
+	  break;
+	  case 83://s
+	  key_s=true;
+	  break;
+	  case 68://d
+	  key_d=true;
+	  break;
+	   case 67://c
+	  key_c=true;
+	  break;
+	  case 74://j
+	  key_j=true;
+	 
+	  break;
+	  case 76://l
+	  key_l=true;
+	  break;
+	  case 32://space
+	  key_space=true;
+	  break;
+	  case 16://space
+	  key_shift=true;
+	  break;
+	  case 17://space
+	  key_ctrl=true;
+	  break;
+	 
+	  
+  }
+});
+document.addEventListener("keyup", function(event) {
+
+  switch(event.keyCode){
+	 
+	  case 87://w
+	  key_w=false;
+	  break;
+	  case 65://a
+	  key_a=false;
+	  break;
+	  case 83://s
+	  key_s=false;
+	  break;
+	  case 68://d
+	  key_d=false;
+	  break;
+	  case 74://j
+	  key_j=false;
+	 case 67://c
+	  key_c=false;
+	  break;
+	  break;
+	  case 76://l
+	  key_l=false;
+	  break;
+	  case 32://space
+	  key_space=false;
+	  break;
+	  case 16://space
+	  key_shift=false;
+	  break;
+	  case 17://space
+	  key_ctrl=false;
+	  break;
+  }
+});
+
+	setInterval(function(){
+		if(key_w){
+			let vectorDir = quatRotateVec(cameraRot,[0,0,1]);
+			cameraPos[0]+=vectorDir[0]*cameraSpeed;
+			cameraPos[1]+=vectorDir[1]*cameraSpeed;
+			cameraPos[2]+=vectorDir[2]*cameraSpeed;
+		}else if(key_s){
+			let vectorDir = quatRotateVec(cameraRot,[0,0,1]);
+			cameraPos[0]-=vectorDir[0]*cameraSpeed;
+			cameraPos[1]-=vectorDir[1]*cameraSpeed;
+			cameraPos[2]-=vectorDir[2]*cameraSpeed;
+		}
+		if(key_d){
+			let vectorDir = quatRotateVec(cameraRot,[1,0,0]);
+			cameraPos[0]+=vectorDir[0]*cameraSpeed;
+			cameraPos[1]+=vectorDir[1]*cameraSpeed;
+			cameraPos[2]+=vectorDir[2]*cameraSpeed;
+		}else if(key_a){
+			let vectorDir = quatRotateVec(cameraRot,[1,0,0]);
+			cameraPos[0]-=vectorDir[0]*cameraSpeed;
+			cameraPos[1]-=vectorDir[1]*cameraSpeed;
+			cameraPos[2]-=vectorDir[2]*cameraSpeed;
+		}if(key_c){
+			
+			cameraPos[1]+=cameraSpeed;
+		
+		}else if(key_space){
+			cameraPos[1]-=cameraSpeed;
+		}
+		
+		
+		
+		//camera rotation
+		if(key_shift){
+		
+			if(pos.x!=tempoorar[0]||pos.y!=tempoorar[1]){
+				const [x,y,z,w] = cameraRot;
+				tempoorar[0]=pos.x; tempoorar[1]=pos.y;
+				
+				const [dx,dy] = [pos.x-lastPos.x,pos.y-lastPos.y];
+				
+				let pitch = Math.asin(2 * (w * x - y * z)); // clamp needed
+				
+				let yaw = Math.atan2(2 * (w * y + z * x), 1 - 2 * (x * x + y * y));
+				pitch -= dy * cameraRotSpeed;
+				yaw   += dx * cameraRotSpeed;
+			
+				pitch = Math.max(-cameraLimit, Math.min(cameraLimit, pitch));
+				const halfPitch = pitch / 2;
+				const halfYaw = yaw / 2;
+				
+				const cp = Math.cos(halfPitch);
+				const sp = Math.sin(halfPitch);
+				const cy = Math.cos(halfYaw);
+				const sy = Math.sin(halfYaw);
+				
+				cameraRot[0] = sp * cy;
+				cameraRot[1] = cp * sy;
+				cameraRot[2] = -sp * sy;
+				cameraRot[3]= cp * cy;
+				
+			
+		
+			}
+			
+		}
+		
+		
+	},10);
+	
+	mainLoop = setInterval(function(){
+		
+		
+		z=(z+1);
+		for(let i = 0;i<screen_Y;i++){
+			for(let j = 0;j<screen_X;j++){
+				let posii = (j+(i)*screen_X)*4;
+				//var texpos = (((j+z)%tex_X)+((i+z)%tex_Y)*tex_X)*4;
+				
+				OUTDATA_BG[posii]=(i+z)%255;
+				OUTDATA_BG[posii+1]=(j+(z/2))%255;
+				OUTDATA_BG[posii+2]=255;
+				OUTDATA_BG[posii+3]=255;
+			}
+	        	
+		}
+	bkgCtx.putImageData(OS_CANVAS_BG,0,0);
+	
+	},30);
+	var sss2 = [screen_X/2,screen_Y/2];
+	let ttt = 0;
+	setInterval(function(){
+		ttt++;
+		//raycast
+		for(let i = 0;i<screen_Y;i++){
+			for(let j = 0;j<screen_X;j++){
+				
+				let found = false;
+				for(let k = 0;k<objects.length;k++){
+					var dir = [(j-sss2[0])/screen_Y,(i-sss2[1])/screen_Y,1];
+				
+				dir = normalize(dir);
+					const plane = objects[k];
+				const planeNormal = planeNormalFromQuat(plane.rot);
+				dir = quatRotateVec(cameraRot,dir);
+				const hitPoint = intersectRayPlane(cameraPos, dir, plane.pos, planeNormal);
+				var pos = (j+i*screen_X)*4;
+				
+				if (hitPoint) {
+					var retu = pointInQuad(hitPoint, plane.pos, plane.rot, plane.scale)
+					//if(retu.is){
+						
+						
+					var texpos = Math.floor(((retu.coords[0]+1)*128+Math.floor((retu.coords[1]+1)*128)*tex_X))*4;
+					texpos = texpos%(tex_X*tex_Y*4);
+				OUTDATA[pos]=textures[texpos];
+				OUTDATA[pos+1]=textures[texpos+1];
+				OUTDATA[pos+2]=textures[texpos+2];
+				OUTDATA[pos+3]=textures[texpos+3];
+				found=true;
+				break;
+					//}
+					
+				} 
+				}
+				
+				if(!found){
+					OUTDATA[pos]=0;
+				OUTDATA[pos+1]=0;
+				OUTDATA[pos+2]=0;
+				OUTDATA[pos+3]=0;
+				}
+					
+				
+				
+				
+			}
+	        	
+		}
+	mainCtx.putImageData(OS_CANVAS_OUT,0,0);
+	//cameraPos[1]+=Math.sin(ttt/15.0)/7.0;
+	//cameraRot[0]+=Math.cos(ttt/15.0)/256.0;
+	//cameraRot[1]+=Math.cos(ttt/15.0)/512.0;
+	//cameraRot[2]+=Math.cos(ttt/15.0)/512.0;
+	//cameraPos[3]+=Math.sin(ttt/10.0)/7.0;
+	
+	//cameraRot[1]+=0.2;
+	//cameraRot[2]+=0.2;
+	//cameraRot[3]+=0.2;
+
+	},200);
+
+	
+	
+}
+
+//RENDERER();
+function cross(a, b) {
+  return [
+    a[1]*b[2] - a[2]*b[1],
+    a[2]*b[0] - a[0]*b[2],
+    a[0]*b[1] - a[1]*b[0]
+  ];
+}
+function pointInQuad(hitPoint, quadPos, quadRot, quadScale) {
+  // Transform hitPoint into local space of the quad
+  const toLocal = subtract(hitPoint, quadPos);
+
+  // Create quad's local axes
+  const up = normalize(quatRotateVec(quadRot, [0, 1, 0]));     // Plane normal
+  const right = normalize(quatRotateVec(quadRot, [1, 0, 0]));  // Local X
+  const forward = normalize(cross(up, right));                 // Local Z
+
+  // Project toLocal onto local axes
+  const dx = dot(toLocal, right);
+  const dz = dot(toLocal, forward);
+
+  // Half extents
+  const halfW = quadScale[0] / 2;
+  const halfH = quadScale[1] / 2;
+
+  return {is: (Math.abs(dx) <= halfW && Math.abs(dz) <= halfH), coords:[dx/halfW,dz/halfH]};
+}
+function quatRotateVec(q, v) {
+  // Quaternion-vector multiplication: v' = q * v * q^-1
+  const [qx, qy, qz, qw] = q;
+  const [vx, vy, vz] = v;
+
+  // Quaternion * vector
+  const ix =  qw * vx + qy * vz - qz * vy;
+  const iy =  qw * vy + qz * vx - qx * vz;
+  const iz =  qw * vz + qx * vy - qy * vx;
+  const iw = -qx * vx - qy * vy - qz * vz;
+
+  // Result * conjugate(q)
+  return [
+    ix * qw + iw * -qx + iy * -qz - iz * -qy,
+    iy * qw + iw * -qy + iz * -qx - ix * -qz,
+    iz * qw + iw * -qz + ix * -qy - iy * -qx
+  ];
+}
+
+function degreesToRadians(deg) {
+  return deg * Math.PI / 180;
+}
+
+function planeNormalFromQuat(quat) {
+  // Assume the default plane normal is facing up in local space: [0, 1, 0]
+  const defaultNormal = [0, 1, 0];
+  return normalize(quatRotateVec(quat, defaultNormal));
+}
+
+
+function dot(a, b) {
+  return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
+
+function subtract(a, b) {
+  return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
+}
+
+function add(a, b) {
+  return [a[0]+b[0], a[1]+b[1], a[2]+b[2]];
+}
+
+function scaleVec(v, s) {
+  return [v[0]*s, v[1]*s, v[2]*s];
+}
+
+function intersectRayPlane(rayOrigin, rayDir, planePoint, planeNormal) {
+  const denom = dot(rayDir, planeNormal);
+  if (Math.abs(denom) < 1e-6) return null; // Parallel
+  const diff = subtract(planePoint, rayOrigin);
+  const t = dot(diff, planeNormal) / denom;
+  if (t < 0) return null; // Plane is behind
+  return add(rayOrigin, scaleVec(rayDir, t)); // Point of intersection
+}
+
+
+
+
+
+ function normalize(vec) {
+    const [x, y, z] = vec;
+    const length = Math.hypot(x, y, z); // same as sqrt(x*x + y*y + z*z)
+    if (length === 0) return [0, 0, 0];
+    return [x / length, y / length, z / length];
+}
+function SetResolution(sx,sy){
+	canvasSize.x = sx;
+  canvasSize.y = sy
+  resolution.x = sx;
+  resolution.y = sy;
+  div.style.height = ""+canvasSize.y+"px";
+  div.style.width = ""+canvasSize.x+"px";
+  UpdateCanvas();
+  div.style.left = "119px";
+  div.style.top = "40px";
+  ChangeRes();
+ScrollUpdate();
+}
+
+
+
+
 function YUUM(){
 	var mainLoop;
 	var metaframe=300;
@@ -8136,8 +8537,18 @@ function AddLayerCanvas(){
   canvas.height=resolution.y;
   canvas.style.zIndex=layers[layers.length-1][1]+1;
   document.getElementById("layerdiv").appendChild(canvas);
+  return document.getElementById(canvas.id);
 }
-
+function AddLayerCanvas(cid){
+  var canvas = document.createElement("canvas");
+ 
+  canvas.id=cid;
+  canvas.width=resolution.x;
+  canvas.height=resolution.y;
+  canvas.style.zIndex=layers[layers.length-1][1]+1;
+  document.getElementById("layerdiv").appendChild(canvas);
+  return document.getElementById(canvas.id);
+}
 //UI
 function LoadLayersUI(){
   layersui.innerHTML="";//remove all layers
@@ -9374,6 +9785,7 @@ default:
            
     if(lastPos.x == -1){
         UpdatePos();
+		
         lastPos.x = pos.x;
         lastPos.y = pos.y;
         AbsLastPos.x = AbsPos.x;
@@ -9384,6 +9796,12 @@ default:
       //AbsLastPos.y = AbsPos.y;
       //lastPos.y = pos.y;
        UpdatePos();
+	   
+	   
+	   
+	   
+
+	   
 	   //console.log("hoveredON:"+hoveredON);
     if(middle && (hoveredON=="canvas"||hoveredON=="background")){
 		//console.log("moving :3")
